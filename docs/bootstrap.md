@@ -12,7 +12,7 @@ Docker не потрібен: локально — лише npm run dev прот
 -->
 
 Моє репо: https://github.com/pavmys/therapy-scheduling · Прод-URL: https://therapy-scheduling-three.vercel.app
-Репо вимог PM: <!-- https://github.com/<pm>/<team-slug>-spec --> · Організація Supabase: Agentic Engineering Course
+Репо вимог PM: https://github.com/Sofiia-pm/therapy-scheduling-spec · Організація Supabase: Agentic Engineering Course
 
 ## 1. Інструменти й репо
 
@@ -80,11 +80,14 @@ Docker не потрібен: локально — лише npm run dev прот
 
 ## 7. Перший PR (перевірка ruleset-у)
 
-- [ ] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
-      → окремим коментарем `@coderabbitai review` — <!-- посилання на PR (наступним PR) -->
-- [ ] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — <!-- знімок -->
-- [ ] Vercel створив preview для PR — <!-- посилання на preview (наступним PR) -->
-- [ ] **Squash and merge** → прод-деплой Vercel пройшов — <!-- посилання -->
+- [x] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
+      → окремим коментарем `@coderabbitai review` — https://github.com/pavmys/therapy-scheduling/pull/1
+- [x] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — під час перевірок PR #1
+      мав `mergeStateStatus: BLOCKED`; `git push origin HEAD:main` відхилено:
+      `GH013: Repository rule violations found for refs/heads/main` → `push declined due to repository rule violations`
+- [x] Vercel створив preview для PR — https://therapy-scheduling-git-setup-b-637487-pavlom2901-9007s-projects.vercel.app
+- [x] **Squash and merge** → прод-деплой Vercel пройшов — коміт `ceb3f48`, деплой Production «Ready» —
+      [знімок](img/vercel-prod-deploy.png); CI на `main` після merge: https://github.com/pavmys/therapy-scheduling/actions/runs/39676035356
 - [ ] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — <!-- посилання на run -->
 
 ## 8. Вимоги PM і специфікація
