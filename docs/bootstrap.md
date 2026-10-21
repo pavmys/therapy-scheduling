@@ -34,7 +34,8 @@ Docker не потрібен: локально — лише npm run dev прот
       (точні назви й місце перемикачів перевірте в інтерфейсі) — [знімок](img/auth-signups.png), [знімок](img/auth-email.png)
       (провайдер Email увімкнено — без нього не працює вхід email + пароль)
 - [x] (Після розділу 4, коли є прод-URL) Authentication → URL Configuration: Site URL = прод-URL Vercel; Redirect URLs
-      `http://localhost:3000/**`, `https://*-<slug>.vercel.app/**` — [знімок](img/auth-urls.png)
+      `http://localhost:3000/**`, `https://*-<slug>.vercel.app/**` — Site URL `https://therapy-scheduling-three.vercel.app`;
+      Redirect URLs `http://localhost:3000/**`, `https://*-pavlom2901-9007s-projects.vercel.app/**` — [знімок](img/auth-urls.png)
 - [x] `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
       (Project Settings → API Keys; точну назву розділу перевірте в інтерфейсі) і `DEMO_USER_PASSWORD` (≥ 8 символів).
       Значення не комітимо й не вставляємо в чат — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
@@ -64,7 +65,8 @@ Docker не потрібен: локально — лише npm run dev прот
 
 - [x] Actions → CI → **Run workflow** (гілка `main`, `include_seed` ✓) → job `db-deploy` застосував першу міграцію й сид — https://github.com/pavmys/therapy-scheduling/actions/runs/39670865915
 - [x] `npm run users:demo` (синтетичні користувачі з `supabase/demo-users.json`) → `npm run dev` → `http://localhost:3000` →
-      вхід як `admin@example.test` працює локально й на прод-URL
+      вхід як `admin@example.test` працює локально й на прод-URL — [знімок локально](img/login-local.png),
+      [знімок на прод-URL](img/login-prod.png)
 - [x] CI на `main` зелений: `spec`, `app`, `conformance`, `db-check`, `db-deploy` — https://github.com/pavmys/therapy-scheduling/actions/runs/39670865915
 
 ## 6. Ruleset `solo-main` (лише після зеленого CI на `main`)
