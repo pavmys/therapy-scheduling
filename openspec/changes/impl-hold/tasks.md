@@ -5,7 +5,7 @@
 ## 1. Ролі й картки клієнтів (`task/clients`)
 
 - [ ] 1.1 Записати `docs/decisions/0001-slot-hold-data-model.md` (D1–D4, D8) і `docs/decisions/0002-test-strategy.md` (D9); перевірити, що кожен ADR посилається на AC ID
-- [ ] 1.2 Міграція `roles_and_clients`: ролі admin / scheduler / therapist за процедурою D1, `private.is_staff()`, нова політика select `profiles` для staff, таблиця `clients` з check, unique, grants і RLS (D2, D4); перевірити: `node scripts/check-migration-order.mjs` і зелений `db-check`
+- [ ] 1.2 Міграція `roles_and_clients`: ролі admin / scheduler / therapist за процедурою D1, `private.is_staff()`, нова політика select `profiles` для staff, таблиця `clients` з `not null`, defaults, check, unique, grants і RLS (D2, D4), `is_staff()` NULL-safe, об'єкти в `security definer` функціях — зі схемою (D1); перевірити: `node scripts/check-migration-order.mjs`, зелений `db-check` і ручну SQL-перевірку з Risks (анонім і користувач без профілю не вставляють у `clients`; `a@b@c`, `@`, порожнє ім'я → `23514`), результати — в описі PR
 - [ ] 1.3 `supabase/demo-users.json` — admin1, scheduler1, scheduler2, therapist1, therapist2; після merge `npm run users:demo` створює всіх п'ятьох без помилок
 - [ ] 1.4 `src/lib/clients/validate.ts` (D6) з юніт-тестами AC-HOLD-11, AC-HOLD-15, AC-HOLD-35; перевірити: `npm test`
 - [ ] 1.5 `/` редиректить за роллю (D7); `/clients` — форма (`useActionState`) і пошук за частиною імені чи email; `createClient` мапить `23505` у «A client with this email already exists.»; тести action з моком Supabase — AC-HOLD-10, AC-HOLD-16, AC-HOLD-34; перевірити: `npm test`
@@ -15,7 +15,7 @@ Done when: AC-HOLD-10, AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-3
 
 ## 2. Слоти дня й утримання (`task/slot-holds`)
 
-- [ ] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3; перевірити: зелений `db-check`
+- [ ] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `HOLD_FORBIDDEN`), результати — в описі PR
 - [ ] 2.2 `supabase/seed.sql` — слоти therapist1 і therapist2 (D8); після merge `db-deploy` з `include_seed`, слоти видно в проді
 - [ ] 2.3 `src/lib/time.ts` (D5) з юніт-тестами формату «YYYY-MM-DD HH:mm», меж дня й переходу DST у America/Los_Angeles; перевірити: `npm test`
 - [ ] 2.4 `src/lib/holds/status.ts` і `messages.ts` (D6): `holdStatus`, `slotStatus`, `dayView`; юніт-тести AC-HOLD-01, AC-HOLD-05, AC-HOLD-06, AC-HOLD-18, AC-HOLD-24, AC-HOLD-32, AC-HOLD-33; перевірити: `npm test`
@@ -26,7 +26,7 @@ Done when: AC-HOLD-01, AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-05, AC-HOLD-0
 
 ## 3. Список утримань і підтвердження (`task/confirm-hold`)
 
-- [ ] 3.1 Міграція `confirm_hold`: `public.confirm_hold` → `private.confirm_hold_impl` з порядком перевірок D3; перевірити: зелений `db-check`
+- [ ] 3.1 Міграція `confirm_hold`: `public.confirm_hold` → `private.confirm_hold_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `CONFIRM_FORBIDDEN`), результати — в описі PR
 - [ ] 3.2 `holdsList` у `src/lib/holds/status.ts` (D6, Q3) з юніт-тестами AC-HOLD-12, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29; перевірити: `npm test`
 - [ ] 3.3 `/holds` — список і кнопка «Confirm»; `confirmHold` мапить коди D3; тести action з моком — AC-HOLD-13, AC-HOLD-14, AC-HOLD-19, AC-HOLD-22, AC-HOLD-23, AC-HOLD-27, AC-HOLD-36; перевірити: `npm test`
 - [ ] 3.4 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: підтвердження scheduler2 утримання scheduler1, повторне підтвердження, прострочене; перевірити: `npm run ac:coverage`

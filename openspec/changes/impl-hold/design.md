@@ -25,15 +25,21 @@
 
 ### D1. Ролі `admin` / `scheduler` / `therapist` (AC-HOLD-08, AC-HOLD-14, AC-HOLD-19, AC-HOLD-27)
 
-Нова міграція змінює набір ролей за процедурою з шапки першої міграції: зняти `profiles_role_check` → `update profiles set role = 'therapist' where role = 'member'` → `default 'therapist'` → новий `profiles_role_check check (role in ('admin','scheduler','therapist'))`. Default — `therapist` як найменш привілейована роль. Новий хелпер `private.is_staff()` (`security definer`, `set search_path = ''`): `current_app_role() in ('admin','scheduler')`. `supabase/demo-users.json` — admin1, scheduler1, scheduler2, therapist1, therapist2 (`*@example.test`, Q1).
+Нова міграція змінює набір ролей за процедурою з шапки першої міграції: зняти `profiles_role_check` → `update profiles set role = 'therapist' where role = 'member'` → `default 'therapist'` → новий `profiles_role_check check (role in ('admin','scheduler','therapist'))`. Default — `therapist` як найменш привілейована роль. Новий хелпер `private.is_staff() returns boolean` (`security definer`, `set search_path = ''`): `coalesce(private.current_app_role() in ('admin','scheduler'), false)` — для анонімного виклику чи користувача без профілю `current_app_role()` повертає `NULL`, і без `coalesce` перевірка `if not private.is_staff()` пропустила б заборону.
+
+Правило для всіх `security definer` функцій зрізу: через `set search_path = ''` кожну таблицю й функцію пишемо зі схемою (`public.slots`, `public.clients`, `public.holds`, `public.profiles`, `private.current_app_role()`, `auth.uid()`; вбудовані функції на кшталт `now()` зі схеми `pg_catalog` видно й без неї); `revoke execute … from public, anon`, `grant execute … to authenticated`.
+
+`supabase/demo-users.json` — admin1, scheduler1, scheduler2, therapist1, therapist2 (`*@example.test`, Q1).
 
 Альтернатива — окрема таблиця ролей: зайве для трьох фіксованих ролей.
 
 ### D2. Модель даних (AC-HOLD-01, AC-HOLD-02, AC-HOLD-12, AC-HOLD-16, AC-HOLD-34)
 
-- `public.slots`: `id`, `therapist_id → profiles(id)`, `starts_at timestamptz`, `ends_at timestamptz` (= `starts_at + 60 хв`, check), `unique (therapist_id, starts_at)`. Слоти — лише сид (D8).
-- `public.clients`: `id`, `full_name text` (check: `btrim(full_name) <> ''`), `email text` (check: `email = lower(btrim(email))` і містить `@`), `unique (email)`, `created_at`. Нормалізацію робить застосунок (D6), check і unique — останній рубіж (AC-HOLD-16, AC-HOLD-34, AC-HOLD-35).
-- `public.holds`: `id`, `slot_id → slots`, `client_id → clients`, `created_at`, `expires_at`, `confirmed_at timestamptz null`. Сеанс = утримання з `confirmed_at is not null` (глосарій PM: підтвердження — момент, коли утримання стає сеансом); окремої таблиці сеансів немає.
+Усі колонки — `not null`, крім `holds.confirmed_at`; `id uuid primary key default gen_random_uuid()`.
+
+- `public.slots`: `id`, `therapist_id uuid not null → public.profiles(id)`, `starts_at timestamptz not null`, `ends_at timestamptz not null` (check `ends_at = starts_at + interval '60 minutes'`), `unique (therapist_id, starts_at)`. Слоти — лише сид (D8).
+- `public.clients`: `id`, `full_name text not null` (check `btrim(full_name) <> ''`), `email text not null` (check `email = lower(btrim(email))` і `email ~ '^[^@[:space:]]+@[^@[:space:]]+$'` — рівно один `@` з непорожніми частинами без пробілів, як у D6), `unique (email)`, `created_at timestamptz not null default now()`. Користувач вставляє лише `full_name` і `email` (D3), тому `id` і `created_at` мають defaults. Нормалізацію й перевірку робить застосунок (D6); ті самі правила в check і unique — останній рубіж для прямого `insert` (AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-35).
+- `public.holds`: `id`, `slot_id uuid not null → public.slots`, `client_id uuid not null → public.clients`, `created_at timestamptz not null`, `expires_at timestamptz not null`, `confirmed_at timestamptz null`. `created_at` і `expires_at` задає лише `private.hold_slot_impl` (користувач у `holds` не пише). Сеанс = утримання з `confirmed_at is not null` (глосарій PM: підтвердження — момент, коли утримання стає сеансом); окремої таблиці сеансів немає.
 - Статус не зберігається, а обчислюється: `confirmed_at` є → «Confirmed»; інакше `now < expires_at` → «Held»; інакше «Expired». Активне = Held або Confirmed.
 - `created_at` обрізаємо до хвилини (`date_trunc('minute', now())`), `expires_at = created_at + interval '1440 minutes'`: точність до хвилини з «Припущень» PM, щоб о 14:29 було «Held», а о 14:30 — «Expired» (AC-HOLD-05, AC-HOLD-06), і щоб DST не впливав на тривалість.
 - Повторне утримання після прострочення (Q2, у WS6 — варіант B) — новий рядок `holds`; старий «Expired» лишається й видно в списку до початку слоту.
@@ -45,7 +51,7 @@
 У supabase-js немає транзакцій, тому перевірка + запис — одна функція. Публічні обгортки `public.hold_slot(p_slot_id uuid, p_client_id uuid)` і `public.confirm_hold(p_hold_id uuid)` — `security invoker`, викликають `private.hold_slot_impl` / `private.confirm_hold_impl` (`security definer`, `set search_path = ''`). Ролі `authenticated` **не** даємо `insert` / `update` на `holds`: інакше планувальник обійшов би перевірки прямим запитом до таблиці.
 
 `hold_slot` (порядок перевірок):
-1. `private.is_staff()` інакше помилка `HOLD_FORBIDDEN` (AC-HOLD-08).
+1. `(select auth.uid()) is null or not private.is_staff()` → помилка `HOLD_FORBIDDEN` (AC-HOLD-08; анонім і користувач без профілю теж отримують відмову, D1).
 2. `select … from slots where id = p_slot_id for update` — блокування рядка слоту серіалізує одночасні утримання (AC-HOLD-04).
 3. Активне утримання чи сеанс на слоті → `SLOT_UNAVAILABLE` (AC-HOLD-03, AC-HOLD-04, AC-HOLD-17).
 4. `now() >= starts_at` → `SLOT_STARTED` (AC-HOLD-07). Для слоту, що і почався, і зайнятий, спрацьовує п. 3: користувач бачить «Held»/«Confirmed», і повідомлення «no longer available» йому відповідає; жоден AC цю комбінацію не описує.
@@ -53,7 +59,7 @@
 6. `insert` з `created_at`, `expires_at` (D2), повертає рядок (AC-HOLD-02).
 
 `confirm_hold`:
-1. `private.is_staff()` інакше `CONFIRM_FORBIDDEN` (AC-HOLD-14); будь-який планувальник чи адміністратор (AC-HOLD-19, AC-HOLD-27).
+1. `(select auth.uid()) is null or not private.is_staff()` → `CONFIRM_FORBIDDEN` (AC-HOLD-14); будь-який планувальник чи адміністратор (AC-HOLD-19, AC-HOLD-27).
 2. `select … from holds where id = p_hold_id for update` (AC-HOLD-36, одночасне підтвердження).
 3. `confirmed_at` уже є → `HOLD_ALREADY_CONFIRMED` (AC-HOLD-36).
 4. `now() >= expires_at` → `HOLD_EXPIRED` (AC-HOLD-13).
@@ -62,7 +68,7 @@
 
 Код помилки — `raise exception '<CODE>'` з окремим `errcode`; server action мапить код у текст повідомлення PM (D6). Альтернатива — exclusion constraint: неможливий, бо «активне» залежить від `now()`.
 
-Картку клієнта створюємо прямим `insert` у `clients` (одна операція): `grant insert (full_name, email)` і політика `with check (private.is_staff())`; порушення `unique` (`23505`) → `CLIENT_EMAIL_EXISTS` (AC-HOLD-16, AC-HOLD-34).
+Картку клієнта створюємо прямим `insert` у `clients` (одна операція): `grant insert (full_name, email)` (решту колонок заповнюють defaults D2) і політика `with check (private.is_staff())`; порожнє ім'я чи некоректний email при прямому запиті відхиляють check D2 (`23514`); порушення `unique` (`23505`) → `CLIENT_EMAIL_EXISTS` (AC-HOLD-16, AC-HOLD-34).
 
 ### D4. RLS і grants (AC-HOLD-09, AC-HOLD-21)
 
@@ -106,7 +112,7 @@ Vitest без бази: (1) юніт-тести чистих функцій D5�
 
 ## Risks / Trade-offs
 
-- [SQL-логіка `hold_slot` / `confirm_hold` і RLS не тестуються в CI] → `db-check` перевіряє, що міграція застосовується; у кожній задачі з міграцією — ручна перевірка сценаріїв AC на Preview / прод із синтетичними користувачами (запис у PR); пізніше — окремий workflow з тестами проти Postgres (новий ADR).
+- [SQL-логіка `hold_slot` / `confirm_hold` і RLS не тестуються в CI; мок-тести server actions не перевіряють поведінку Postgres] → `db-check` перевіряє, що міграція застосовується; у кожній задачі з міграцією — ручна SQL-перевірка в PR (результати в описі): анонімний виклик RPC і прямий `insert` з publishable key → відмова; користувач без профілю → `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN`; therapist → відмова; прямий `insert` у `clients` з `a@b@c`, `@`, порожнім ім'ям → `23514`; плюс сценарії AC на Preview із синтетичними користувачами. Пізніше — окремий workflow з тестами проти Postgres (новий ADR).
 - [Блокування `for update` на слоті й клієнті] → короткі транзакції, порядок блокувань завжди слот → клієнт, тож взаємоблокувань немає.
 - [`now()` бази й `new Date()` застосунку розходяться на секунди] → рішення приймає лише база; застосунок обчислює статус для показу, і на межі хвилини показ може відставати до наступного оновлення сторінки.
 - [Старі демо-користувачі `member*` у проді] → міграція переводить їх у `therapist`; доступу до чужих даних вони не отримують.
