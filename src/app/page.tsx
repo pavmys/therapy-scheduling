@@ -22,10 +22,12 @@ export default async function Home() {
     .eq("id", claims.sub)
     .maybeSingle();
 
-  // Планувальник і адміністратор працюють зі слотами терапевтів (зріз 1);
-  // розклад терапевта — задача 4 impl-hold.
+  // Планувальник і адміністратор працюють зі слотами терапевтів, терапевт — зі своїм розкладом (зріз 1).
   if (isStaffRole(profile?.role)) {
     redirect("/slots");
+  }
+  if (profile?.role === "therapist") {
+    redirect("/schedule");
   }
 
   return (

@@ -1,6 +1,7 @@
 // Статуси утримань і слотів (design.md impl-hold, D2, D6). Статус не зберігається в базі,
 // а обчислюється з часу створення, підтвердження й поточного часу `now` — тому прострочення
 // не потребує фонової задачі. Рішення про запис приймає лише база (hold_slot); тут — показ.
+import { addDays, formatPracticeDate } from "@/lib/time";
 import { NO_FREE_SLOTS_MESSAGE } from "./messages";
 
 export type HoldStatus = "held" | "confirmed" | "expired";
@@ -79,4 +80,18 @@ export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldLi
     items.push({ hold, slot, status });
   }
   return items.sort((a, b) => ms(a.slot.starts_at) - ms(b.slot.starts_at) || ms(a.hold.created_at) - ms(b.hold.created_at));
+}
+
+export type ScheduleDay = { date: string; items: DaySlot[] };
+
+// Тиждень терапевта (понеділок–неділя в часі практики) з усіма його слотами й статусами
+// (AC-HOLD-30, AC-HOLD-31). Прострочене утримання не показуємо — його слот вільний або «Past»
+// (AC-HOLD-21); активне утримання й сеанс — з клієнтом.
+export function therapistWeek(slots: SlotRow[], holds: HoldRow[], monday: string, now: Date): ScheduleDay[] {
+  const days: ScheduleDay[] = Array.from({ length: 7 }, (_, i) => ({ date: addDays(monday, i), items: [] }));
+  const byDate = new Map(days.map((d) => [d.date, d]));
+  for (const item of dayView(slots, holds, now).items) {
+    byDate.get(formatPracticeDate(new Date(item.slot.starts_at)))?.items.push(item);
+  }
+  return days;
 }

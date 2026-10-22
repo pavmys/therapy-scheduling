@@ -72,7 +72,7 @@ export default async function HoldsPage() {
             const slot = slotOf.get(hold.id)!;
             return (
               <li key={hold.id} className="flex flex-wrap items-center gap-4 py-3 text-sm" data-status={status}>
-                <span className="w-44 font-mono">
+                <span className="w-52 whitespace-nowrap font-mono">
                   {formatPracticeDateTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
                 </span>
                 <span className="w-32">{therapistName.get(slot.therapist_id) ?? "—"}</span>
