@@ -4,6 +4,10 @@ export const HOLD_ERROR_MESSAGES = {
   SLOT_UNAVAILABLE: "This slot is no longer available.",
   SLOT_STARTED: "This slot has already started and cannot be held.",
   CLIENT_OVERLAP: "This client already has a hold or session at this time.",
+  // Слот чи клієнта не знайдено (видалено після завантаження сторінки або некоректний id) —
+  // власні тексти розробника: AC цих випадків не описують.
+  SLOT_NOT_FOUND: "This slot is no longer available.",
+  CLIENT_NOT_FOUND: "This client no longer exists. Select another client.",
   CONFIRM_FORBIDDEN: "Only schedulers and admins can confirm holds.",
   HOLD_EXPIRED: "This hold has expired. Hold the slot again.",
   SLOT_STARTED_CONFIRM: "This slot has already started and cannot be confirmed.",

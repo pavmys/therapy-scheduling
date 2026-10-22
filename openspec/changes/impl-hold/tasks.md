@@ -15,7 +15,7 @@ Done when: AC-HOLD-10, AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-3
 
 ## 2. Слоти дня й утримання (`task/slot-holds`)
 
-- [x] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `HOLD_FORBIDDEN`), результати — в описі PR
+- [ ] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `HOLD_FORBIDDEN`), результати — в описі PR
 - [ ] 2.2 `supabase/seed.sql` — слоти therapist1 і therapist2 (D8); після merge `db-deploy` з `include_seed`, слоти видно в проді
 - [x] 2.3 `src/lib/time.ts` (D5) з юніт-тестами формату «YYYY-MM-DD HH:mm», меж дня й переходу DST у America/Los_Angeles; перевірити: `npm test`
 - [x] 2.4 `src/lib/holds/status.ts` і `messages.ts` (D6): `holdStatus`, `slotStatus`, `dayView`; юніт-тести AC-HOLD-01, AC-HOLD-05, AC-HOLD-06, AC-HOLD-18, AC-HOLD-24, AC-HOLD-32, AC-HOLD-33; перевірити: `npm test`

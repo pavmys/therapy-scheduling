@@ -9,9 +9,13 @@ create table public.slots (
   therapist_id uuid not null references public.profiles (id) on delete cascade,
   starts_at    timestamptz not null,
   ends_at      timestamptz not null,
-  -- Кожен слот — 60 хвилин і починається на початку години (припущення PM).
+  -- Кожен слот — 60 хвилин і починається на початку години (припущення PM). Початок години
+  -- перевіряємо в UTC, щоб результат не залежав від TimeZone сесії; зсув America/Los_Angeles —
+  -- ціла кількість годин, тож початок години в UTC = початок години в часі практики.
   constraint slots_duration_check check (ends_at = starts_at + interval '60 minutes'),
-  constraint slots_hour_start_check check (date_trunc('hour', starts_at) = starts_at),
+  constraint slots_hour_start_check check (
+    date_trunc('hour', starts_at at time zone 'UTC') = starts_at at time zone 'UTC'
+  ),
   constraint slots_therapist_start_key unique (therapist_id, starts_at)
 );
 
