@@ -9,7 +9,7 @@
 - [x] 1.3 `supabase/demo-users.json` — admin1, scheduler1, scheduler2, therapist1, therapist2; після merge `npm run users:demo` створює всіх п'ятьох без помилок
 - [x] 1.4 `src/lib/clients/validate.ts` (D6) з юніт-тестами AC-HOLD-11, AC-HOLD-15, AC-HOLD-35; перевірити: `npm test`
 - [x] 1.5 `/` редиректить за роллю (D7); `/clients` — форма (`useActionState`) і пошук за частиною імені чи email; `createClient` мапить `23505` у «A client with this email already exists.»; тести action з моком Supabase — AC-HOLD-10, AC-HOLD-16, AC-HOLD-34; перевірити: `npm test`
-- [ ] 1.6 Рядки `docs/conformance.md` для AC задачі → «реалізовано»; ручна перевірка на Preview синтетичним scheduler1 (створення й дублікат); перевірити: `npm run ac:coverage`
+- [x] 1.6 Рядки `docs/conformance.md` для AC задачі → «реалізовано»; ручна перевірка на Preview синтетичним scheduler1 (створення й дублікат); перевірити: `npm run ac:coverage`
 
 Done when: AC-HOLD-10, AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-35
 
@@ -37,7 +37,7 @@ Done when: AC-HOLD-12, AC-HOLD-13, AC-HOLD-14, AC-HOLD-19, AC-HOLD-20, AC-HOLD-2
 
 - [x] 4.1 `therapistWeek` і `practiceWeekRange` (D5, D6) з юніт-тестами AC-HOLD-21, AC-HOLD-30, AC-HOLD-31; перевірити: `npm test`
 - [x] 4.2 `/schedule?week=` — тиждень пн–нд, попередній / наступний, фільтр `therapist_id = claims.sub` поверх RLS; тест завантаження даних з моком — AC-HOLD-09; перевірити: `npm test`
-- [ ] 4.3 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: therapist1 не бачить утримань therapist2; перевірити: `npm run ac:coverage` (усі 36 «реалізовано»)
+- [x] 4.3 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: therapist1 не бачить утримань therapist2; перевірити: `npm run ac:coverage` (усі 36 «реалізовано»)
 
 Done when: AC-HOLD-09, AC-HOLD-21, AC-HOLD-30, AC-HOLD-31
 
