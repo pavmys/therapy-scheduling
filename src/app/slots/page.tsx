@@ -78,7 +78,8 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-12">
       <StaffNav email={user.email} title="Slots" />
 
-      <form className="flex flex-wrap items-end gap-3">
+      {/* key: при переході «Previous / Next day» React не скидає defaultValue полів — нова форма на кожен вибір. */}
+      <form key={`${therapistId}|${date}|${clientQuery}`} className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">
           Therapist
           <select name="therapist" defaultValue={therapistId} className={field}>

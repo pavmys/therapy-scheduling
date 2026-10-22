@@ -1,6 +1,6 @@
 // Типи схеми бази. Оновлюйте разом із міграцією: готовий файл — у Summary прогону job db-check у CI
 // (supabase gen types typescript --local на одноразовій базі); або npm run db:types після npx supabase link на ваш проєкт. Ця стартова версія написана вручну
-// й описує таблиці й функції з міграцій 20261012000000, 20261022040716 і 20261022042804.
+// й описує таблиці й функції з міграцій 20261012000000, 20261022040716, 20261022042804 і 20261022063605.
 
 export type Json =
   | string
@@ -104,13 +104,39 @@ export type Database = {
           expires_at?: string;
           confirmed_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "holds_slot_id_fkey";
+            columns: ["slot_id"];
+            isOneToOne: false;
+            referencedRelation: "slots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "holds_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      confirm_hold: {
+        Args: { p_hold_id: string };
+        Returns: {
+          id: string;
+          slot_id: string;
+          client_id: string;
+          created_at: string;
+          expires_at: string;
+          confirmed_at: string | null;
+        };
+      };
       hold_slot: {
         Args: { p_slot_id: string; p_client_id: string };
         Returns: {

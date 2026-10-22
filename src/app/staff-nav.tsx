@@ -10,6 +10,9 @@ export function StaffNav({ email, title }: { email: string | null; title: string
         <Link href="/slots" className="underline">
           Slots
         </Link>
+        <Link href="/holds" className="underline">
+          Holds
+        </Link>
         <Link href="/clients" className="underline">
           Clients
         </Link>

@@ -60,3 +60,23 @@ export function dayView(slots: SlotRow[], holds: HoldRow[], now: Date) {
   const noFreeSlots = !items.some((i) => i.status === "free");
   return { items, message: noFreeSlots ? NO_FREE_SLOTS_MESSAGE : null };
 }
+
+export type HoldListItem = { hold: HoldRow; slot: SlotRow; status: HoldStatus };
+
+// Список утримань планувальника — «кому зателефонувати» (Q3, Sofiia-pm/therapy-scheduling-spec#15):
+// «Held» і «Expired» усіх терапевтів за часом слоту від найближчого; підтверджені сеанси — у слотах дня.
+// Прострочене видно лише до початку слоту, з моменту початку включно — ні (AC-HOLD-20, -28, -29).
+// Повторне утримання того самого слоту тим самим клієнтом після прострочення в WS6 дає два рядки (Q2, #14).
+export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldListItem[] {
+  const slotById = new Map(slots.map((s) => [s.id, s]));
+  const items: HoldListItem[] = [];
+  for (const hold of holds) {
+    const slot = slotById.get(hold.slot_id);
+    if (!slot) continue;
+    const status = holdStatus(hold, now);
+    if (status === "confirmed") continue;
+    if (status === "expired" && now.getTime() >= ms(slot.starts_at)) continue;
+    items.push({ hold, slot, status });
+  }
+  return items.sort((a, b) => ms(a.slot.starts_at) - ms(b.slot.starts_at) || ms(a.hold.created_at) - ms(b.hold.created_at));
+}
