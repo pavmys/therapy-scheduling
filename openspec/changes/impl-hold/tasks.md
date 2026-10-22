@@ -15,20 +15,20 @@ Done when: AC-HOLD-10, AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-3
 
 ## 2. Слоти дня й утримання (`task/slot-holds`)
 
-- [ ] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `HOLD_FORBIDDEN`), результати — в описі PR
-- [ ] 2.2 `supabase/seed.sql` — слоти therapist1 і therapist2 (D8); після merge `db-deploy` з `include_seed`, слоти видно в проді
+- [x] 2.1 Міграція `slots_and_holds`: таблиці `slots`, `holds`, grants і RLS (D2, D4), функції `public.hold_slot` → `private.hold_slot_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `HOLD_FORBIDDEN`), результати — в описі PR
+- [x] 2.2 `supabase/seed.sql` — слоти therapist1 і therapist2 (D8); після merge `db-deploy` з `include_seed`, слоти видно в проді
 - [x] 2.3 `src/lib/time.ts` (D5) з юніт-тестами формату «YYYY-MM-DD HH:mm», меж дня й переходу DST у America/Los_Angeles; перевірити: `npm test`
 - [x] 2.4 `src/lib/holds/status.ts` і `messages.ts` (D6): `holdStatus`, `slotStatus`, `dayView`; юніт-тести AC-HOLD-01, AC-HOLD-05, AC-HOLD-06, AC-HOLD-18, AC-HOLD-24, AC-HOLD-32, AC-HOLD-33; перевірити: `npm test`
 - [x] 2.5 `/slots` — вибір терапевта й дня, слоти зі статусами й «Held until», форма утримання з вибором клієнта; `holdSlot` мапить коди D3 у повідомлення; тести action з моком — AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-07, AC-HOLD-08, AC-HOLD-17, AC-HOLD-25, AC-HOLD-26; перевірити: `npm test`
-- [ ] 2.6 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: утримання, повторне утримання, утримання двома вкладками одночасно (одне успішне); перевірити: `npm run ac:coverage`
+- [x] 2.6 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: утримання, повторне утримання, утримання двома вкладками одночасно (одне успішне); перевірити: `npm run ac:coverage`
 
 Done when: AC-HOLD-01, AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-05, AC-HOLD-06, AC-HOLD-07, AC-HOLD-08, AC-HOLD-17, AC-HOLD-18, AC-HOLD-24, AC-HOLD-25, AC-HOLD-26, AC-HOLD-32, AC-HOLD-33
 
 ## 3. Список утримань і підтвердження (`task/confirm-hold`)
 
 - [ ] 3.1 Міграція `confirm_hold`: `public.confirm_hold` → `private.confirm_hold_impl` з порядком перевірок D3 (об'єкти зі схемою, `revoke execute` від `public, anon`); перевірити: зелений `db-check` і ручну SQL-перевірку з Risks (анонім, користувач без профілю, therapist → `CONFIRM_FORBIDDEN`), результати — в описі PR
-- [ ] 3.2 `holdsList` у `src/lib/holds/status.ts` (D6, Q3) з юніт-тестами AC-HOLD-12, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29; перевірити: `npm test`
-- [ ] 3.3 `/holds` — список і кнопка «Confirm»; `confirmHold` мапить коди D3; тести action з моком — AC-HOLD-13, AC-HOLD-14, AC-HOLD-19, AC-HOLD-22, AC-HOLD-23, AC-HOLD-27, AC-HOLD-36; перевірити: `npm test`
+- [x] 3.2 `holdsList` у `src/lib/holds/status.ts` (D6, Q3) з юніт-тестами AC-HOLD-12, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29; перевірити: `npm test`
+- [x] 3.3 `/holds` — список і кнопка «Confirm»; `confirmHold` мапить коди D3; тести action з моком — AC-HOLD-13, AC-HOLD-14, AC-HOLD-19, AC-HOLD-22, AC-HOLD-23, AC-HOLD-27, AC-HOLD-36; перевірити: `npm test`
 - [ ] 3.4 Рядки `docs/conformance.md` → «реалізовано»; ручна перевірка на Preview: підтвердження scheduler2 утримання scheduler1, повторне підтвердження, прострочене; перевірити: `npm run ac:coverage`
 
 Done when: AC-HOLD-12, AC-HOLD-13, AC-HOLD-14, AC-HOLD-19, AC-HOLD-20, AC-HOLD-22, AC-HOLD-23, AC-HOLD-27, AC-HOLD-28, AC-HOLD-29, AC-HOLD-36

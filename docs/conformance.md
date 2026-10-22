@@ -54,17 +54,17 @@
 | AC-HOLD-26 | Прострочене утримання клієнта не заважає | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
 | AC-HOLD-05 | За хвилину до прострочення | `src/lib/holds/status.ts` (holdStatus) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-06 | Утримання прострочилося | `src/lib/holds/status.ts` (holdStatus, slotStatus) | `src/lib/holds/status.test.ts` | реалізовано |
-| AC-HOLD-20 | Планувальник бачить прострочене утримання | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-28 | Прострочене утримання видно до початку слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-29 | Прострочене утримання зникає з початком слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-12 | Підтвердження утримання | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-23 | Підтвердження за хвилину до початку слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-27 | Підтвердження іншим планувальником | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-13 | Підтвердження простроченого утримання | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-22 | Підтвердження після початку слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-36 | Повторне або одночасне підтвердження | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-14 | Терапевт пробує підтвердити утримання | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-19 | Адміністратор утримує й підтверджує | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-20 | Планувальник бачить прострочене утримання | `src/lib/holds/status.ts` (holdsList) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-28 | Прострочене утримання видно до початку слоту | `src/lib/holds/status.ts` (holdsList) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-29 | Прострочене утримання зникає з початком слоту | `src/lib/holds/status.ts` (holdsList) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-12 | Підтвердження утримання | `src/lib/holds/status.ts` (holdStatus, slotStatus) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-23 | Підтвердження за хвилину до початку слоту | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-27 | Підтвердження іншим планувальником | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-13 | Підтвердження простроченого утримання | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-22 | Підтвердження після початку слоту | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-36 | Повторне або одночасне підтвердження | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-14 | Терапевт пробує підтвердити утримання | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
+| AC-HOLD-19 | Адміністратор утримує й підтверджує | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold), `src/app/slots/actions.ts` (holdSlot) | `src/app/holds/actions.test.ts` | реалізовано |
 | AC-HOLD-09 | Терапевт бачить лише свої утримання | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-21 | Прострочене утримання в розкладі терапевта | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-30 | Поточний тиждень | — | — | відкладено (чекає реалізації) |

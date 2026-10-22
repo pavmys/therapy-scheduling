@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatPracticeDateTime, practiceWallTimeToInstant } from "@/lib/time";
-import { dayView, holdStatus, slotStatus, type HoldRow, type SlotRow } from "./status";
+import { dayView, holdsList, holdStatus, slotStatus, type HoldRow, type SlotRow } from "./status";
 
 // Дані тестів — у часі практики (America/Los_Angeles), як у критеріях PM.
 const at = (date: string, hour: number, minute = 0) => practiceWallTimeToInstant(date, hour, minute);
@@ -92,6 +92,53 @@ describe("статуси слотів дня", () => {
       ["s11", "past"],
       ["s13", "held"],
       ["s14", "confirmed"],
+    ]);
+  });
+});
+
+describe("підтвердження й список утримань", () => {
+  it("AC-HOLD-12: підтверджений слот лишається «Confirmed» і після 24 годин, без «Held until»", () => {
+    const s = slot("s", "2026-11-05", 10);
+    const h = { ...hold("s", at("2026-11-02", 14, 30)), confirmed_at: at("2026-11-02", 16).toISOString() };
+    for (const now of [at("2026-11-02", 16, 1), at("2026-11-04", 9)]) {
+      expect(holdStatus(h, now)).toBe("confirmed");
+      expect(slotStatus(s, [h], now)).toBe("confirmed");
+      expect(dayView([s], [h], now).items[0]).toMatchObject({ status: "confirmed" });
+    }
+  });
+
+  it("AC-HOLD-20: планувальник бачить прострочене утримання, слот вільний", () => {
+    const s = slot("s", "2026-11-05", 10);
+    const h = hold("s", at("2026-11-02", 14, 30));
+    const now = at("2026-11-03", 15);
+    expect(holdsList([h], [s], now)).toEqual([{ hold: h, slot: s, status: "expired" }]);
+    expect(slotStatus(s, [h], now)).toBe("free");
+  });
+
+  it("AC-HOLD-28: прострочене утримання видно до початку слоту", () => {
+    const s = slot("s", "2026-11-05", 10);
+    const h = hold("s", at("2026-11-02", 14, 30));
+    expect(holdsList([h], [s], at("2026-11-05", 9, 59)).map((i) => i.status)).toEqual(["expired"]);
+  });
+
+  it("AC-HOLD-29: з початку слоту прострочене утримання в списку не показано", () => {
+    const s = slot("s", "2026-11-05", 10);
+    const h = hold("s", at("2026-11-02", 14, 30));
+    expect(holdsList([h], [s], at("2026-11-05", 10))).toEqual([]);
+    expect(holdsList([h], [s], at("2026-11-05", 12))).toEqual([]);
+  });
+
+  it("список — «Held» і «Expired» за часом слоту від найближчого, без сеансів (Q3)", () => {
+    const now = at("2026-11-03", 15);
+    const s1 = slot("t1-05-10", "2026-11-05", 10);
+    const s2 = slot("t2-04-11", "2026-11-04", 11);
+    const s3 = slot("t1-04-12", "2026-11-04", 12);
+    const expired = hold("t1-05-10", at("2026-11-02", 14, 30));
+    const held = hold("t2-04-11", at("2026-11-03", 9));
+    const session = { ...hold("t1-04-12", at("2026-11-02", 9)), confirmed_at: at("2026-11-02", 10).toISOString() };
+    expect(holdsList([expired, session, held], [s1, s2, s3], now).map((i) => [i.slot.id, i.status])).toEqual([
+      ["t2-04-11", "held"],
+      ["t1-05-10", "expired"],
     ]);
   });
 });

@@ -8,6 +8,7 @@ export const HOLD_ERROR_MESSAGES = {
   // власні тексти розробника: AC цих випадків не описують.
   SLOT_NOT_FOUND: "This slot is no longer available.",
   CLIENT_NOT_FOUND: "This client no longer exists. Select another client.",
+  HOLD_NOT_FOUND: "This hold no longer exists.",
   CONFIRM_FORBIDDEN: "Only schedulers and admins can confirm holds.",
   HOLD_EXPIRED: "This hold has expired. Hold the slot again.",
   SLOT_STARTED_CONFIRM: "This slot has already started and cannot be confirmed.",
