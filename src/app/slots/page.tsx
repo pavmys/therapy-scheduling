@@ -56,6 +56,8 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
         .from("holds")
         .select("id, slot_id, client_id, created_at, expires_at, confirmed_at")
         .in("slot_id", slotIds)
+        // Лише сеанси й ще активні утримання: прострочені не впливають на статус і не накопичуються.
+        .or(`confirmed_at.not.is.null,expires_at.gt.${now.toISOString()}`)
     : { data: [], error: null };
 
   const holdClientIds = [...new Set((holds ?? []).map((h) => h.client_id))];

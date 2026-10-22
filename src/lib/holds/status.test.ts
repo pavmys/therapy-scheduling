@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatPracticeDateTime, practiceWallTimeToInstant } from "@/lib/time";
-import { dayView, holdsList, holdStatus, slotStatus, type HoldRow, type SlotRow } from "./status";
+import { formatPracticeDateTime, practiceWallTimeToInstant, practiceWeekRange } from "@/lib/time";
+import { dayView, holdsList, holdStatus, slotStatus, therapistWeek, type HoldRow, type SlotRow } from "./status";
 
 // Дані тестів — у часі практики (America/Los_Angeles), як у критеріях PM.
 const at = (date: string, hour: number, minute = 0) => practiceWallTimeToInstant(date, hour, minute);
@@ -140,5 +140,53 @@ describe("підтвердження й список утримань", () => {
       ["t2-04-11", "held"],
       ["t1-05-10", "expired"],
     ]);
+  });
+});
+
+describe("розклад терапевта", () => {
+  // Дані AC-HOLD-30 / AC-HOLD-31: сьогодні середа 2026-11-04.
+  const now = at("2026-11-04", 9);
+  const slots = [
+    slot("s0210", "2026-11-02", 10),
+    slot("s0610", "2026-11-06", 10),
+    slot("s0611", "2026-11-06", 11),
+    slot("s0612", "2026-11-06", 12),
+    slot("s1210", "2026-11-12", 10),
+  ];
+  const holds = [
+    hold("s0210", at("2026-10-30", 9), true),
+    hold("s0610", at("2026-11-04", 8)),
+    hold("s1210", at("2026-11-01", 9), true),
+  ];
+  const statuses = (days: ReturnType<typeof therapistWeek>) =>
+    days.flatMap((d) => d.items.map((i) => `${d.date} ${formatPracticeDateTime(new Date(i.slot.starts_at)).slice(11)} ${i.status}`));
+
+  it("AC-HOLD-30: поточний тиждень пн–нд з усіма слотами й статусами", () => {
+    const week = practiceWeekRange("2026-11-04");
+    expect([week.monday, week.sunday]).toEqual(["2026-11-02", "2026-11-08"]);
+    const days = therapistWeek(slots, holds, week.monday, now);
+    expect(days.map((d) => d.date)).toEqual([
+      "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08",
+    ]);
+    expect(statuses(days)).toEqual([
+      "2026-11-02 10:00 confirmed",
+      "2026-11-06 10:00 held",
+      "2026-11-06 11:00 free",
+      "2026-11-06 12:00 free",
+    ]);
+  });
+
+  it("AC-HOLD-31: наступний тиждень — 2026-11-09 – 2026-11-15 і сеанс 2026-11-12", () => {
+    const next = practiceWeekRange("2026-11-09");
+    expect([next.monday, next.sunday]).toEqual(["2026-11-09", "2026-11-15"]);
+    expect(statuses(therapistWeek(slots, holds, next.monday, now))).toEqual(["2026-11-12 10:00 confirmed"]);
+  });
+
+  it("AC-HOLD-21: прострочене утримання в розкладі не показано, слот вільний", () => {
+    const s = slot("s0510", "2026-11-05", 10);
+    const expired = hold("s0510", at("2026-11-02", 14, 30));
+    const [item] = therapistWeek([s], [expired], "2026-11-02", at("2026-11-03", 15)).flatMap((d) => d.items);
+    expect(item.status).toBe("free");
+    expect(item.hold).toBeUndefined();
   });
 });
