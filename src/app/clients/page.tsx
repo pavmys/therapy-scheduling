@@ -20,7 +20,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
     .order("full_name")
     .limit(50);
   if (filter) request = request.or(filter);
-  const { data: clients } = await request;
+  const { data: clients, error } = await request;
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-12">
@@ -53,7 +53,11 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
             Search
           </button>
         </form>
-        {clients && clients.length > 0 ? (
+        {error ? (
+          <p role="alert" className="text-sm text-red-600">
+            Could not load clients. Try again.
+          </p>
+        ) : clients && clients.length > 0 ? (
           <ul className="divide-y divide-zinc-200 text-sm dark:divide-zinc-800" data-testid="client-list">
             {clients.map((c) => (
               <li key={c.id} className="flex justify-between py-2">

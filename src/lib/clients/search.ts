@@ -1,9 +1,15 @@
 // Пошук наявного клієнта за частиною імені або email без урахування регістру
 // (власне припущення розробника, docs/spec-reading.md). Повертає фільтр PostgREST для .or(…).
-// Символи, що мають значення в синтаксисі фільтра (кома, дужки, лапки) чи шаблону ilike (%, _, *, \),
-// прибираємо, щоб пошуковий рядок не змінив сам запит.
+//
+// Пошуковий рядок шукаємо буквально:
+//   1) для ilike екрануємо \, % і _ (escape-символ LIKE за замовчуванням — \), тож john_doe шукає саме «john_doe»;
+//   2) * PostgREST сам перетворює на % у шаблоні like/ilike — його прибираємо;
+//   3) значення беремо в подвійні лапки PostgREST (кома й дужки всередині не ламають .or(…)),
+//      а \ і " у ньому екрануємо зворотною скісною рискою. Апостроф лишається як є (O'Brien).
 export function clientSearchFilter(query: string): string | null {
-  const term = query.replace(/[,()"'%_*\\]/g, " ").trim().replace(/\s+/g, " ");
+  const term = query.replace(/\*/g, " ").trim().replace(/\s+/g, " ");
   if (!term) return null;
-  return `full_name.ilike.%${term}%,email.ilike.%${term}%`;
+  const likeEscaped = term.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const quoted = `"%${likeEscaped.replace(/[\\"]/g, (c) => `\\${c}`)}%"`;
+  return `full_name.ilike.${quoted},email.ilike.${quoted}`;
 }
