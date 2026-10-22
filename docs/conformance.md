@@ -33,12 +33,12 @@
 
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
-| AC-HOLD-10 | Створення клієнта з іменем і email | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-11 | Порожнє ім'я клієнта | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-15 | Email без знака @ | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-16 | Дублікат email | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-34 | Дублікат email з іншим регістром і пробілами | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-35 | Email зберігається малими літерами без пробілів | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-10 | Створення клієнта з іменем і email | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
+| AC-HOLD-11 | Порожнє ім'я клієнта | `src/lib/clients/validate.ts` (validateClient) | `src/lib/clients/validate.test.ts` | реалізовано |
+| AC-HOLD-15 | Email без знака @ | `src/lib/clients/validate.ts` (validateClient) | `src/lib/clients/validate.test.ts` | реалізовано |
+| AC-HOLD-16 | Дублікат email | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
+| AC-HOLD-34 | Дублікат email з іншим регістром і пробілами | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
+| AC-HOLD-35 | Email зберігається малими літерами без пробілів | `src/lib/clients/validate.ts` (normalizeEmail) | `src/lib/clients/validate.test.ts` | реалізовано |
 | AC-HOLD-01 | Вільний, утриманий і підтверджений слоти | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-32 | Слоти, що вже почалися, мають статус «Past» | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-18 | Усі слоти дня утримані або підтверджені | — | — | відкладено (чекає реалізації) |
