@@ -104,7 +104,22 @@ export type Database = {
           expires_at?: string;
           confirmed_at?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "holds_slot_id_fkey";
+            columns: ["slot_id"];
+            isOneToOne: false;
+            referencedRelation: "slots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "holds_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
