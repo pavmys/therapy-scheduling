@@ -20,6 +20,7 @@ function fakeSupabase(tables: Record<string, Row[]>) {
       gte: (col: string, v: string) => ((rows = rows.filter((r) => String(r[col]) >= v)), query),
       lt: (col: string, v: string) => ((rows = rows.filter((r) => String(r[col]) < v)), query),
       in: (col: string, vs: unknown[]) => ((rows = rows.filter((r) => vs.includes(r[col]))), query),
+      or: (filter: string) => (filters.push(`or=${filter}`), query),
       order: () => query,
       then: (resolve: (v: { data: Row[]; error: null }) => unknown) => resolve({ data: rows, error: null }),
     };
@@ -62,6 +63,8 @@ describe("loadTherapistWeek", () => {
     expect(items[0].hold!.expires_at).toBe(iso("2026-11-03", 9));
     expect([...result.clientName.values()]).not.toContain("Client Two");
     expect(calls.find((c) => c.table === "slots")?.filters).toContain("therapist_id=therapist1");
+    // Прострочені утримання не завантажуються (лише сеанси й активні).
+    expect(calls.find((c) => c.table === "holds")?.filters.some((f) => f.startsWith("or=confirmed_at.not.is.null,expires_at.gt."))).toBe(true);
     expect(result.error).toBeNull();
   });
 });
