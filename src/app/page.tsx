@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isStaffRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./login/actions";
 
@@ -20,6 +21,12 @@ export default async function Home() {
     .select("email, full_name, role")
     .eq("id", claims.sub)
     .maybeSingle();
+
+  // Планувальник і адміністратор працюють із картками клієнтів (зріз 1, задача 1);
+  // наступні задачі impl-hold ведуть сюди на слоти й розклад терапевта.
+  if (isStaffRole(profile?.role)) {
+    redirect("/clients");
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
