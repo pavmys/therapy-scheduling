@@ -1,0 +1,116 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Підмінений Supabase (ADR 0002): роль і відповідь функції hold_slot задає тест.
+// Правила утримання виконує база; тест перевіряє виклик і мапінг коду помилки в текст PM.
+type RpcResult = { data: { expires_at: string } | null; error: { message: string; code?: string } | null };
+
+const fake = vi.hoisted(() => ({
+  role: "scheduler" as string | null,
+  rpcResults: [] as RpcResult[],
+  rpcCalls: [] as { fn: string; args: unknown }[],
+}));
+
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "user-1" } } }) },
+    from: () => ({
+      select: () => ({
+        eq: () => ({ maybeSingle: async () => ({ data: fake.role ? { role: fake.role } : null }) }),
+      }),
+    }),
+    rpc: async (fn: string, args: unknown) => {
+      fake.rpcCalls.push({ fn, args });
+      return fake.rpcResults.shift() ?? { data: null, error: { message: "no result" } };
+    },
+  }),
+}));
+
+const { holdSlot } = await import("./actions");
+
+function form(slotId: string, clientId: string) {
+  const data = new FormData();
+  data.set("slot_id", slotId);
+  data.set("client_id", clientId);
+  return data;
+}
+
+// Утримання 2026-11-02 14:30 у часі практики (PST, UTC−8) → expires_at 2026-11-03 14:30.
+const held = (): RpcResult => ({ data: { expires_at: "2026-11-03T22:30:00Z" }, error: null });
+const failed = (code: string): RpcResult => ({ data: null, error: { message: code, code: "P0001" } });
+
+beforeEach(() => {
+  fake.role = "scheduler";
+  fake.rpcResults = [];
+  fake.rpcCalls = [];
+});
+
+describe("holdSlot", () => {
+  it("AC-HOLD-02: утримання вільного слоту — «Held until» через 24 години", async () => {
+    fake.rpcResults = [held()];
+    const state = await holdSlot(null, form("slot-10", "client1"));
+    expect(state).toEqual({ ok: true, message: "Held until 2026-11-03 14:30" });
+    expect(fake.rpcCalls).toEqual([{ fn: "hold_slot", args: { p_slot_id: "slot-10", p_client_id: "client1" } }]);
+  });
+
+  it("AC-HOLD-03: слот уже утримано за іншим клієнтом", async () => {
+    fake.rpcResults = [failed("SLOT_UNAVAILABLE")];
+    const state = await holdSlot(null, form("slot-10", "client2"));
+    expect(state).toEqual({ ok: false, message: "This slot is no longer available." });
+  });
+
+  it("AC-HOLD-04: одночасне утримання — одне успішне, інше бачить «no longer available»", async () => {
+    // База серіалізує виклики блокуванням рядка слоту: другий бачить утримання першого.
+    fake.rpcResults = [held(), failed("SLOT_UNAVAILABLE")];
+    const results = await Promise.all([
+      holdSlot(null, form("slot-10", "client1")),
+      holdSlot(null, form("slot-10", "client2")),
+    ]);
+    expect(results.filter((r) => r?.ok)).toHaveLength(1);
+    expect(results.find((r) => !r?.ok)?.message).toBe("This slot is no longer available.");
+  });
+
+  it("AC-HOLD-07: слот, що вже почався, не утримується", async () => {
+    fake.rpcResults = [failed("SLOT_STARTED")];
+    const state = await holdSlot(null, form("slot-10", "client1"));
+    expect(state).toEqual({ ok: false, message: "This slot has already started and cannot be held." });
+  });
+
+  it("AC-HOLD-08: терапевт не утримує слоти, запит до бази не йде", async () => {
+    fake.role = "therapist";
+    const state = await holdSlot(null, form("slot-10", "client1"));
+    expect(state).toEqual({ ok: false, message: "Only schedulers and admins can hold slots." });
+    expect(fake.rpcCalls).toEqual([]);
+  });
+
+  it("AC-HOLD-08: відмова бази для ролі теж дає текст PM", async () => {
+    fake.rpcResults = [failed("HOLD_FORBIDDEN")];
+    const state = await holdSlot(null, form("slot-10", "client1"));
+    expect(state).toEqual({ ok: false, message: "Only schedulers and admins can hold slots." });
+  });
+
+  it("AC-HOLD-17: повторне утримання того самого слоту за тим самим клієнтом", async () => {
+    fake.rpcResults = [failed("SLOT_UNAVAILABLE")];
+    const state = await holdSlot(null, form("slot-10", "client1"));
+    expect(state).toEqual({ ok: false, message: "This slot is no longer available." });
+  });
+
+  it("AC-HOLD-25: клієнт уже має утримання на цей час", async () => {
+    fake.rpcResults = [failed("CLIENT_OVERLAP")];
+    const state = await holdSlot(null, form("slot-t2-10", "client1"));
+    expect(state).toEqual({ ok: false, message: "This client already has a hold or session at this time." });
+  });
+
+  it("AC-HOLD-26: прострочене утримання клієнта не заважає — утримання створено", async () => {
+    fake.rpcResults = [held()];
+    const state = await holdSlot(null, form("slot-t2-10", "client1"));
+    expect(state?.ok).toBe(true);
+  });
+
+  it("без клієнта — підказка, запит до бази не йде", async () => {
+    const state = await holdSlot(null, form("slot-10", ""));
+    expect(state).toEqual({ ok: false, message: "Select a client." });
+    expect(fake.rpcCalls).toEqual([]);
+  });
+});

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { signOut } from "@/app/login/actions";
+import { StaffNav } from "@/app/staff-nav";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
 import { clientSearchFilter } from "@/lib/clients/search";
 import { ClientForm } from "./client-form";
@@ -24,15 +24,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-12">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Clients</h1>
-        <form action={signOut} className="flex items-center gap-3 text-sm">
-          <span className="text-zinc-500">{user.email}</span>
-          <button type="submit" className="underline">
-            Sign out
-          </button>
-        </form>
-      </header>
+      <StaffNav email={user.email} title="Clients" />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-medium">New client</h2>

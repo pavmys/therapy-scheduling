@@ -39,21 +39,21 @@
 | AC-HOLD-16 | Дублікат email | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
 | AC-HOLD-34 | Дублікат email з іншим регістром і пробілами | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
 | AC-HOLD-35 | Email зберігається малими літерами без пробілів | `src/lib/clients/validate.ts` (normalizeEmail) | `src/lib/clients/validate.test.ts` | реалізовано |
-| AC-HOLD-01 | Вільний, утриманий і підтверджений слоти | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-32 | Слоти, що вже почалися, мають статус «Past» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-18 | Усі слоти дня утримані або підтверджені | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-24 | День без жодного слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-33 | Слоти «Past», «Held» і «Confirmed» без вільних | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-02 | Утримання вільного слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-03 | Слот уже утримано за іншим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-04 | Одночасне утримання двома планувальниками | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-17 | Повторне утримання того самого слоту за тим самим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-07 | Утримання після початку слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-08 | Терапевт пробує утримати слот | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-25 | Клієнт уже має утримання на цей час | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-26 | Прострочене утримання клієнта не заважає | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-05 | За хвилину до прострочення | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-06 | Утримання прострочилося | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-01 | Вільний, утриманий і підтверджений слоти | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-32 | Слоти, що вже почалися, мають статус «Past» | `src/lib/holds/status.ts` (slotStatus) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-18 | Усі слоти дня утримані або підтверджені | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-24 | День без жодного слоту | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-33 | Слоти «Past», «Held» і «Confirmed» без вільних | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-02 | Утримання вільного слоту | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-03 | Слот уже утримано за іншим клієнтом | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-04 | Одночасне утримання двома планувальниками | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-17 | Повторне утримання того самого слоту за тим самим клієнтом | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-07 | Утримання після початку слоту | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-08 | Терапевт пробує утримати слот | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-25 | Клієнт уже має утримання на цей час | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-26 | Прострочене утримання клієнта не заважає | `src/app/slots/actions.ts` (holdSlot), `supabase/migrations/20261022042804_slots_and_holds.sql` (hold_slot) | `src/app/slots/actions.test.ts` | реалізовано |
+| AC-HOLD-05 | За хвилину до прострочення | `src/lib/holds/status.ts` (holdStatus) | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-06 | Утримання прострочилося | `src/lib/holds/status.ts` (holdStatus, slotStatus) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-20 | Планувальник бачить прострочене утримання | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-28 | Прострочене утримання видно до початку слоту | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-29 | Прострочене утримання зникає з початком слоту | — | — | відкладено (чекає реалізації) |
