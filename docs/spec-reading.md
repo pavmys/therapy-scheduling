@@ -11,7 +11,7 @@
 Для PM це матеріал нотатки «порівняння реалізацій»: де одні вимоги прочитали по-різному.
 -->
 
-Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-22
+Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-23
 
 ## Скан за таксономією
 
@@ -43,9 +43,9 @@
 
 | # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
 |---|---|---|---|---|---|---|
-| Q1 | AC-HOLD-27, -19, -36 (Sofiia-pm/therapy-scheduling-spec#2) | Звідки беруться облікові записи планувальників і адміністратора в зрізі 1? | A: усі користувачі — сид, керування користувачами поза зрізом | Sofiia-pm/therapy-scheduling-spec#13 | A — у WS7-оновленні вимоги; #2 для WS6 не змінюється | admin1, scheduler1, scheduler2, therapist1, therapist2 (`*@example.test`) — сид; екрана керування користувачами немає; у специфікації — текст PM, Q1 в Open questions |
-| Q2 | AC-HOLD-06, -13, -28 (Sofiia-pm/therapy-scheduling-spec#2) | Чи можна знову утримати той самий слот за тим самим клієнтом після прострочення? | A: нове утримання, старе «Expired» зникає зі списку | Sofiia-pm/therapy-scheduling-spec#14 | A — у WS7-оновленні; до того — за чинним текстом (B) | у WS6 — B (дозволено, у списку обидва записи), як випливає з AC-HOLD-06 і -28; Q2 в Open questions; перехід на A — після WS7-оновлення |
-| Q3 | AC-HOLD-20, -28, -29 (Sofiia-pm/therapy-scheduling-spec#2) | Що ще є в списку утримань планувальника і в якому порядку? | A: лише «Held» і «Expired» усіх терапевтів, за часом слоту від найближчого | Sofiia-pm/therapy-scheduling-spec#15 | A — у WS7-оновленні; працювати за A вже зараз | реалізуємо A; у специфікації — текст PM, Q3 в Open questions (вміст і порядок списку — як у відповіді PM) |
+| Q1 | AC-HOLD-27, -19, -36 (Sofiia-pm/therapy-scheduling-spec#2) | Звідки беруться облікові записи планувальників і адміністратора в зрізі 1? | A: усі користувачі — сид, керування користувачами поза зрізом | Sofiia-pm/therapy-scheduling-spec#13 | A — внесено у вимогу 2026-10-22: «Припущення» (усі користувачі зрізу 1 — сид) і «Поза межами» (створення користувачів і зміна ролей) | сид admin1, scheduler1, scheduler2, therapist1, therapist2 (PR pavmys/therapy-scheduling#6); у специфікації — зміна `clarify-hold` (Assumptions, Non-goals); Q1 в Open questions закрито |
+| Q2 | AC-HOLD-06, -13, -28 (Sofiia-pm/therapy-scheduling-spec#2) | Чи можна знову утримати той самий слот за тим самим клієнтом після прострочення? | A: нове утримання, старе «Expired» зникає зі списку | Sofiia-pm/therapy-scheduling-spec#14 | A — внесено у вимогу 2026-10-22: AC-HOLD-37 (нове утримання, старе «Expired» зникає зі списку) | у WS6 спершу B за чинним текстом; AC-HOLD-37 перекладено зміною `clarify-hold` (ADDED), у матриці «відкладено (чекає реалізації)» до PR «Реалізація» |
+| Q3 | AC-HOLD-20, -28, -29 (Sofiia-pm/therapy-scheduling-spec#2) | Що ще є в списку утримань планувальника і в якому порядку? | A: лише «Held» і «Expired» усіх терапевтів, за часом слоту від найближчого | Sofiia-pm/therapy-scheduling-spec#15 | A — внесено у вимогу 2026-10-22: AC-HOLD-38 (лише «Held» і «Expired» за часом слоту) | `/holds` реалізовано за A (PR pavmys/therapy-scheduling#8); AC-HOLD-38 перекладено зміною `clarify-hold` (ADDED), у матриці «відкладено (чекає реалізації)» до тесту в PR «Реалізація» |
 
 ## Власні припущення
 
