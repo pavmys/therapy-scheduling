@@ -8,7 +8,7 @@ import { ConfirmForm } from "./confirm-form";
 
 const HOLD_COLUMNS = "id, slot_id, client_id, created_at, expires_at, confirmed_at, slot:slots!inner(id, therapist_id, starts_at, ends_at)";
 
-// Список утримань «кому зателефонувати» (Q3): «Held» і «Expired» до початку слоту, усі терапевти,
+// Список утримань «кому зателефонувати» (AC-HOLD-38): «Held» і «Expired» до початку слоту, усі терапевти,
 // за часом слоту від найближчого; «Held» можна підтвердити, коли клієнт погодився.
 export default async function HoldsPage() {
   const user = await getCurrentUser();
@@ -44,14 +44,24 @@ export default async function HoldsPage() {
   ]);
 
   const rows = [...(held.data ?? []), ...(expired.data ?? [])];
+  // Повторне утримання, яке вже підтвердили, теж приховує старе «Expired» того самого клієнта на цьому
+  // слоті (AC-HOLD-37): підтверджені рядки лише для слотів прострочених утримань, у списку не показуються.
+  const expiredSlotIds = [...new Set((expired.data ?? []).map((h) => h.slot_id))];
+  const reheldConfirmed = expiredSlotIds.length
+    ? await supabase
+        .from("holds")
+        .select("id, slot_id, client_id, created_at, expires_at, confirmed_at")
+        .in("slot_id", expiredSlotIds)
+        .not("confirmed_at", "is", null)
+    : { data: [], error: null };
   const clientIds = [...new Set(rows.map((h) => h.client_id))];
   const clients = clientIds.length
     ? await supabase.from("clients").select("id, full_name").in("id", clientIds)
     : { data: [] as { id: string; full_name: string }[], error: null };
 
-  const error = held.error || expired.error || therapists.error || clients.error;
+  const error = held.error || expired.error || reheldConfirmed.error || therapists.error || clients.error;
   const slots = rows.map((h) => h.slot);
-  const items = holdsList(rows, slots, now);
+  const items = holdsList([...rows, ...(reheldConfirmed.data ?? [])], slots, now);
   const clientName = new Map((clients.data ?? []).map((c) => [c.id, c.full_name]));
   const therapistName = new Map((therapists.data ?? []).map((t) => [t.id, t.full_name ?? t.email]));
   const slotOf = new Map(rows.map((h) => [h.id, h.slot]));

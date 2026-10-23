@@ -87,6 +87,26 @@ describe("createClientCard", () => {
     expect(fake.inserted).toEqual([{ full_name: "Client Three", email: "client3@example.test" }]);
   });
 
+  it("AC-HOLD-39: некоректні форми email — клієнта не створено", async () => {
+    for (const email of ["client3@example", "client3@@example.test", "@example.test", "client 3@example.test"]) {
+      expect(await createClientCard(null, form("Client Three", email))).toEqual({
+        ok: false,
+        message: "Enter the client's name and a valid email.",
+      });
+    }
+    expect(fake.inserted).toEqual([]);
+  });
+
+  it("AC-HOLD-41: ім'я з пробілів відхилено, « Client Four » збережено як «Client Four»", async () => {
+    expect(await createClientCard(null, form("   ", "client5@example.test"))).toEqual({
+      ok: false,
+      message: "Enter the client's name and a valid email.",
+    });
+    const state = await createClientCard(null, form(" Client Four ", "client4@example.test"));
+    expect(state).toEqual({ ok: true, message: "Client created: Client Four (client4@example.test)." });
+    expect(fake.inserted).toEqual([{ full_name: "Client Four", email: "client4@example.test" }]);
+  });
+
   it("адміністратор теж створює клієнта", async () => {
     fake.role = "admin";
     expect((await createClientCard(null, form("Client Three", "client3@example.test")))?.ok).toBe(true);

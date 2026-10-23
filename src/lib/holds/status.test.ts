@@ -143,6 +143,40 @@ describe("підтвердження й список утримань", () => {
   });
 });
 
+describe("уточнення PM: список утримань", () => {
+  it("AC-HOLD-37: повторне утримання тим самим клієнтом приховує старе «Expired»", () => {
+    const s = slot("s", "2026-11-05", 10);
+    const old = hold("s", at("2026-11-02", 14, 30));
+    const now = at("2026-11-03", 15);
+    const again = hold("s", now);
+    expect(formatPracticeDateTime(new Date(again.expires_at))).toBe("2026-11-04 15:00");
+    expect(holdsList([old, again], [s], now)).toEqual([{ hold: again, slot: s, status: "held" }]);
+    // і тоді, коли нове утримання вже підтверджено (сеанси в списку не показуються)
+    const confirmed = { ...again, confirmed_at: at("2026-11-03", 16).toISOString() };
+    expect(holdsList([old, confirmed], [s], at("2026-11-03", 16, 30))).toEqual([]);
+    // утримання іншого клієнта старе «Expired» не приховує (AC-HOLD-20)
+    const other = { ...again, id: "other", client_id: "client2" };
+    expect(holdsList([old, other], [s], now).map((i) => i.hold.id)).toEqual([old.id, "other"]);
+  });
+
+  it("AC-HOLD-38: лише «Held» і «Expired» за часом слоту, без сеансів і минулих", () => {
+    const now = at("2026-11-03", 15);
+    const s1 = slot("t1-05-10", "2026-11-05", 10);
+    const s2 = slot("t2-04-11", "2026-11-04", 11);
+    const s3 = slot("t1-04-12", "2026-11-04", 12);
+    const s4 = slot("t1-02-10", "2026-11-02", 10);
+    const client1 = { ...hold("t1-05-10", at("2026-11-02", 14, 30)), client_id: "client1" };
+    const client2 = { ...hold("t2-04-11", at("2026-11-03", 9)), client_id: "client2" };
+    const client3 = { ...hold("t1-04-12", at("2026-11-02", 9), true), client_id: "client3" };
+    const client4 = { ...hold("t1-02-10", at("2026-10-30", 9), true), client_id: "client4" };
+    const items = holdsList([client1, client4, client3, client2], [s1, s2, s3, s4], now);
+    expect(items.map((i) => [i.hold.client_id, formatPracticeDateTime(new Date(i.slot.starts_at)), i.status])).toEqual([
+      ["client2", "2026-11-04 11:00", "held"],
+      ["client1", "2026-11-05 10:00", "expired"],
+    ]);
+  });
+});
+
 describe("розклад терапевта", () => {
   // Дані AC-HOLD-30 / AC-HOLD-31: сьогодні середа 2026-11-04.
   const now = at("2026-11-04", 9);

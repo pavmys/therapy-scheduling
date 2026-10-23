@@ -20,14 +20,14 @@ function matchesOr(row: Row, filter: string): boolean {
 }
 
 function fakeSupabase(tables: Record<string, Row[]>) {
-  const calls: { table: string; filters: string[]; returned: Row[] }[] = [];
+  const calls: { table: string; filters: string[]; returned: Row[]; columns: string }[] = [];
   const from = (table: string) => {
     let rows = [...(tables[table] ?? [])];
     const filters: string[] = [];
-    const call = { table, filters, returned: [] as Row[] };
+    const call = { table, filters, returned: [] as Row[], columns: "" };
     calls.push(call);
     const query = {
-      select: () => query,
+      select: (columns: string) => ((call.columns = columns), query),
       eq: (col: string, v: unknown) => (filters.push(`${col}=${v}`), (rows = rows.filter((r) => r[col] === v)), query),
       gte: (col: string, v: string) => ((rows = rows.filter((r) => String(r[col]) >= v)), query),
       lt: (col: string, v: string) => ((rows = rows.filter((r) => String(r[col]) < v)), query),
@@ -93,5 +93,18 @@ describe("loadTherapistWeek", () => {
     expect(items.some((i) => i.hold?.id === "h-expired")).toBe(false);
     expect([...result.clientName.values()]).not.toContain("Client Three");
     expect(result.error).toBeNull();
+  });
+
+  it("AC-HOLD-40: у розкладі терапевта — лише ім'я клієнта, email не завантажується", async () => {
+    const { client, calls } = fakeSupabase({
+      slots: [slot("t1", "therapist1", "2026-11-04", 10)],
+      holds: [held("t1", "client1")],
+      clients: [{ id: "client1", full_name: "Client One", email: "client1@example.test" }],
+    });
+    const result = await loadTherapistWeek(client, "therapist1", "2026-11-04", practiceWallTimeToInstant("2026-11-02", 12));
+    const clientsCall = calls.find((c) => c.table === "clients");
+    expect(clientsCall?.columns).toBe("id, full_name");
+    expect(clientsCall?.columns).not.toContain("email");
+    expect([...result.clientName.values()]).toEqual(["Client One"]);
   });
 });
