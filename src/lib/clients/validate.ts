@@ -5,7 +5,8 @@ export const INVALID_CLIENT_MESSAGE = "Enter the client's name and a valid email
 
 // Коректний email (припущення PM): рівно один «@», непорожня частина до нього, крапка в частині
 // після «@», без пробілів усередині — як clients_email_check у міграції (AC-HOLD-15, AC-HOLD-39).
-const EMAIL_PATTERN = /^[^@\s]+@[^@\s]*\.[^@\s]*$/;
+// До першої крапки домену — без крапок: розбиття однозначне, тож перевірка лінійна (без ReDoS).
+const EMAIL_PATTERN = /^[^@\s]+@[^@\s.]*\.[^@\s]*$/;
 
 // Email унікальний без урахування регістру й пробілів по краях; зберігається й показується саме так (AC-HOLD-35).
 export function normalizeEmail(email: string): string {

@@ -7,12 +7,13 @@
 alter table public.clients drop constraint clients_email_check;
 alter table public.clients add constraint clients_email_check check (
   email = lower(btrim(email))
-  and email ~ '^[^@[:space:]]+@[^@[:space:]]*\.[^@[:space:]]*$'
+  and email ~ '^[^@[:space:]]+@[^@[:space:].]*\.[^@[:space:]]*$'
 );
 
--- Ім'я зберігається без пробілів по краях; лише з пробілів — порожнє (AC-HOLD-11, AC-HOLD-41).
+-- Ім'я зберігається без пробільних символів по краях; лише з них — порожнє (AC-HOLD-11, AC-HOLD-41).
+-- [[:space:]], а не btrim(): btrim прибирає лише пробіли, а застосунок (trim) — і табуляції, переноси тощо.
 alter table public.clients drop constraint clients_full_name_check;
 alter table public.clients add constraint clients_full_name_check check (
-  btrim(full_name) <> ''
-  and full_name = btrim(full_name)
+  full_name ~ '[^[:space:]]'
+  and full_name !~ '^[[:space:]]|[[:space:]]$'
 );

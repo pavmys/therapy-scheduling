@@ -49,6 +49,21 @@ describe("validateClient", () => {
     });
   });
 
+  it("довгий некоректний домен перевіряється за лінійний час (без ReDoS)", () => {
+    const email = `a@${"a.".repeat(40_000)} `;
+    const started = performance.now();
+    expect(validateClient("Client Three", `${email}x y`).ok).toBe(false);
+    expect(performance.now() - started).toBeLessThan(200);
+  });
+
+  it("ім'я лише з табуляцій чи переносів — порожнє", () => {
+    expect(validateClient("\t\t", "client5@example.test").ok).toBe(false);
+    expect(validateClient("\n Client Four\t", "client4@example.test")).toEqual({
+      ok: true,
+      value: { fullName: "Client Four", email: "client4@example.test" },
+    });
+  });
+
   it("відхиляє email з кількома @ або порожніми частинами", () => {
     for (const email of ["@", "a@", "@b", "a@b@c", "a b@c", "a@b"]) {
       expect(validateClient("Client Three", email).ok).toBe(false);
