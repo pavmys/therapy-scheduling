@@ -113,6 +113,14 @@ describe("holdSlot", () => {
     expect(state?.ok).toBe(true);
   });
 
+  it("AC-HOLD-37: повторне утримання простроченого слоту за тим самим клієнтом створює «Held»", async () => {
+    // Утримання 2026-11-03 15:00 у часі практики (PST, UTC−8) → expires_at 2026-11-04 15:00.
+    fake.rpcResults = [{ data: { expires_at: "2026-11-04T23:00:00Z" }, error: null }];
+    const state = await holdSlot(null, form(SLOT_T1_10, CLIENT_1));
+    expect(state).toEqual({ ok: true, message: "Held until 2026-11-04 15:00" });
+    expect(fake.rpcCalls).toEqual([{ fn: "hold_slot", args: { p_slot_id: SLOT_T1_10, p_client_id: CLIENT_1 } }]);
+  });
+
   it("без клієнта або з некоректним id — підказка, запит до бази не йде", async () => {
     for (const clientId of ["", "not-a-uuid"]) {
       expect(await holdSlot(null, form(SLOT_T1_10, clientId))).toEqual({ ok: false, message: "Select a client." });

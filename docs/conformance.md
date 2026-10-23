@@ -36,11 +36,11 @@
 | AC-HOLD-10 | Створення клієнта з іменем і email | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
 | AC-HOLD-11 | Порожнє ім'я клієнта | `src/lib/clients/validate.ts` (validateClient) | `src/lib/clients/validate.test.ts` | реалізовано |
 | AC-HOLD-15 | Email без знака @ | `src/lib/clients/validate.ts` (validateClient) | `src/lib/clients/validate.test.ts` | реалізовано |
-| AC-HOLD-39 | Некоректні форми email | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-39 | Некоректні форми email | `src/lib/clients/validate.ts` (validateClient), `supabase/migrations/20261023091653_client_email_and_name_rules.sql` | `src/lib/clients/validate.test.ts` | реалізовано |
 | AC-HOLD-16 | Дублікат email | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
 | AC-HOLD-34 | Дублікат email з іншим регістром і пробілами | `src/app/clients/actions.ts` (createClientCard) | `src/app/clients/actions.test.ts` | реалізовано |
 | AC-HOLD-35 | Email зберігається малими літерами без пробілів | `src/lib/clients/validate.ts` (normalizeEmail) | `src/lib/clients/validate.test.ts` | реалізовано |
-| AC-HOLD-41 | Ім'я з пробілами | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-41 | Ім'я з пробілами | `src/lib/clients/validate.ts` (validateClient), `supabase/migrations/20261023091653_client_email_and_name_rules.sql` | `src/lib/clients/validate.test.ts` | реалізовано |
 | AC-HOLD-01 | Вільний, утриманий і підтверджений слоти | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-32 | Слоти, що вже почалися, мають статус «Past» | `src/lib/holds/status.ts` (slotStatus) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-18 | Усі слоти дня утримані або підтверджені | `src/lib/holds/status.ts` (dayView) | `src/lib/holds/status.test.ts` | реалізовано |
@@ -67,10 +67,10 @@
 | AC-HOLD-36 | Повторне або одночасне підтвердження | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
 | AC-HOLD-14 | Терапевт пробує підтвердити утримання | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
 | AC-HOLD-19 | Адміністратор утримує й підтверджує | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold), `src/app/slots/actions.ts` (holdSlot) | `src/app/holds/actions.test.ts` | реалізовано |
-| AC-HOLD-37 | Повторне утримання тим самим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-38 | Список утримань — лише «Held» і «Expired» усіх терапевтів за часом слоту від найближчого, без підтверджених сеансів | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-37 | Повторне утримання тим самим клієнтом | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-38 | Список утримань — лише «Held» і «Expired» усіх терапевтів за часом слоту від найближчого, без підтверджених сеансів | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-09 | Терапевт бачить лише свої утримання | `src/lib/schedule/load.ts` (loadTherapistWeek), `supabase/migrations/20261022042804_slots_and_holds.sql` (RLS) | `src/lib/schedule/load.test.ts` | реалізовано |
 | AC-HOLD-21 | Прострочене утримання в розкладі терапевта | `src/lib/holds/status.ts` (therapistWeek) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-30 | Поточний тиждень | `src/lib/holds/status.ts` (therapistWeek), `src/lib/time.ts` (practiceWeekRange) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-31 | Перемикання на наступний тиждень | `src/lib/holds/status.ts` (therapistWeek), `src/app/schedule/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
-| AC-HOLD-40 | Терапевт бачить у розкладі ім'я клієнта без email і не має окремого списку клієнтів | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-40 | Терапевт бачить у розкладі ім'я клієнта без email і не має окремого списку клієнтів | `src/lib/schedule/load.ts` (loadTherapistWeek), `src/app/clients/page.tsx` | `src/lib/schedule/load.test.ts` | реалізовано |
