@@ -64,19 +64,28 @@ export function dayView(slots: SlotRow[], holds: HoldRow[], now: Date) {
 
 export type HoldListItem = { hold: HoldRow; slot: SlotRow; status: HoldStatus };
 
-// Список утримань планувальника — «кому зателефонувати» (Q3, Sofiia-pm/therapy-scheduling-spec#15):
-// «Held» і «Expired» усіх терапевтів за часом слоту від найближчого; підтверджені сеанси — у слотах дня.
-// Прострочене видно лише до початку слоту, з моменту початку включно — ні (AC-HOLD-20, -28, -29).
-// Повторне утримання того самого слоту тим самим клієнтом після прострочення в WS6 дає два рядки (Q2, #14).
+// Список утримань планувальника — «кому зателефонувати»: «Held» і «Expired» усіх терапевтів за часом
+// слоту від найближчого; підтверджені сеанси — у слотах дня (AC-HOLD-38).
+// Прострочене видно лише до початку слоту, з моменту початку включно — ні (AC-HOLD-20, -28, -29),
+// і не видно, коли той самий клієнт знову утримав той самий слот (AC-HOLD-37).
+// `holds` може містити й підтверджені рядки: вони не показуються, але приховують старе «Expired».
 export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldListItem[] {
   const slotById = new Map(slots.map((s) => [s.id, s]));
+  const rehold = (expired: HoldRow) =>
+    holds.some(
+      (h) =>
+        h.id !== expired.id &&
+        h.slot_id === expired.slot_id &&
+        h.client_id === expired.client_id &&
+        ms(h.created_at) > ms(expired.created_at),
+    );
   const items: HoldListItem[] = [];
   for (const hold of holds) {
     const slot = slotById.get(hold.slot_id);
     if (!slot) continue;
     const status = holdStatus(hold, now);
     if (status === "confirmed") continue;
-    if (status === "expired" && now.getTime() >= ms(slot.starts_at)) continue;
+    if (status === "expired" && (now.getTime() >= ms(slot.starts_at) || rehold(hold))) continue;
     items.push({ hold, slot, status });
   }
   return items.sort((a, b) => ms(a.slot.starts_at) - ms(b.slot.starts_at) || ms(a.hold.created_at) - ms(b.hold.created_at));

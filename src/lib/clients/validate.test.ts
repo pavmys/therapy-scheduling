@@ -28,8 +28,29 @@ describe("validateClient", () => {
     });
   });
 
+  it("AC-HOLD-39: email без крапки після «@», з двома «@», з порожньою частиною до «@» чи з пробілом — відхиляється", () => {
+    for (const email of ["client3@example", "client3@@example.test", "@example.test", "client 3@example.test"]) {
+      expect(validateClient("Client Three", email)).toEqual({
+        ok: false,
+        message: "Enter the client's name and a valid email.",
+      });
+    }
+    expect(validateClient("Client Three", "client3@example.test").ok).toBe(true);
+  });
+
+  it("AC-HOLD-41: ім'я лише з пробілів — порожнє, пробіли по краях прибираються", () => {
+    expect(validateClient("   ", "client5@example.test")).toEqual({
+      ok: false,
+      message: "Enter the client's name and a valid email.",
+    });
+    expect(validateClient(" Client Four ", "client4@example.test")).toEqual({
+      ok: true,
+      value: { fullName: "Client Four", email: "client4@example.test" },
+    });
+  });
+
   it("відхиляє email з кількома @ або порожніми частинами", () => {
-    for (const email of ["@", "a@", "@b", "a@b@c", "a b@c"]) {
+    for (const email of ["@", "a@", "@b", "a@b@c", "a b@c", "a@b"]) {
       expect(validateClient("Client Three", email).ok).toBe(false);
     }
   });
