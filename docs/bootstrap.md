@@ -88,17 +88,22 @@ Docker не потрібен: локально — лише npm run dev прот
 - [x] Vercel створив preview для PR — https://therapy-scheduling-git-setup-b-637487-pavlom2901-9007s-projects.vercel.app
 - [x] **Squash and merge** → прод-деплой Vercel пройшов — коміт `ceb3f48`, деплой Production «Ready» —
       [знімок](img/vercel-prod-deploy.png); CI на `main` після merge: https://github.com/pavmys/therapy-scheduling/actions/runs/39676035356
-- [ ] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — <!-- посилання на run -->
+- [x] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — PR https://github.com/pavmys/therapy-scheduling/pull/6
+      (`20261022040716_roles_and_clients.sql`): `db-check` — https://github.com/pavmys/therapy-scheduling/actions/runs/39720882665,
+      `db-deploy` на `main` — https://github.com/pavmys/therapy-scheduling/actions/runs/39722080665
 
 ## 8. Вимоги PM і специфікація
 
-- [ ] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
-      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу
-- [ ] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
+- [x] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
+      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу — адреса https://github.com/Sofiia-pm/therapy-scheduling-spec з чату команди; зустріч команди відбулась — [знімок](img/team-meeting.jpg) (обличчя й імена учасників розмито)
+- [x] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
       `/requirements-sync <pm>/<team-slug>-spec` → PR «Оновлення вимог» злито; шапка `docs/conformance.md` показує
-      адресу, джерело (issues чи docs) і дату знімка — <!-- посилання на PR -->
-- [ ] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
-      `docs/spec-reading.md` — <!-- посилання на issues -->
-- [ ] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
+      адресу, джерело (issues чи docs) і дату знімка — https://github.com/pavmys/therapy-scheduling/pull/3 (знімок 2026-10-22);
+      після уточнень PM — https://github.com/pavmys/therapy-scheduling/pull/11 (знімок 2026-10-23)
+- [x] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
+      `docs/spec-reading.md` — https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/13,
+      https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/14, https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/15
+- [x] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
       → скіл `spec-review` → `npx openspec archive add-<зріз> -y` → `/conformance` → PR «Специфікація» злито;
-      `npm run ac:coverage` без «вимогу PM ще не перекладено» — <!-- посилання на PR -->
+      `npm run ac:coverage` без «вимогу PM ще не перекладено» — https://github.com/pavmys/therapy-scheduling/pull/4 (`add-hold`);
+      після уточнень PM — https://github.com/pavmys/therapy-scheduling/pull/12 (`clarify-hold`)
