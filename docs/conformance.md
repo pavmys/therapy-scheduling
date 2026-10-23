@@ -68,9 +68,9 @@
 | AC-HOLD-14 | Терапевт пробує підтвердити утримання | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold) | `src/app/holds/actions.test.ts` | реалізовано |
 | AC-HOLD-19 | Адміністратор утримує й підтверджує | `src/app/holds/actions.ts` (confirmHold), `supabase/migrations/20261022063605_confirm_hold.sql` (confirm_hold), `src/app/slots/actions.ts` (holdSlot) | `src/app/holds/actions.test.ts` | реалізовано |
 | AC-HOLD-37 | Повторне утримання тим самим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-38 | Лише «Held» і «Expired» за часом слоту | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-38 | Список утримань — лише «Held» і «Expired» усіх терапевтів за часом слоту від найближчого, без підтверджених сеансів | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-09 | Терапевт бачить лише свої утримання | `src/lib/schedule/load.ts` (loadTherapistWeek), `supabase/migrations/20261022042804_slots_and_holds.sql` (RLS) | `src/lib/schedule/load.test.ts` | реалізовано |
 | AC-HOLD-21 | Прострочене утримання в розкладі терапевта | `src/lib/holds/status.ts` (therapistWeek) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-30 | Поточний тиждень | `src/lib/holds/status.ts` (therapistWeek), `src/lib/time.ts` (practiceWeekRange) | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-31 | Перемикання на наступний тиждень | `src/lib/holds/status.ts` (therapistWeek), `src/app/schedule/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
-| AC-HOLD-40 | Ім'я клієнта без email | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-40 | Терапевт бачить у розкладі ім'я клієнта без email і не має окремого списку клієнтів | — | — | відкладено (чекає реалізації) |
