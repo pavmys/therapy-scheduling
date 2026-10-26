@@ -6,10 +6,10 @@
 
 - [ ] 1.1 ADR `docs/decisions/0004-db-access-tests-pglite.md` (D6, статус «замінює 0002» у частині тестів доступу): контекст, ≥2 варіанти з «чому ні», наслідки, «Як перевіряємо»
 - [ ] 1.2 `@electric-sql/pglite@0.5.8` (dev, `-E`) і `tests/db/supabase-pglite.ts` з демо, адаптований (`asUser`, `asService`, `asAnon`, користувачі з `demo-users.json`); джерело — в описі PR
-- [ ] 1.3 Міграція `profiles_role_nullable` (D1, drop-first): `role` без default і `not null`, новий `profiles_role_check`; `supabase/demo-users.json` — newuser1 (`role: null`), pm-admin, pm-scheduler, pm-therapist; `scripts/create-demo-users.mjs` приймає `null`
+- [ ] 1.3 Міграція `profiles_role_nullable` (D1, drop-first): спершу перестворити `slots_select_staff_or_own`, `holds_select_staff_or_own_slot` і `clients_select_own_therapist` з перевіркою ролі `therapist` у гілці терапевта; потім `role` без default і `not null`, новий `profiles_role_check`; `supabase/demo-users.json` — newuser1 (`role: null`), pm-admin, pm-scheduler, pm-therapist; `scripts/create-demo-users.mjs` приймає `null`
 - [ ] 1.4 `src/lib/access.ts` (`accessFor`) і екран без ролі на `/` та сторінках `/slots`, `/holds`, `/clients`, `/schedule` (лише повідомлення PM і «Sign out»); тест `accessFor` — AC-CARD-07, AC-CARD-11
-- [ ] 1.5 `tests/db/app-access.test.ts`: AC-CARD-07 (`asAnon` до `clients` і `holds` → відмова, дані не змінились), AC-CARD-11 (без ролі — 0 карток, `insert` відхилено, `update profiles set role = 'admin'` → `permission denied`, роль лишається NULL)
-- [ ] 1.6 Мутаційна перевірка: тимчасовий `grant update (full_name, role)` у новій міграції → AC-CARD-11 червоний; червоний прогін CI на коміті `mutation: …`, потім revert; таблиця «AC → що прибрали → який тест упав» в описі PR
+- [ ] 1.5 `tests/db/app-access.test.ts`: AC-CARD-07 (`asAnon` до `clients` і `holds` → відмова, дані не змінились), AC-CARD-11 (без ролі — 0 карток, `insert` відхилено, `update profiles set role = 'admin'` → `permission denied`, роль лишається NULL; терапевт з утриманням, з якого знято роль, — 0 карток, утримань і слотів, дані не змінились)
+- [ ] 1.6 Мутаційна перевірка: тимчасовий `grant update (full_name, role)` у новій міграції → AC-CARD-11 (самопризначення ролі) червоний; прибрана перевірка ролі в перествореній політиці → AC-CARD-11 (терапевт без ролі) червоний; червоний прогін CI на коміті `mutation: …`, потім revert; таблиця «AC → що прибрали → який тест упав» в описі PR
 - [ ] 1.7 Рядки `docs/conformance.md` AC-CARD-07, AC-CARD-11 → «реалізовано»; після merge — `npm run users:demo`, акаунти pm-… для PM (паролі — лише в чаті)
 
 Done when: AC-CARD-07, AC-CARD-11
