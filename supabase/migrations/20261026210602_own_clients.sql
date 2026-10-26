@@ -35,6 +35,6 @@ create policy clients_select_own_therapist
   for select
   to authenticated
   using (
-    (select private.current_app_role()) = 'therapist'
-    and (select private.is_own_client(clients.id))
+    true -- MUTATION (revert): без перевірки ролі
+    or (select private.is_own_client(clients.id)) -- MUTATION (revert): будь-хто бачить усі картки
   );
