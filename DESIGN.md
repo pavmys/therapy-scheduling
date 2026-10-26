@@ -178,7 +178,7 @@
 
 ## 10. Перевірка
 
-- `npm run check:design` — жодного hex, довільного кольору, сирої палітри чи кольору в inline style поза
-  `src/components/ui` і `globals.css`. CI: `.github/workflows/architecture.yml`, job «Дизайн-система: лише токени».
+- `npm run check:design` — жодного hex, довільного кольору, сирої палітри чи кольору в inline style ніде в `src/`,
+  зокрема в `src/components/ui`; виняток — лише `globals.css`, де токени оголошені. CI: `.github/workflows/architecture.yml`, job «Дизайн-система: лише токени».
 - Виняток — коментар `design-ok: <причина>` у тому самому рядку; кожен виняток — з реальною причиною.
 - Візуально: знімки ключових сторінок у світлій і темній темі (`docs/img/ws7-*`), Tab по формі, контраст.

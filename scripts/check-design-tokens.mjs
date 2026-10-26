@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Архітектурне правило «дизайн-система»: у застосунку кольори лише через семантичні токени.
-// Шукає в src/ (поза src/components/ui і src/app/globals.css). Якщо теки src/ немає — у app/, components/ і lib/
-// кореня (поза components/ui і app/globals.css); що саме перевірено, скрипт пише у виводі.
+// Шукає в src/ (зокрема в src/components/ui; поза src/app/globals.css, де токени оголошені). Якщо теки src/ немає —
+// у app/, components/ і lib/ кореня (поза app/globals.css); що саме перевірено, скрипт пише у виводі.
 //   1) hex-кольори (#fff, #0f6b6e); якір у посиланні (href="#add") — не колір;
 //   2) довільні кольори в класах Tailwind (bg-[#…], text-[oklch(…)]);
 //   3) сирі палітри Tailwind (bg-zinc-900, text-rose-700, bg-white, text-black);
@@ -37,8 +37,8 @@ if (BASES.length === 0) {
 const BASE = hasSrc ? "src" : "";
 const SCANNED = BASES.map((b) => `${b}/`);
 const SKIP_DIRS = new Set(["node_modules", ".next"]);
+// src/components/ui теж перевіряємо: компоненти дизайн-системи беруть кольори лише з токенів (AGENTS.md, DESIGN.md).
 const SKIP_FILES = [
-  join(BASE, "components", "ui") + sep, // компоненти дизайн-системи — тут токени визначають вигляд
   join(BASE, "app", "globals.css"), // тут токени оголошені
 ];
 const EXT = /\.(tsx|ts|jsx|js|css)$/;
@@ -143,7 +143,7 @@ for (const file of BASES.flatMap((b) => walk(join(root, b)))) {
   });
 }
 
-const where = hasSrc ? "src/components/ui" : "components/ui";
+const where = hasSrc ? "src/app/globals.css" : "app/globals.css";
 if (asJson) {
   console.log(JSON.stringify({ ok: findings.length === 0, scanned: SCANNED, findings }, null, 2));
 } else {

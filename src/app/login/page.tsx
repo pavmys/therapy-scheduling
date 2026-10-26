@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
               <Input id="password" name="password" type="password" autoComplete="current-password" required />
             </div>
             {message ? <ActionMessage ok={false} message={message} /> : null}
-            <Button type="submit" size="lg">
+            <Button type="submit">
               Увійти
             </Button>
           </form>
