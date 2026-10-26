@@ -11,9 +11,41 @@
 Для PM це матеріал нотатки «порівняння реалізацій»: де одні вимоги прочитали по-різному.
 -->
 
-Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-23
+Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-24
 
-## Скан за таксономією
+## Зріз 2: картка клієнта з обмеженим доступом
+
+Вимога Sofiia-pm/therapy-scheduling-spec#19 (`requirements/19-planuvalnyk-zapovniuie-kartku-kliienta.md`), AC-CARD-01…11;
+матриця прав і глосарій — `requirements/product.md` (знімок 2026-10-24). Перед питаннями переглянуто питання колег
+Sofiia-pm/therapy-scheduling-spec#20–#29 (усі відкриті, відповідей PM на 2026-10-26 немає).
+
+### Скан за таксономією (зріз 2)
+
+| # | Категорія | Статус | Де |
+|---|---|---|---|
+| 1 | Функціональний обсяг | Частково | швидке створення клієнта зрізу 1 (AC-HOLD-10) проти повної картки (AC-CARD-01) — Sofiia-pm/therapy-scheduling-spec#20; «Поза межами» ясні |
+| 2 | Ролі й доступ | Частково | «свій клієнт» (AC-CARD-04, AC-CARD-08): «Held» після початку слоту — Sofiia-pm/therapy-scheduling-spec#25; минулий сеанс «Confirmed» — не описано; AC-HOLD-40 («окремого списку клієнтів у зрізі 1 немає») проти AC-CARD-04; AC-CARD-05, -06, -07, -11 — ясно |
+| 3 | Домен і модель даних | Частково | email опікуна в кількох картках — Sofiia-pm/therapy-scheduling-spec#22; дублікат картки дитини — Sofiia-pm/therapy-scheduling-spec#23; перетин через спільного опікуна — Sofiia-pm/therapy-scheduling-spec#26 |
+| 4 | Потік взаємодії (UX) | Частково | порожній список для планувальника — Sofiia-pm/therapy-scheduling-spec#27; форма для терапевта — Sofiia-pm/therapy-scheduling-spec#24; вихід без ролі — Sofiia-pm/therapy-scheduling-spec#29; вибір дитини під час утримання (AC-CARD-02) — пошук за email опікуна не описано |
+| 5 | Нефункціональні вимоги | Ясно | «Припущення»: America/Los_Angeles, дати РРРР-ММ-ДД, англійський інтерфейс, синтетичні дані |
+| 6 | Інтеграції й обмеження платформи | Ясно | анкета поза застосунком; ролі — сид; листів немає (`requirements/product.md` «Що поза scope») |
+| 7 | Граничні випадки й збої | Частково | неіснуюча картка — Sofiia-pm/therapy-scheduling-spec#28; порожні ім'я дитини, дата народження, мова й дата в майбутньому — Sofiia-pm/therapy-scheduling-spec#21 |
+| 8 | Обмеження й компроміси | Ясно | «Поза межами» (пара й сім'я — WS9, редагування — після WS11), «Відкриті питання» (тип «Child» за віком — ні) |
+| 9 | Термінологія | Частково | «Свій клієнт» у глосарії — лише «Held» або «Confirmed», без часу сеансу; AC-HOLD-40 обмежений словами «у зрізі 1» |
+| 10 | Сигнали завершеності | Частково | тексти помилок для порожніх полів, крім опікуна, — Sofiia-pm/therapy-scheduling-spec#21; решта AC — з конкретними даними й текстами |
+| 11 | Заглушки й розмиті слова | Ясно | — |
+
+### Питання до PM (зріз 2)
+
+| # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
+|---|---|---|---|---|---|---|
+| Q4 | AC-CARD-04, AC-HOLD-40 (Sofiia-pm/therapy-scheduling-spec#19, #2) | Чи знято частину AC-HOLD-40 «окремого списку клієнтів у терапевта немає», коли AC-CARD-04 дає йому список своїх клієнтів? | A: AC-HOLD-40 змінено — у розкладі лише ім'я без email, частину про список прибрано | Sofiia-pm/therapy-scheduling-spec#30 | очікуємо | у специфікації — текст PM обох вимог, питання в Open questions; сторінка списку для терапевта — за AC-CARD-04 |
+| Q5 | AC-CARD-04, AC-CARD-08 (Sofiia-pm/therapy-scheduling-spec#19) | Чи лишається клієнт «своїм», коли сеанс «Confirmed» уже минув? (коментар у Sofiia-pm/therapy-scheduling-spec#25) | A: так, без обмеження в часі | https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/25#issuecomment-6424238090 | очікуємо | у специфікації — текст PM («Confirmed» без умови про час), питання в Open questions; доступ — за A |
+| Q6 | AC-CARD-02 (Sofiia-pm/therapy-scheduling-spec#19) | Чи знаходить планувальник дитину за email опікуна під час утримання слоту? | A: так, пошук знаходить дитину й за email опікуна | Sofiia-pm/therapy-scheduling-spec#31 | очікуємо | у специфікації — текст PM, питання в Open questions; вибір клієнта під час утримання — за A |
+
+## Зріз 1: утримання слоту
+
+### Скан за таксономією
 
 <!-- Крок 1 скіла spec-clarify: усі 11 категорій (.claude/skills/spec-clarify/references/ambiguity-taxonomy.md).
 Статус — Ясно / Частково / Немає; «Де» — AC ID або вимога (<pm>/<team-slug>-spec#7 чи requirements/7-….md, не голе
