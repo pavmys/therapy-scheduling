@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INVALID_CLIENT_MESSAGE, normalizeEmail, validateClient } from "./validate";
+import { INCOMPLETE_CARD_MESSAGE, INVALID_CLIENT_MESSAGE, normalizeEmail, validateCard, validateClient } from "./validate";
 
 describe("validateClient", () => {
   it("AC-HOLD-11: порожнє ім'я з коректним email відхиляється", () => {
@@ -68,5 +68,56 @@ describe("validateClient", () => {
     for (const email of ["@", "a@", "@b", "a@b@c", "a b@c", "a@b"]) {
       expect(validateClient("Client Three", email).ok).toBe(false);
     }
+  });
+});
+
+describe("validateCard", () => {
+  const child = {
+    clientType: "child",
+    fullName: "Client Eight",
+    dateOfBirth: "2016-01-10",
+    sessionLanguage: "English",
+    email: "",
+    guardianName: "Guardian Eight",
+    guardianEmail: "guardian8@example.test",
+  };
+
+  it("AC-CARD-03: картка дитини без імені чи коректного email опікуна відхиляється текстом PM", () => {
+    for (const guardian of [
+      { guardianName: "", guardianEmail: "guardian8@example.test" },
+      { guardianName: "Guardian Eight", guardianEmail: "" },
+      { guardianName: "   ", guardianEmail: "guardian8@example.test" },
+      { guardianName: "Guardian Eight", guardianEmail: "guardian8example.test" },
+    ]) {
+      expect(validateCard({ ...child, ...guardian }, "2026-11-03")).toEqual({
+        ok: false,
+        message: "Enter the guardian's name and a valid email.",
+      });
+    }
+    expect(validateCard(child, "2026-11-03")).toEqual({
+      ok: true,
+      value: {
+        client_type: "child",
+        full_name: "Client Eight",
+        date_of_birth: "2016-01-10",
+        session_language: "English",
+        email: null,
+        guardian_name: "Guardian Eight",
+        guardian_email: "guardian8@example.test",
+      },
+    });
+  });
+
+  it("дата народження сьогодні — можна, завтра — ні (дата практики з виклику)", () => {
+    expect(validateCard({ ...child, dateOfBirth: "2026-11-03" }, "2026-11-03").ok).toBe(true);
+    expect(validateCard({ ...child, dateOfBirth: "2026-11-04" }, "2026-11-03")).toEqual({
+      ok: false,
+      message: INCOMPLETE_CARD_MESSAGE,
+    });
+  });
+
+  it("невідомий тип чи мова — картку не створено", () => {
+    expect(validateCard({ ...child, clientType: "couple" }, "2026-11-03").ok).toBe(false);
+    expect(validateCard({ ...child, sessionLanguage: "French" }, "2026-11-03").ok).toBe(false);
   });
 });

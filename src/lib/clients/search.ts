@@ -1,5 +1,5 @@
-// Пошук наявного клієнта за частиною імені або email без урахування регістру
-// (власне припущення розробника, docs/spec-reading.md). Повертає фільтр PostgREST для .or(…).
+// Пошук наявного клієнта за частиною імені, email або email опікуна без урахування регістру
+// (власне припущення розробника, docs/spec-reading.md; email опікуна — Q6, Sofiia-pm/therapy-scheduling-spec#31). Повертає фільтр PostgREST для .or(…).
 //
 // Пошуковий рядок шукаємо буквально:
 //   1) для ilike екрануємо \, % і _ (escape-символ LIKE за замовчуванням — \), тож john_doe шукає саме «john_doe»;
@@ -11,5 +11,5 @@ export function clientSearchFilter(query: string): string | null {
   if (!term) return null;
   const likeEscaped = term.replace(/[\\%_]/g, (c) => `\\${c}`);
   const quoted = `"%${likeEscaped.replace(/[\\"]/g, (c) => `\\${c}`)}%"`;
-  return `full_name.ilike.${quoted},email.ilike.${quoted}`;
+  return `full_name.ilike.${quoted},email.ilike.${quoted},guardian_email.ilike.${quoted}`;
 }

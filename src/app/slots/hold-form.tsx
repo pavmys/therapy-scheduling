@@ -4,9 +4,10 @@ import { useActionState } from "react";
 import { ActionMessage } from "@/components/ui/action-message";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { clientOptionLabel } from "@/lib/clients/view";
 import { holdSlot, type HoldSlotState } from "./actions";
 
-type ClientOption = { id: string; full_name: string; email: string };
+type ClientOption = { id: string; full_name: string; email: string | null; guardian_email: string | null };
 
 export function HoldForm({ slotId, clients }: { slotId: string; clients: ClientOption[] }) {
   const [state, formAction, pending] = useActionState<HoldSlotState, FormData>(holdSlot, null);
@@ -18,7 +19,7 @@ export function HoldForm({ slotId, clients }: { slotId: string; clients: ClientO
         <NativeSelectOption value="">Select a client…</NativeSelectOption>
         {clients.map((c) => (
           <NativeSelectOption key={c.id} value={c.id}>
-            {c.full_name} ({c.email})
+            {clientOptionLabel(c)}
           </NativeSelectOption>
         ))}
       </NativeSelect>

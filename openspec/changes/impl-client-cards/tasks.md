@@ -16,12 +16,12 @@ Done when: AC-CARD-07, AC-CARD-11
 
 ## 2. Картка клієнта з анкети (`task/client-card-form`)
 
-- [ ] 2.1 Міграція `client_cards` (D2): колонки картки, `email` без `not null`, `clients_card_shape_check`, `clients_card_complete_check … not valid`, `grant insert` лише на колонки картки, без `update` і `delete`
-- [ ] 2.2 `src/lib/clients/validate.ts`: тип, ім'я, дата народження ≤ сьогодні (America/Los_Angeles), мова, email дорослого або ім'я та email опікуна; юніт-тести AC-CARD-03 і наявні AC-HOLD-11, -15, -35, -39, -41 з повною карткою
-- [ ] 2.3 `createClientCard` (D4): `getCurrentUser()` → роль → валідація → `insert`; повідомлення PM; `useActionState` повертає введені значення; тести дії з моком — AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-06 (терапевт: повідомлення, `insert` не викликано), AC-HOLD-10, -16, -34
-- [ ] 2.4 Сторінки: `/clients/new` (форма Adult / Child на `@/components/ui`; для терапевта — лише повідомлення), `/clients` для staff — таблиця всіх карток; вибір клієнта на `/slots` — `clientOptionLabel` з email опікуна, пошук і за `guardian_email`; тест `clientOptionLabel` — AC-CARD-02
-- [ ] 2.5 `tests/db/client-cards.test.ts`: AC-CARD-06 (терапевт `insert` → відмова, кількість карток та сама), AC-CARD-10 (scheduler2 і admin1 бачать усі три картки, у дитини — дані опікуна)
-- [ ] 2.6 Мутаційна перевірка: прибрати перевірку ролі в `createClientCard` → AC-CARD-06 (дія) червоний; таблиця в описі PR
+- [x] 2.1 Міграція `client_cards` (D2): колонки картки, `email` без `not null`, `clients_card_shape_check`, `clients_card_complete_check … not valid`, `grant insert` лише на колонки картки, без `update` і `delete`
+- [x] 2.2 `src/lib/clients/validate.ts`: тип, ім'я, дата народження ≤ сьогодні (America/Los_Angeles), мова, email дорослого або ім'я та email опікуна; юніт-тести AC-CARD-03 і наявні AC-HOLD-11, -15, -35, -39, -41 з повною карткою
+- [x] 2.3 `createClientCard` (D4): `getCurrentUser()` → роль → валідація → `insert`; повідомлення PM; `useActionState` повертає введені значення; тести дії з моком — AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-06 (терапевт: повідомлення, `insert` не викликано), AC-HOLD-10, -16, -34
+- [x] 2.4 Сторінки: `/clients/new` (форма Adult / Child на `@/components/ui`; для терапевта — лише повідомлення), `/clients` для staff — таблиця всіх карток; вибір клієнта на `/slots` — `clientOptionLabel` з email опікуна, пошук і за `guardian_email`; тест `clientOptionLabel` — AC-CARD-02
+- [x] 2.5 `tests/db/client-cards.test.ts`: AC-CARD-06 (терапевт `insert` → відмова, кількість карток та сама), AC-CARD-10 (scheduler2 і admin1 бачать усі три картки, у дитини — дані опікуна)
+- [x] 2.6 Мутаційна перевірка: прибрати перевірку ролі в `createClientCard` → AC-CARD-06 (дія) червоний; таблиця в описі PR
 - [ ] 2.7 Рядки `docs/conformance.md` AC-CARD-01, -02, -03, -06, -10 → «реалізовано»; ручна перевірка на Preview: дорослий, дитина, помилка опікуна
 
 Done when: AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-06, AC-CARD-10
