@@ -38,6 +38,15 @@ IF терапевт відкриває форму нової картки за �
 - **THEN** форму не показано, therapist1 одразу бачить повідомлення «Only schedulers and admins can create client cards.»
 - **AND** кількість карток клієнтів не змінилася
 
+### Requirement: Порожній список клієнтів терапевта
+IF у терапевта немає жодного свого клієнта — утримання зі статусом «Held», слот якого ще не почався, чи сеансу зі статусом «Confirmed» (AC-CARD-14), THEN the system SHALL показати в списку його клієнтів повідомлення «No clients yet. Clients appear here when a scheduler holds a slot with you.» і жодної картки.
+
+#### Scenario: AC-CARD-09 Терапевт без клієнтів
+- **GIVEN** therapist2 не має жодного утримання зі статусом «Held» і жодного сеансу зі статусом «Confirmed»
+- **WHEN** therapist2 відкриває список своїх клієнтів
+- **THEN** він бачить повідомлення «No clients yet. Clients appear here when a scheduler holds a slot with you.»
+- **AND** не бачить жодної картки
+
 ## ADDED Requirements
 
 ### Requirement: Помилки форми картки біля кожного поля

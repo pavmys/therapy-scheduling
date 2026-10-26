@@ -15,11 +15,16 @@
 
 ## Зріз 2: картка клієнта з обмеженим доступом
 
-Вимога Sofiia-pm/therapy-scheduling-spec#19 (`requirements/19-planuvalnyk-zapovniuie-kartku-kliienta.md`), AC-CARD-01…11;
-матриця прав і глосарій — `requirements/product.md` (знімок 2026-10-24). Перед питаннями переглянуто питання колег
-Sofiia-pm/therapy-scheduling-spec#20–#29 (усі відкриті, відповідей PM на 2026-10-26 немає).
+Вимога Sofiia-pm/therapy-scheduling-spec#19 (`requirements/19-planuvalnyk-zapovniuie-kartku-kliienta.md`).
 
-### Скан за таксономією (зріз 2)
+Стан після відповідей PM (знімок 2026-10-26): усі питання Sofiia-pm/therapy-scheduling-spec#20–#31 закрито рішеннями
+PM; додано AC-CARD-12…16, змінено AC-CARD-02, -04, -06, -11 і AC-HOLD-40 (зміна специфікації `clarify-client-cards`).
+Відповіді на наші Q4–Q6 — у таблиці нижче.
+
+Скан і питання нижче — стан першого читання (знімок 2026-10-24, AC-CARD-01…11): тоді питання колег
+Sofiia-pm/therapy-scheduling-spec#20–#29 були відкриті, і відповідей PM ще не було.
+
+### Скан за таксономією (зріз 2, знімок 2026-10-24)
 
 | # | Категорія | Статус | Де |
 |---|---|---|---|

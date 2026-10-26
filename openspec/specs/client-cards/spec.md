@@ -129,7 +129,7 @@ IF терапевт відкриває форму нової картки за �
 - **AND** кількість карток клієнтів не змінилася
 
 ### Requirement: Порожній список клієнтів терапевта
-IF у терапевта немає жодного утримання зі статусом «Held» і жодного сеансу зі статусом «Confirmed», THEN the system SHALL показати в списку його клієнтів повідомлення «No clients yet. Clients appear here when a scheduler holds a slot with you.» і жодної картки.
+IF у терапевта немає жодного свого клієнта — утримання зі статусом «Held», слот якого ще не почався, чи сеансу зі статусом «Confirmed» (AC-CARD-14), THEN the system SHALL показати в списку його клієнтів повідомлення «No clients yet. Clients appear here when a scheduler holds a slot with you.» і жодної картки.
 
 #### Scenario: AC-CARD-09 Терапевт без клієнтів
 - **GIVEN** therapist2 не має жодного утримання зі статусом «Held» і жодного сеансу зі статусом «Confirmed»
