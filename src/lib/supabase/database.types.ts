@@ -41,20 +41,35 @@ export type Database = {
         Row: {
           id: string;
           full_name: string;
-          email: string;
+          email: string | null;
           created_at: string;
+          client_type: string;
+          date_of_birth: string | null;
+          session_language: string | null;
+          guardian_name: string | null;
+          guardian_email: string | null;
         };
         Insert: {
           id?: string;
           full_name: string;
-          email: string;
+          email?: string | null;
           created_at?: string;
+          client_type?: string;
+          date_of_birth?: string | null;
+          session_language?: string | null;
+          guardian_name?: string | null;
+          guardian_email?: string | null;
         };
         Update: {
           id?: string;
           full_name?: string;
-          email?: string;
+          email?: string | null;
           created_at?: string;
+          client_type?: string;
+          date_of_birth?: string | null;
+          session_language?: string | null;
+          guardian_name?: string | null;
+          guardian_email?: string | null;
         };
         Relationships: [];
       };

@@ -74,7 +74,11 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const clientName = new Map((holdClients ?? []).map((c) => [c.id, c.full_name]));
 
   const filter = clientSearchFilter(clientQuery);
-  let clientsRequest = supabase.from("clients").select("id, full_name, email").order("full_name").limit(50);
+  let clientsRequest = supabase
+    .from("clients")
+    .select("id, full_name, email, guardian_email")
+    .order("full_name")
+    .limit(50);
   if (filter) clientsRequest = clientsRequest.or(filter);
   const { data: clients } = await clientsRequest;
 
@@ -112,7 +116,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                 name="client_q"
                 type="search"
                 defaultValue={clientQuery}
-                placeholder="Part of name or email"
+                placeholder="Part of name, email or guardian's email"
               />
             </div>
             <Button type="submit" variant="outline">

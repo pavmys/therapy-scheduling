@@ -10,7 +10,8 @@ let holdOfClient6: string;
 beforeAll(async () => {
   t = await createTestDb();
   [{ id: client6 }] = await t.asService<{ id: string }>(
-    "insert into public.clients (full_name, email) values ('Client Six', 'client6@example.test') returning id",
+    `insert into public.clients (client_type, full_name, email, date_of_birth, session_language)
+     values ('adult', 'Client Six', 'client6@example.test', '1990-05-14', 'English') returning id`,
   );
   // Власний слот у далекому майбутньому: тест не залежить від дат сиду й поточного часу.
   const [{ id: slot }] = await t.asService<{ id: string }>(
@@ -38,7 +39,10 @@ describe("AC-CARD-07: відвідувач без входу", () => {
     );
     await expect(t.asAnon("select * from public.holds")).rejects.toThrow(/permission denied/);
     await expect(
-      t.asAnon("insert into public.clients (full_name, email) values ('Anon', 'anon@example.test')"),
+      t.asAnon(
+        `insert into public.clients (client_type, full_name, email, date_of_birth, session_language)
+         values ('adult', 'Anon', 'anon@example.test', '1990-05-14', 'English')`,
+      ),
     ).rejects.toThrow(/permission denied/);
 
     expect(await countClients()).toBe(before);
@@ -64,7 +68,11 @@ describe("AC-CARD-11: користувач без ролі", () => {
 
     const before = await countClients();
     await expect(
-      t.asUser(newuser1, "insert into public.clients (full_name, email) values ('New', 'new@example.test')"),
+      t.asUser(
+        newuser1,
+        `insert into public.clients (client_type, full_name, email, date_of_birth, session_language)
+         values ('adult', 'New', 'new@example.test', '1990-05-14', 'English')`,
+      ),
     ).rejects.toThrow(/row-level security/);
     expect(await countClients()).toBe(before);
   });
