@@ -63,6 +63,3 @@ alter table public.profiles add constraint profiles_role_check
 
 -- Колонковий grant update (full_name) з першої міграції не розширюємо: користувач не призначає роль сам собі.
 -- private.current_app_role() для користувача без ролі повертає NULL, private.is_staff() — false.
-
--- MUTATION (revert): дозволити користувачу змінювати свою роль.
-grant update (full_name, role) on table public.profiles to authenticated;
