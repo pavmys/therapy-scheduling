@@ -93,6 +93,49 @@ describe("свої клієнти терапевта", () => {
     expect(card9).toEqual({ full_name: "Client Nine", email: "client9@example.test" });
   });
 
+  it("AC-CARD-14: «Held», слот якого вже почався, не робить клієнта своїм, а минулий «Confirmed» — так", async () => {
+    // Слоти, що почалися годину тому: утримання client12 ще «Held» (створене дві години тому, до 24 годин далеко),
+    // сеанс client13 «Confirmed» — минулий.
+    const [{ id: client12 }] = await t.asService<{ id: string }>(ADULT, ["Client Twelve", "client12@example.test"]);
+    const [{ id: client13 }] = await t.asService<{ id: string }>(ADULT, ["Client Thirteen", "client13@example.test"]);
+    const started = async () =>
+      (
+        await t.asService<{ id: string }>(
+          `insert into public.slots (therapist_id, starts_at, ends_at)
+           values ($1, date_trunc('hour', now()) - interval '1 hour', date_trunc('hour', now()))
+           on conflict (therapist_id, starts_at) do update set ends_at = excluded.ends_at
+           returning id`,
+          [therapist1],
+        )
+      )[0].id;
+    const startedSlot = await started();
+    const [{ id: heldStarted }] = await t.asService<{ id: string }>(
+      `insert into public.holds (slot_id, client_id, created_at, expires_at)
+       values ($1, $2, date_trunc('minute', now()) - interval '2 hours',
+               date_trunc('minute', now()) - interval '2 hours' + interval '1440 minutes')
+       returning id`,
+      [startedSlot, client12],
+    );
+    await t.asService(
+      `insert into public.holds (slot_id, client_id, created_at, expires_at, confirmed_at)
+       values ($1, $2, date_trunc('minute', now()) - interval '3 hours',
+               date_trunc('minute', now()) - interval '3 hours' + interval '1440 minutes', now() - interval '3 hours')`,
+      [await slot(therapist1, "2026-01-05 18:00+00"), client13],
+    );
+
+    const visible = await visibleTo(therapist1);
+    expect(visible).toContain("Client Thirteen");
+    expect(visible).not.toContain("Client Twelve");
+    expect(await t.asUser(therapist1, "select * from public.clients where id = $1", [client12])).toHaveLength(0);
+
+    // Утримання справді ще «Held» (не прострочене й не підтверджене) — відмова саме через початок слоту.
+    const [held] = await t.asService<{ held: boolean }>(
+      "select (confirmed_at is null and expires_at > now()) as held from public.holds where id = $1",
+      [heldStarted],
+    );
+    expect(held.held).toBe(true);
+  });
+
   it("AC-CARD-08: прострочене утримання client6 не робить його своїм — немає ні в списку, ні за посиланням", async () => {
     // Утримання client6 у therapist1 прострочилося: створене понад 24 години тому.
     await t.asService(
@@ -103,7 +146,9 @@ describe("свої клієнти терапевта", () => {
       [ids.hold6],
     );
 
-    expect(await visibleTo(therapist1)).toEqual(["Client Seven"]);
+    const visible = await visibleTo(therapist1);
+    expect(visible).toContain("Client Seven");
+    expect(visible).not.toContain("Client Six");
     expect(await t.asUser(therapist1, "select * from public.clients where id = $1", [ids.client6])).toHaveLength(0);
 
     const [card6] = await t.asService<{ full_name: string }>("select full_name from public.clients where id = $1", [
