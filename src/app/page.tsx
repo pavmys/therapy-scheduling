@@ -1,48 +1,31 @@
+import { Lock } from "lucide-react";
 import { redirect } from "next/navigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { isStaffRole } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { accessFor, NO_ROLE_MESSAGE } from "@/lib/access";
+import { getCurrentUser } from "@/lib/auth";
 import { signOut } from "./login/actions";
 
-// Головна сторінка шаблону: хто увійшов і з якою роллю (з таблиці profiles).
-// Сторінка читає cookies, тому рендериться динамічно (шаблон зібрано з --no-cache-components).
+// Головна: веде за роллю (роль — з profiles через getCurrentUser, getClaims(), не getSession()).
+// Без ролі — лише повідомлення PM і вихід, жодних даних (AC-CARD-11). Інші сторінки перенаправляють
+// сюди будь-кого без своєї ролі, тож користувач без ролі за будь-яким посиланням бачить саме це.
 export default async function Home() {
-  const supabase = await createClient();
+  const user = await getCurrentUser();
+  const access = accessFor(user);
 
-  // getClaims() перевіряє JWT. getSession() для авторизації на сервері не використовуємо.
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  if (!claims) {
-    redirect("/login");
-  }
-
-  // RLS: користувач бачить лише власний профіль.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, full_name, role")
-    .eq("id", claims.sub)
-    .maybeSingle();
-
-  // Планувальник і адміністратор працюють зі слотами терапевтів, терапевт — зі своїм розкладом (зріз 1).
-  if (isStaffRole(profile?.role)) {
-    redirect("/slots");
-  }
-  if (profile?.role === "therapist") {
-    redirect("/schedule");
-  }
+  if (access === "login") redirect("/login");
+  if (access === "staff") redirect("/slots");
+  if (access === "therapist") redirect("/schedule");
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
-      <h1 className="font-heading text-2xl font-semibold tracking-tight">Проєкт команди</h1>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
-        <dt className="text-muted-foreground">Email</dt>
-        <dd data-testid="user-email">{profile?.email ?? claims.email ?? "—"}</dd>
-        <dt className="text-muted-foreground">Роль</dt>
-        <dd data-testid="user-role">{profile?.role ?? "профіль не знайдено"}</dd>
-      </dl>
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-6 py-16">
+      <Alert data-testid="no-role">
+        <Lock aria-hidden="true" />
+        <AlertDescription className="text-foreground">{NO_ROLE_MESSAGE}</AlertDescription>
+      </Alert>
       <form action={signOut}>
         <Button type="submit" variant="outline">
-          Вийти
+          Sign out
         </Button>
       </form>
     </main>
