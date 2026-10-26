@@ -11,7 +11,7 @@
 Для PM це матеріал нотатки «порівняння реалізацій»: де одні вимоги прочитали по-різному.
 -->
 
-Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-24
+Вимоги: Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-26
 
 ## Зріз 2: картка клієнта з обмеженим доступом
 
@@ -39,9 +39,9 @@ Sofiia-pm/therapy-scheduling-spec#20–#29 (усі відкриті, відпо�
 
 | # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
 |---|---|---|---|---|---|---|
-| Q4 | AC-CARD-04, AC-HOLD-40 (Sofiia-pm/therapy-scheduling-spec#19, #2) | Чи знято частину AC-HOLD-40 «окремого списку клієнтів у терапевта немає», коли AC-CARD-04 дає йому список своїх клієнтів? | A: AC-HOLD-40 змінено — у розкладі лише ім'я без email, частину про список прибрано | Sofiia-pm/therapy-scheduling-spec#30 | очікуємо | у специфікації — текст PM обох вимог, питання в Open questions; сторінка списку для терапевта — за AC-CARD-04 |
-| Q5 | AC-CARD-04, AC-CARD-08 (Sofiia-pm/therapy-scheduling-spec#19) | Чи лишається клієнт «своїм», коли сеанс «Confirmed» уже минув? (коментар у Sofiia-pm/therapy-scheduling-spec#25) | A: так, без обмеження в часі | https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/25#issuecomment-6424238090 | очікуємо | у специфікації — текст PM («Confirmed» без умови про час), питання в Open questions; доступ — за A |
-| Q6 | AC-CARD-02 (Sofiia-pm/therapy-scheduling-spec#19) | Чи знаходить планувальник дитину за email опікуна під час утримання слоту? | A: так, пошук знаходить дитину й за email опікуна | Sofiia-pm/therapy-scheduling-spec#31 | очікуємо | у специфікації — текст PM, питання в Open questions; вибір клієнта під час утримання — за A |
+| Q4 | AC-CARD-04, AC-HOLD-40 (Sofiia-pm/therapy-scheduling-spec#19, #2) | Чи знято частину AC-HOLD-40 «окремого списку клієнтів у терапевта немає», коли AC-CARD-04 дає йому список своїх клієнтів? | A: AC-HOLD-40 змінено — у розкладі лише ім'я без email, частину про список прибрано | Sofiia-pm/therapy-scheduling-spec#30 | A — внесено у вимогу 2026-10-26: AC-HOLD-40 без «окремого списку клієнтів немає» | у задачі 3 `impl-client-cards` список своїх клієнтів для терапевта (AC-CARD-04); AC-HOLD-40 перекладено зміною `clarify-client-cards` (MODIFIED) |
+| Q5 | AC-CARD-04, AC-CARD-08 (Sofiia-pm/therapy-scheduling-spec#19) | Чи лишається клієнт «своїм», коли сеанс «Confirmed» уже минув? (коментар у Sofiia-pm/therapy-scheduling-spec#25) | A: так, без обмеження в часі | https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/25#issuecomment-6424238090 | A — внесено у вимогу 2026-10-26: AC-CARD-14 (минулий «Confirmed» — свій без обмеження; «Held» — лише до початку слоту, відповідь на #25) | минулий «Confirmed» уже реалізовано (`private.is_own_client`); межа «Held» на початку слоту — AC-CARD-14 «відкладено (чекає реалізації)», зміна `clarify-client-cards` (ADDED) |
+| Q6 | AC-CARD-02 (Sofiia-pm/therapy-scheduling-spec#19) | Чи знаходить планувальник дитину за email опікуна під час утримання слоту? | A: так, пошук знаходить дитину й за email опікуна | Sofiia-pm/therapy-scheduling-spec#31 | A — внесено у вимогу 2026-10-26: AC-CARD-02 і припущення про пошук під час утримання | реалізовано в задачі 2 `impl-client-cards` (пошук і за `guardian_email`); AC-CARD-02 перекладено зміною `clarify-client-cards` (MODIFIED) |
 
 ## Зріз 1: утримання слоту
 
