@@ -18,7 +18,8 @@ export default async function NewClientCardPage() {
 
   if (access === "therapist") {
     return (
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-4 px-6 py-16">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
+        <StaffNav email={user!.email} title="New client card" role="therapist" />
         <ActionMessage ok={false} message={FORBIDDEN_MESSAGE} />
       </main>
     );
