@@ -132,6 +132,16 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   схемі `private` з `set search_path = ''`.
 - Авторизація на сервері — `supabase.auth.getClaims()`, ніколи `getSession()`.
 
+## Дизайн-система
+
+- Правила вигляду — DESIGN.md. Кольори — лише семантичні утиліти з токенів (bg-primary, text-muted-foreground,
+  border-input, bg-status-held…); жодних hex, bg-[#…], сирих палітр (zinc-500, bg-white) і кольорів в inline style.
+- Компоненти — лише з @/components/ui (shadcn/ui, змінюються в цій теці); статус — лише `StatusBadge`. Нових кольорів
+  у компонентах не вигадуй і сирих класів у `src/components/ui` не ховай.
+- Новий токен: DESIGN.md → :root і темна тема (`@media (prefers-color-scheme: dark)`) у src/app/globals.css →
+  --color-<назва> у @theme inline. Блок `.dark` і `@custom-variant dark` не додавай (після `shadcn add` — прибрати).
+- Перевірка: npm run check:design (CI: .github/workflows/architecture.yml).
+
 ## Секрети
 
 - Значення лише в `.env.local`, Vercel (Production + Preview) і GitHub (секрет environment `production` —

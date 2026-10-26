@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
+import { ActionMessage } from "@/components/ui/action-message";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
 import { clientSearchFilter } from "@/lib/clients/search";
 import { ClientForm } from "./client-form";
@@ -23,45 +29,56 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
   const { data: clients, error } = await request;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
       <StaffNav email={user.email} title="Clients" />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">New client</h2>
-        <ClientForm />
-      </section>
+      <Card>
+        <CardHeader>
+          <h2 className="font-heading text-lg font-semibold">New client</h2>
+        </CardHeader>
+        <CardContent>
+          <ClientForm />
+        </CardContent>
+      </Card>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Find a client</h2>
-        <form className="flex gap-2">
-          <input
-            name="q"
-            type="search"
-            defaultValue={query}
-            placeholder="Part of name or email"
-            className="flex-1 rounded border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-          />
-          <button type="submit" className="rounded border border-zinc-300 px-4 py-2 text-sm dark:border-zinc-700">
-            Search
-          </button>
-        </form>
-        {error ? (
-          <p role="alert" className="text-sm text-red-600">
-            Could not load clients. Try again.
-          </p>
-        ) : clients && clients.length > 0 ? (
-          <ul className="divide-y divide-zinc-200 text-sm dark:divide-zinc-800" data-testid="client-list">
-            {clients.map((c) => (
-              <li key={c.id} className="flex justify-between py-2">
-                <span>{c.full_name}</span>
-                <span className="text-zinc-500">{c.email}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-zinc-500">No clients found.</p>
-        )}
-      </section>
+      <Card>
+        <CardHeader>
+          <h2 className="font-heading text-lg font-semibold">Find a client</h2>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <form className="flex items-end gap-2">
+            <div className="flex flex-1 flex-col gap-2">
+              <Label htmlFor="client-q">Name or email</Label>
+              <Input id="client-q" name="q" type="search" defaultValue={query} placeholder="Part of name or email" />
+            </div>
+            <Button type="submit" variant="outline">
+              Search
+            </Button>
+          </form>
+          {error ? (
+            <ActionMessage ok={false} message="Could not load clients. Try again." />
+          ) : clients && clients.length > 0 ? (
+            <Table data-testid="client-list">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-muted-foreground">Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clients.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.full_name}</TableCell>
+                    <TableCell className="text-muted-foreground">{c.email}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground">No clients found.</p>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

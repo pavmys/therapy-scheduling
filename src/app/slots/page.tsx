@@ -3,7 +3,14 @@ import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
 import { clientSearchFilter } from "@/lib/clients/search";
-import { dayView, SLOT_STATUS_LABEL } from "@/lib/holds/status";
+import { ActionMessage } from "@/components/ui/action-message";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { dayView } from "@/lib/holds/status";
 import {
   addDays,
   formatPracticeDateTime,
@@ -14,7 +21,7 @@ import {
 } from "@/lib/time";
 import { HoldForm } from "./hold-form";
 
-const field = "rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900";
+const navLink = buttonVariants({ variant: "ghost", size: "sm" });
 
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
@@ -81,57 +88,72 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
       <StaffNav email={user.email} title="Slots" />
 
       {/* key: при переході «Previous / Next day» React не скидає defaultValue полів — нова форма на кожен вибір. */}
-      <form key={`${therapistId}|${date}|${clientQuery}`} className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Therapist
-          <select name="therapist" defaultValue={therapistId} className={field}>
-            {(therapists ?? []).map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.full_name ?? t.email}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Day
-          <input name="date" type="date" defaultValue={date} className={field} />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Find a client
-          <input name="client_q" type="search" defaultValue={clientQuery} placeholder="Part of name or email" className={field} />
-        </label>
-        <button type="submit" className="rounded border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700">
-          Show
-        </button>
-      </form>
+      <Card>
+        <CardContent>
+          <form key={`${therapistId}|${date}|${clientQuery}`} className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="slots-therapist">Therapist</Label>
+              <NativeSelect id="slots-therapist" name="therapist" defaultValue={therapistId}>
+                {(therapists ?? []).map((t) => (
+                  <NativeSelectOption key={t.id} value={t.id}>
+                    {t.full_name ?? t.email}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="slots-date">Day</Label>
+              <Input id="slots-date" name="date" type="date" defaultValue={date} className="w-auto tabular-nums" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="slots-client-q">Find a client</Label>
+              <Input
+                id="slots-client-q"
+                name="client_q"
+                type="search"
+                defaultValue={clientQuery}
+                placeholder="Part of name or email"
+              />
+            </div>
+            <Button type="submit" variant="outline">
+              Show
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center justify-between text-sm">
-        <Link href={link(addDays(date, -1))} className="underline">
+        <Link href={link(addDays(date, -1))} className={navLink}>
           ← Previous day
         </Link>
-        <span className="font-medium">{date}</span>
-        <Link href={link(addDays(date, 1))} className="underline">
+        <span className="font-medium tabular-nums">{date}</span>
+        <Link href={link(addDays(date, 1))} className={navLink}>
           Next day →
         </Link>
       </div>
 
       {loadError ? (
-        <p role="alert" className="text-sm text-red-600">
-          Could not load slots. Try again.
-        </p>
+        <ActionMessage ok={false} message="Could not load slots. Try again." />
       ) : (
         <section className="flex flex-col gap-3">
           {view.message ? <p className="text-sm font-medium">{view.message}</p> : null}
-          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800" data-testid="slot-list">
+          <ul
+            className="divide-y divide-border rounded-lg border bg-card px-4 empty:hidden"
+            data-testid="slot-list"
+          >
             {view.items.map(({ slot, status, hold }) => (
-              <li key={slot.id} className="flex flex-wrap items-center gap-4 py-3 text-sm" data-status={status}>
-                <span className="w-28 font-mono">
+              <li key={slot.id} className="flex flex-wrap items-center gap-4 py-2.5 text-sm" data-status={status}>
+                <span className="w-28 tabular-nums">
                   {formatPracticeTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
                 </span>
-                <span className="w-24">{SLOT_STATUS_LABEL[status]}</span>
-                {hold ? <span>{clientName.get(hold.client_id) ?? "—"}</span> : null}
+                <span className="w-28">
+                  <StatusBadge status={status} />
+                </span>
+                {hold ? <span className="font-medium">{clientName.get(hold.client_id) ?? "—"}</span> : null}
                 {status === "held" && hold ? (
-                  <span className="text-zinc-500">Held until {formatPracticeDateTime(new Date(hold.expires_at))}</span>
+                  <span className="text-muted-foreground tabular-nums">
+                    Held until {formatPracticeDateTime(new Date(hold.expires_at))}
+                  </span>
                 ) : null}
                 {status === "free" ? <HoldForm slotId={slot.id} clients={clients ?? []} /> : null}
               </li>

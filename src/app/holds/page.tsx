@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
-import { HOLD_STATUS_LABEL, holdsList } from "@/lib/holds/status";
+import { ActionMessage } from "@/components/ui/action-message";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { holdsList } from "@/lib/holds/status";
 import { fetchAll } from "@/lib/supabase/fetch-all";
 import { formatPracticeDateTime, formatPracticeTime } from "@/lib/time";
 import { ConfirmForm } from "./confirm-form";
@@ -71,33 +74,50 @@ export default async function HoldsPage() {
       <StaffNav email={user.email} title="Holds" />
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
-          Could not load holds. Try again.
-        </p>
+        <ActionMessage ok={false} message="Could not load holds. Try again." />
       ) : items.length === 0 ? (
-        <p className="text-sm text-zinc-500">No holds waiting for a decision.</p>
+        <p className="text-sm text-muted-foreground">No holds waiting for a decision.</p>
       ) : (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800" data-testid="hold-list">
-          {items.map(({ hold, status }) => {
-            const slot = slotOf.get(hold.id)!;
-            return (
-              <li key={hold.id} className="flex flex-wrap items-center gap-4 py-3 text-sm" data-status={status}>
-                <span className="w-52 whitespace-nowrap font-mono">
-                  {formatPracticeDateTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
-                </span>
-                <span className="w-32">{therapistName.get(slot.therapist_id) ?? "—"}</span>
-                <span className="w-36">{clientName.get(hold.client_id) ?? "—"}</span>
-                <span className="w-20">{HOLD_STATUS_LABEL[status]}</span>
-                {status === "held" ? (
-                  <>
-                    <span className="text-zinc-500">Held until {formatPracticeDateTime(new Date(hold.expires_at))}</span>
-                    <ConfirmForm holdId={hold.id} />
-                  </>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+        <div className="rounded-lg border bg-card px-2">
+          <Table data-testid="hold-list">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-muted-foreground">Slot</TableHead>
+                <TableHead className="text-muted-foreground">Therapist</TableHead>
+                <TableHead className="text-muted-foreground">Client</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map(({ hold, status }) => {
+                const slot = slotOf.get(hold.id)!;
+                return (
+                  <TableRow key={hold.id} data-status={status}>
+                    <TableCell className="tabular-nums">
+                      {formatPracticeDateTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
+                    </TableCell>
+                    <TableCell>{therapistName.get(slot.therapist_id) ?? "—"}</TableCell>
+                    <TableCell className="font-medium">{clientName.get(hold.client_id) ?? "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <StatusBadge status={status} />
+                        {status === "held" ? (
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            Held until {formatPracticeDateTime(new Date(hold.expires_at))}
+                          </span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-normal">
+                      {status === "held" ? <ConfirmForm holdId={hold.id} /> : null}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </main>
   );
