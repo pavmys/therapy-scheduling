@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { ActionMessage } from "@/components/ui/action-message";
+import { Button } from "@/components/ui/button";
 import { confirmHold, type ConfirmHoldState } from "./actions";
 
 export function ConfirmForm({ holdId }: { holdId: string }) {
@@ -9,18 +11,10 @@ export function ConfirmForm({ holdId }: { holdId: string }) {
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-2">
       <input type="hidden" name="hold_id" value={holdId} />
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-foreground px-3 py-1 text-sm font-medium text-background disabled:opacity-50"
-      >
+      <Button type="submit" size="sm" disabled={pending}>
         Confirm
-      </button>
-      {state ? (
-        <p role={state.ok ? "status" : "alert"} className={state.ok ? "text-sm text-green-700" : "text-sm text-red-600"}>
-          {state.message}
-        </p>
-      ) : null}
+      </Button>
+      {state ? <ActionMessage ok={state.ok} message={state.message} /> : null}
     </form>
   );
 }
