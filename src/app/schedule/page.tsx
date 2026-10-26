@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { signOut } from "@/app/login/actions";
+import { StaffNav } from "@/app/staff-nav";
 import { ActionMessage } from "@/components/ui/action-message";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
 import { loadTherapistWeek } from "@/lib/schedule/load";
@@ -26,15 +26,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/schedul
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-12">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">My schedule</h1>
-        <form action={signOut} className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{user.email}</span>
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
-          </Button>
-        </form>
-      </header>
+      <StaffNav email={user.email} title="My schedule" role="therapist" />
 
       <div className="flex items-center justify-between text-sm">
         <Link href={`/schedule?week=${addDays(week.monday, -7)}`} className={navLink}>

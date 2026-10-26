@@ -5,3 +5,8 @@ export function uuidField(formData: FormData, name: string): string | null {
   const value = formData.get(name);
   return typeof value === "string" && UUID_PATTERN.test(value) ? value : null;
 }
+
+// id з адреси сторінки (/clients/[id]) — лише рядок у форматі UUID; інакше запит до бази не робимо.
+export function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_PATTERN.test(value);
+}
