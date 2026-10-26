@@ -28,10 +28,10 @@ Done when: AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-06, AC-CARD-10
 
 ## 3. Свої клієнти терапевта (`task/therapist-own-clients`)
 
-- [ ] 3.1 ADR `docs/decisions/0005-own-clients-rls.md` (D3): хелпер `private.is_own_client` + RLS проти фільтра в Server Action і проти окремої таблиці «терапевт — клієнт»; «Як перевіряємо» — тести AC-CARD-05, AC-CARD-08 і `check:boundary`
-- [ ] 3.2 Міграція `own_clients` (D3): `private.is_own_client` (`security definer`, `set search_path = ''`, `revoke … from public, anon`), заміна `clients_select_own_therapist` (лише «Held» і «Confirmed»)
-- [ ] 3.3 Сторінки: `/clients` для терапевта — свої клієнти й порожній стан; `/clients/[id]` — картка з «Not provided» або «You don't have access to this client.» без даних; `StaffNav` терапевта; тест `clientsEmptyMessage` — AC-CARD-09; прибрати тест редиректу терапевта з `/clients` (AC-HOLD-40 у `src/app/clients/page.test.ts`), рядок AC-HOLD-40 у матриці — на `src/lib/schedule/load.test.ts`
-- [ ] 3.4 `tests/db/client-cards.test.ts`: AC-CARD-04 (therapist1 бачить client6 і client7 з даними опікуна, не бачить client9), AC-CARD-05 (therapist1 → 0 рядків client9, картка не змінилась), AC-CARD-08 (прострочене утримання → 0 рядків)
+- [x] 3.1 ADR `docs/decisions/0005-own-clients-rls.md` (D3): хелпер `private.is_own_client` + RLS проти фільтра в Server Action і проти окремої таблиці «терапевт — клієнт»; «Як перевіряємо» — тести AC-CARD-05, AC-CARD-08 і `check:boundary`
+- [x] 3.2 Міграція `own_clients` (D3): `private.is_own_client` (`security definer`, `set search_path = ''`, `revoke … from public, anon`), заміна `clients_select_own_therapist` (лише «Held» і «Confirmed»)
+- [x] 3.3 Сторінки: `/clients` для терапевта — свої клієнти й порожній стан; `/clients/[id]` — картка з «Not provided» або «You don't have access to this client.» без даних; `StaffNav` терапевта; тест `clientsEmptyMessage` — AC-CARD-09; прибрати тест редиректу терапевта з `/clients` (AC-HOLD-40 у `src/app/clients/page.test.ts`), рядок AC-HOLD-40 у матриці — на `src/lib/schedule/load.test.ts`
+- [x] 3.4 `tests/db/client-cards.test.ts`: AC-CARD-04 (therapist1 бачить client6 і client7 з даними опікуна, не бачить client9), AC-CARD-05 (therapist1 → 0 рядків client9, картка не змінилась), AC-CARD-08 (прострочене утримання → 0 рядків)
 - [ ] 3.5 Мутаційна перевірка: `using (true)` у новій політиці → AC-CARD-05 і AC-CARD-08 червоні; червоний прогін CI на коміті `mutation: …`, потім revert; таблиця в описі PR
 - [ ] 3.6 Рядки `docs/conformance.md` AC-CARD-04, -05, -08, -09 → «реалізовано»; скріни за ролями `docs/img/ws7-role-*.png` в описі PR; `npx openspec archive impl-client-cards -y` в останньому PR зрізу
 

@@ -38,3 +38,11 @@ export function clientOptionLabel(client: Pick<ClientView, "full_name" | "email"
 export function orNotProvided(value: string | null | undefined): string {
   return value && value.trim() ? value : NOT_PROVIDED;
 }
+
+export const NO_OWN_CLIENTS_MESSAGE = "No clients yet. Clients appear here when a scheduler holds a slot with you.";
+export const NO_ACCESS_TO_CLIENT_MESSAGE = "You don't have access to this client.";
+
+/** Порожній список клієнтів: терапевту — текст PM (AC-CARD-09); staff — як у зрізі 1 (до відповіді PM на #27). */
+export function clientsEmptyMessage(role: "staff" | "therapist"): string {
+  return role === "therapist" ? NO_OWN_CLIENTS_MESSAGE : "No clients found.";
+}

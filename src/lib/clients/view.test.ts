@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientContact, clientOptionLabel, clientTypeLabel, orNotProvided } from "./view";
+import { clientContact, clientOptionLabel, clientsEmptyMessage, clientTypeLabel, orNotProvided } from "./view";
 
 describe("clientOptionLabel", () => {
   it("AC-CARD-02: під час утримання біля дитини client7 показано email опікуна", () => {
@@ -27,5 +27,14 @@ describe("картка клієнта", () => {
     expect(orNotProvided("1990-05-14")).toBe("1990-05-14");
     expect(clientTypeLabel("child")).toBe("Child");
     expect(clientTypeLabel("adult")).toBe("Adult");
+  });
+});
+
+describe("clientsEmptyMessage", () => {
+  it("AC-CARD-09: порожній список терапевта — текст PM", () => {
+    expect(clientsEmptyMessage("therapist")).toBe(
+      "No clients yet. Clients appear here when a scheduler holds a slot with you.",
+    );
+    expect(clientsEmptyMessage("staff")).toBe("No clients found.");
   });
 });
