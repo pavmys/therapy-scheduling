@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
-import { getCurrentUser, isStaffRole } from "@/lib/auth";
+import { staffOnlyPage } from "@/app/staff-only";
+import { accessFor } from "@/lib/access";
+import { getCurrentUser } from "@/lib/auth";
 import { ActionMessage } from "@/components/ui/action-message";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,18 +13,21 @@ import { ConfirmForm } from "./confirm-form";
 
 const HOLD_COLUMNS = "id, slot_id, client_id, created_at, expires_at, confirmed_at, slot:slots!inner(id, therapist_id, starts_at, ends_at)";
 
-// Список утримань «кому зателефонувати» (AC-HOLD-38): «Held» і «Expired» до початку слоту, усі терапевти,
-// за часом слоту від найближчого; «Held» можна підтвердити, коли клієнт погодився.
+// Список утримань «кому зателефонувати» (AC-HOLD-38): «Held» і «Expired» до початку слоту (AC-HOLD-29, -42),
+// усі терапевти, за часом слоту від найближчого; «Held» можна підтвердити, коли клієнт погодився.
+// Терапевт за прямим посиланням бачить лише відмову (AC-HOLD-44).
 export default async function HoldsPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  if (!isStaffRole(user.role)) redirect("/");
-  const { supabase } = user;
+  const access = accessFor(user);
+  if (access === "login") redirect("/login");
+  if (access === "no-role") redirect("/");
+  if (access === "therapist") return staffOnlyPage(user!.email, "Holds");
+  const { supabase, email } = user!;
 
   const now = new Date();
   const nowIso = now.toISOString();
-  // Лише рядки, які можуть потрапити в список: непідтверджені й або ще «Held», або прострочені
-  // з майбутнім слотом. Минулі прострочені утримання не накопичуються у вибірці.
+  // Лише рядки, які можуть потрапити в список: непідтверджені, зі слотом, що ще не почався, і або ще «Held»,
+  // або прострочені. Минулі утримання не накопичуються у вибірці; правило списку — holdsList.
   const [held, expired, therapists] = await Promise.all([
     fetchAll((from, to) =>
       supabase
@@ -30,6 +35,7 @@ export default async function HoldsPage() {
         .select(HOLD_COLUMNS)
         .is("confirmed_at", null)
         .gt("expires_at", nowIso)
+        .gt("slots.starts_at", nowIso)
         .order("id")
         .range(from, to),
     ),
@@ -71,7 +77,7 @@ export default async function HoldsPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-12">
-      <StaffNav email={user.email} title="Holds" />
+      <StaffNav email={email} title="Holds" />
 
       {error ? (
         <ActionMessage ok={false} message="Could not load holds. Try again." />

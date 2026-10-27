@@ -66,8 +66,9 @@ export type HoldListItem = { hold: HoldRow; slot: SlotRow; status: HoldStatus };
 
 // Список утримань планувальника — «кому зателефонувати»: «Held» і «Expired» усіх терапевтів за часом
 // слоту від найближчого; підтверджені сеанси — у слотах дня (AC-HOLD-38).
-// Прострочене видно лише до початку слоту, з моменту початку включно — ні (AC-HOLD-20, -28, -29),
-// і не видно, коли той самий клієнт знову утримав той самий слот (AC-HOLD-37).
+// І «Held», і «Expired» видно лише до початку слоту, з моменту початку включно — ні (AC-HOLD-20, -28, -29,
+// -42); прострочене не видно, коли той самий клієнт знову утримав той самий слот (AC-HOLD-37), а утримання
+// іншого клієнта його не приховує (AC-HOLD-43).
 // `holds` може містити й підтверджені рядки: вони не показуються, але приховують старе «Expired».
 export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldListItem[] {
   const slotById = new Map(slots.map((s) => [s.id, s]));
@@ -85,7 +86,8 @@ export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldLi
     if (!slot) continue;
     const status = holdStatus(hold, now);
     if (status === "confirmed") continue;
-    if (status === "expired" && (now.getTime() >= ms(slot.starts_at) || rehold(hold))) continue;
+    if (now.getTime() >= ms(slot.starts_at)) continue;
+    if (status === "expired" && rehold(hold)) continue;
     items.push({ hold, slot, status });
   }
   return items.sort((a, b) => ms(a.slot.starts_at) - ms(b.slot.starts_at) || ms(a.hold.created_at) - ms(b.hold.created_at));
