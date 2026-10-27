@@ -14,7 +14,8 @@ import { type ClientView, clientContact, clientsEmptyMessage, clientTypeLabel, o
 
 const COLUMNS = "id, full_name, email, client_type, date_of_birth, session_language, guardian_name, guardian_email";
 
-// Картки клієнтів. Планувальник і адміністратор — усі картки й пошук (AC-CARD-10); терапевт — лише свої клієнти
+// Картки клієнтів. Планувальник і адміністратор — усі картки й пошук (AC-CARD-10), без карток — підказка й кнопка
+// нової картки (AC-CARD-15); терапевт — лише свої клієнти
 // з утриманням «Held» чи сеансом «Confirmed» (AC-CARD-04, AC-CARD-08) або порожній стан (AC-CARD-09).
 // Хто що бачить, вирішує RLS (clients_select_staff, clients_select_own_therapist) — сторінка лише показує.
 export default async function ClientsPage({ searchParams }: PageProps<"/clients">) {
@@ -86,7 +87,9 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
           ) : clients && clients.length > 0 ? (
             <ClientsTable clients={clients} />
           ) : (
-            <p className="text-sm text-muted-foreground">{clientsEmptyMessage("staff")}</p>
+            <p className="text-sm text-muted-foreground" data-testid="clients-empty">
+              {clientsEmptyMessage("staff", query)}
+            </p>
           )}
         </CardContent>
       </Card>

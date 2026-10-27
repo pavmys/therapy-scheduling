@@ -64,6 +64,28 @@ describe("створення картки", () => {
     });
   });
 
+  it("AC-CARD-13: повторна картка дитини (те саме ім'я без регістру, дата народження, email опікуна) — відхилено", async () => {
+    const scheduler2 = t.users["scheduler2@example.test"];
+    const before = await countClients();
+    await expect(
+      t.asUser(scheduler2, CHILD, ["client seven", "Guardian Seven", "guardian7@example.test"]),
+    ).rejects.toThrow(/clients_child_identity_key/);
+    expect(await countClients()).toBe(before);
+    expect(
+      await t.asService("select id from public.clients where lower(full_name) = 'client seven'"),
+    ).toHaveLength(1);
+  });
+
+  it("AC-CARD-13: інша дитина того самого опікуна (інше ім'я) — окрема картка", async () => {
+    const scheduler2 = t.users["scheduler2@example.test"];
+    await t.asUser(scheduler2, CHILD, ["Client Twelve", "Guardian Seven", "guardian7@example.test"]);
+    expect(
+      await t.asService(
+        "select id from public.clients where full_name = 'Client Twelve' and guardian_email = 'guardian7@example.test'",
+      ),
+    ).toHaveLength(1);
+  });
+
   it("картку не змінює ніхто, навіть планувальник, напряму — редагування поза зрізом (Non-goals)", async () => {
     await expect(
       t.asUser(
