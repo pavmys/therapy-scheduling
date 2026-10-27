@@ -85,3 +85,11 @@
 | AC-CARD-09 | Порожній список клієнтів терапевта | `src/lib/clients/view.ts` (clientsEmptyMessage), `src/app/clients/page.tsx` | `src/lib/clients/view.test.ts`, `src/app/clients/page.test.ts` | реалізовано |
 | AC-CARD-10 | Планувальник і адміністратор бачать усі картки, у картці дитини — дані опікуна | `src/app/clients/page.tsx`, `src/lib/clients/view.ts` (clientContact), `supabase/migrations/20261022040716_roles_and_clients.sql` (clients_select_staff) | `tests/db/client-cards.test.ts`, `src/lib/clients/view.test.ts` | реалізовано |
 | AC-CARD-11 | Користувач без ролі бачить лише повідомлення про відсутність доступу | `supabase/migrations/20261026193437_profiles_role_nullable.sql`, `src/lib/access.ts` (accessFor), `src/app/page.tsx` | `tests/db/app-access.test.ts`, `src/app/page.test.ts` | реалізовано |
+| AC-CARD-12 | Помилки форми картки — окреме повідомлення біля кожного поля, усі одразу | — | — | відкладено (чекає реалізації) |
+| AC-CARD-13 | Дублікат картки дитини — «A client with these details already exists.» | — | — | відкладено (чекає реалізації) |
+| AC-CARD-14 | «Held» робить клієнта своїм лише до початку слоту, минулий «Confirmed» — без обмеження | — | — | відкладено (чекає реалізації) |
+| AC-CARD-15 | Порожній список клієнтів для планувальника й адміністратора | — | — | відкладено (чекає реалізації) |
+| AC-CARD-16 | Неіснуюча картка — «This client card doesn't exist.» для staff, відмова для терапевта | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-42 | Утримання «Held» зникає зі списку утримань з початком слоту | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-43 | «Expired» лишається в списку до початку слоту, коли слот утримано за іншим клієнтом | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-44 | Терапевту недоступні сторінки слотів і утримань планувальника | — | — | відкладено (чекає реалізації) |
