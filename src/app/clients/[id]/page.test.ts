@@ -1,14 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AppRole } from "@/lib/auth";
 
-// Картка клієнта за прямим посиланням (AC-CARD-05, AC-CARD-08): якщо база під RLS не повернула картку, сторінка
-// показує лише відмову PM — без імені й полів. Саме обмеження — tests/db/own-clients.test.ts.
+// Картка клієнта за прямим посиланням (AC-CARD-05, AC-CARD-08, AC-CARD-16): якщо база під RLS не повернула картку,
+// сторінка показує лише повідомлення PM для ролі — без імені й полів. Саме обмеження — tests/db/own-clients.test.ts.
 vi.mock("next/navigation", () => ({
   redirect: (to: string) => {
     throw new Error(`redirect:${to}`);
   },
 }));
 
-const fake = vi.hoisted(() => ({ row: null as Record<string, unknown> | null, queried: [] as string[] }));
+const fake = vi.hoisted(() => ({
+  role: "therapist" as AppRole,
+  row: null as Record<string, unknown> | null,
+  queried: [] as string[],
+}));
 
 vi.mock("@/lib/auth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/auth")>()),
@@ -26,7 +31,7 @@ vi.mock("@/lib/auth", async (importOriginal) => ({
     id: "therapist1",
     email: "therapist1@example.test",
     fullName: null,
-    role: "therapist",
+    role: fake.role,
   }),
 }));
 
@@ -51,6 +56,7 @@ const render = async (id: string) =>
   texts(await ClientCardPage({ params: Promise.resolve({ id }) } as PageProps<"/clients/[id]">));
 
 beforeEach(() => {
+  fake.role = "therapist";
   fake.row = null;
   fake.queried = [];
 });
@@ -85,5 +91,19 @@ describe("ClientCardPage", () => {
     expect(page).toContain("client6@example.test");
     expect(page).toContain("Not provided");
     expect(page).not.toContain("You don't have access to this client.");
+  });
+
+  it("AC-CARD-16: неіснуюча картка — планувальнику «This client card doesn't exist.», терапевту — відмова, без даних", async () => {
+    fake.role = "scheduler";
+    const scheduler = await render(CLIENT9);
+    expect(scheduler).toContain("This client card doesn't exist.");
+    expect(scheduler).not.toContain("You don't have access to this client.");
+    expect(scheduler).not.toContain("Client type");
+
+    fake.role = "therapist";
+    const therapist = await render(CLIENT9);
+    expect(therapist).toContain("You don't have access to this client.");
+    expect(therapist).not.toContain("This client card doesn't exist.");
+    expect(therapist).not.toContain("Client type");
   });
 });

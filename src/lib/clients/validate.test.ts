@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { INCOMPLETE_CARD_MESSAGE, INVALID_CLIENT_MESSAGE, normalizeEmail, validateCard, validateClient } from "./validate";
+import {
+  firstCardError,
+  INVALID_CLIENT_MESSAGE,
+  INVALID_DATE_OF_BIRTH_MESSAGE,
+  normalizeEmail,
+  validateCard,
+  validateClient,
+} from "./validate";
 
 describe("validateClient", () => {
   it("AC-HOLD-11: порожнє ім'я з коректним email відхиляється", () => {
@@ -91,7 +98,7 @@ describe("validateCard", () => {
     ]) {
       expect(validateCard({ ...child, ...guardian }, "2026-11-03")).toEqual({
         ok: false,
-        message: "Enter the guardian's name and a valid email.",
+        errors: { guardian: "Enter the guardian's name and a valid email." },
       });
     }
     expect(validateCard(child, "2026-11-03")).toEqual({
@@ -112,12 +119,46 @@ describe("validateCard", () => {
     expect(validateCard({ ...child, dateOfBirth: "2026-11-03" }, "2026-11-03").ok).toBe(true);
     expect(validateCard({ ...child, dateOfBirth: "2026-11-04" }, "2026-11-03")).toEqual({
       ok: false,
-      message: INCOMPLETE_CARD_MESSAGE,
+      errors: { dateOfBirth: INVALID_DATE_OF_BIRTH_MESSAGE },
+    });
+    for (const dateOfBirth of ["", "2026-02-30", "03.11.2016"]) {
+      expect(validateCard({ ...child, dateOfBirth }, "2026-11-03")).toEqual({
+        ok: false,
+        errors: { dateOfBirth: INVALID_DATE_OF_BIRTH_MESSAGE },
+      });
+    }
+  });
+
+  it("AC-CARD-12: порожнє ім'я, дата в майбутньому й без мови — три помилки одразу, кожна свого поля", () => {
+    const result = validateCard({ ...child, fullName: "", dateOfBirth: "2026-11-04", sessionLanguage: "" }, "2026-11-03");
+    expect(result).toEqual({
+      ok: false,
+      errors: {
+        fullName: "Enter the client's name.",
+        dateOfBirth: "Enter a date of birth that is not in the future.",
+        sessionLanguage: "Select a session language.",
+      },
+    });
+    expect(firstCardError(result.ok ? {} : result.errors)).toBe("Enter the client's name.");
+  });
+
+  it("AC-CARD-12: без типу клієнта — «Select a client type.»; невідома мова — «Select a session language.»", () => {
+    expect(validateCard({ ...child, clientType: "" }, "2026-11-03")).toEqual({
+      ok: false,
+      errors: { clientType: "Select a client type." },
+    });
+    expect(validateCard({ ...child, clientType: "couple" }, "2026-11-03").ok).toBe(false);
+    expect(validateCard({ ...child, sessionLanguage: "French" }, "2026-11-03")).toEqual({
+      ok: false,
+      errors: { sessionLanguage: "Select a session language." },
     });
   });
 
-  it("невідомий тип чи мова — картку не створено", () => {
-    expect(validateCard({ ...child, clientType: "couple" }, "2026-11-03").ok).toBe(false);
-    expect(validateCard({ ...child, sessionLanguage: "French" }, "2026-11-03").ok).toBe(false);
+  it("дорослий без імені — помилка зрізу 1 біля імені й email, разом з іншими полями", () => {
+    const adult = { ...child, clientType: "adult", fullName: "", email: "client6@example.test", sessionLanguage: "" };
+    expect(validateCard(adult, "2026-11-03")).toEqual({
+      ok: false,
+      errors: { client: INVALID_CLIENT_MESSAGE, sessionLanguage: "Select a session language." },
+    });
   });
 });

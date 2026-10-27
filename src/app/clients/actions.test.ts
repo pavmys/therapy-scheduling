@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Підмінений Supabase (ADR 0002): роль користувача й результат insert задає тест.
 const fake = vi.hoisted(() => ({
   role: "scheduler" as string | null,
-  insertError: null as { code: string } | null,
+  insertError: null as { code: string; message?: string; details?: string } | null,
   inserted: [] as unknown[],
 }));
 
@@ -190,19 +190,71 @@ describe("createClientCard", () => {
     expect(fake.inserted).toEqual([]);
   });
 
-  it("без дати народження, мови чи з датою в майбутньому картку не створено (текст розробника до відповіді PM, #21)", async () => {
+  it("без дати народження, мови чи з датою в майбутньому картку не створено — тексти PM біля полів", async () => {
     const base = { client_type: "adult", full_name: "Client Six", email: "client6@example.test" };
-    for (const extra of [
-      { date_of_birth: "", session_language: "English" },
-      { date_of_birth: "1990-05-14", session_language: "" },
-      { date_of_birth: "2999-01-01", session_language: "English" },
-      { date_of_birth: "1990-02-30", session_language: "English" },
-    ]) {
-      expect(await createClientCard(null, form({ ...base, ...extra }))).toMatchObject({
-        ok: false,
-        message: "Fill in all fields. The date of birth can't be later than today.",
-      });
+    for (const [extra, errors] of [
+      [{ date_of_birth: "", session_language: "English" }, { dateOfBirth: "Enter a date of birth that is not in the future." }],
+      [{ date_of_birth: "1990-05-14", session_language: "" }, { sessionLanguage: "Select a session language." }],
+      [{ date_of_birth: "2999-01-01", session_language: "English" }, { dateOfBirth: "Enter a date of birth that is not in the future." }],
+      [{ date_of_birth: "1990-02-30", session_language: "English" }, { dateOfBirth: "Enter a date of birth that is not in the future." }],
+    ] as const) {
+      expect(await createClientCard(null, form({ ...base, ...extra }))).toMatchObject({ ok: false, errors });
     }
     expect(fake.inserted).toEqual([]);
+  });
+
+  it("AC-CARD-12: дитина без імені, з датою в майбутньому й без мови — три помилки біля полів, введене лишається", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-03T12:00:00Z"));
+    try {
+      const state = await createClientCard(
+        null,
+        form({
+          client_type: "child",
+          full_name: "",
+          date_of_birth: "2026-11-04",
+          session_language: "",
+          guardian_name: "Guardian Eight",
+          guardian_email: "guardian8@example.test",
+        }),
+      );
+      expect(state).toMatchObject({
+        ok: false,
+        errors: {
+          fullName: "Enter the client's name.",
+          dateOfBirth: "Enter a date of birth that is not in the future.",
+          sessionLanguage: "Select a session language.",
+        },
+        values: {
+          clientType: "child",
+          fullName: "",
+          dateOfBirth: "2026-11-04",
+          sessionLanguage: "",
+          guardianName: "Guardian Eight",
+          guardianEmail: "guardian8@example.test",
+        },
+      });
+      expect(Object.keys(state?.errors ?? {})).toHaveLength(3);
+      expect(fake.inserted).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("AC-CARD-13: повторна картка дитини — індекс clients_child_identity_key → текст PM, введене лишається", async () => {
+    fake.insertError = {
+      code: "23505",
+      message: 'duplicate key value violates unique constraint "clients_child_identity_key"',
+    };
+    const state = await createClientCard(
+      null,
+      form({ ...child, full_name: " client seven ", session_language: "English" }),
+    );
+    expect(state).toMatchObject({
+      ok: false,
+      message: "A client with these details already exists.",
+      values: { clientType: "child", fullName: " client seven ", guardianEmail: "guardian7@example.test" },
+    });
+    expect(fake.inserted).toEqual([{ ...child, full_name: "client seven", session_language: "English", email: null }]);
   });
 });

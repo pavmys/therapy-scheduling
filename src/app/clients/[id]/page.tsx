@@ -5,12 +5,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { accessFor } from "@/lib/access";
 import { getCurrentUser } from "@/lib/auth";
-import { clientTypeLabel, NO_ACCESS_TO_CLIENT_MESSAGE, orNotProvided } from "@/lib/clients/view";
+import { clientTypeLabel, missingClientMessage, orNotProvided } from "@/lib/clients/view";
 import { isUuid } from "@/lib/form";
 
 // Картка клієнта за прямим посиланням. Що повернула база під RLS — те й показуємо: чужа картка, картка клієнта з
-// простроченим утриманням чи неіснуюча — 0 рядків, і роль бачить лише відмову без імен і назв полів
-// (AC-CARD-05, AC-CARD-08; неіснуюча для staff — до відповіді PM на Sofiia-pm/therapy-scheduling-spec#28).
+// простроченим утриманням чи неіснуюча — 0 рядків, і роль бачить лише повідомлення без імен і назв полів
+// (AC-CARD-05, AC-CARD-08, AC-CARD-16: staff — «картки немає», терапевт — відмова).
 export default async function ClientCardPage({ params }: PageProps<"/clients/[id]">) {
   const user = await getCurrentUser();
   const access = accessFor(user);
@@ -34,7 +34,7 @@ export default async function ClientCardPage({ params }: PageProps<"/clients/[id
         <StaffNav email={email} title="Client card" role={role} />
         <Alert data-testid="client-no-access">
           <Lock aria-hidden="true" />
-          <AlertDescription className="text-foreground">{NO_ACCESS_TO_CLIENT_MESSAGE}</AlertDescription>
+          <AlertDescription className="text-foreground">{missingClientMessage(role)}</AlertDescription>
         </Alert>
       </main>
     );

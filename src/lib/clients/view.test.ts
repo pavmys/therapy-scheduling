@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { clientContact, clientOptionLabel, clientsEmptyMessage, clientTypeLabel, orNotProvided } from "./view";
+import {
+  clientContact,
+  clientOptionLabel,
+  clientsEmptyMessage,
+  clientTypeLabel,
+  missingClientMessage,
+  orNotProvided,
+} from "./view";
 
 describe("clientOptionLabel", () => {
   it("AC-CARD-02: під час утримання біля дитини client7 показано email опікуна", () => {
@@ -35,6 +42,18 @@ describe("clientsEmptyMessage", () => {
     expect(clientsEmptyMessage("therapist")).toBe(
       "No clients yet. Clients appear here when a scheduler holds a slot with you.",
     );
-    expect(clientsEmptyMessage("staff")).toBe("No clients found.");
+  });
+
+  it("AC-CARD-15: staff без карток — текст PM; пошук без результатів — «No clients found.»", () => {
+    expect(clientsEmptyMessage("staff")).toBe("No clients yet. Create a client card from an intake form.");
+    expect(clientsEmptyMessage("staff", "  ")).toBe("No clients yet. Create a client card from an intake form.");
+    expect(clientsEmptyMessage("staff", "nobody")).toBe("No clients found.");
+  });
+});
+
+describe("missingClientMessage", () => {
+  it("AC-CARD-16: картки немає — staff і терапевт бачать різні тексти PM", () => {
+    expect(missingClientMessage("staff")).toBe("This client card doesn't exist.");
+    expect(missingClientMessage("therapist")).toBe("You don't have access to this client.");
   });
 });

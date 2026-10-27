@@ -40,9 +40,24 @@ export function orNotProvided(value: string | null | undefined): string {
 }
 
 export const NO_OWN_CLIENTS_MESSAGE = "No clients yet. Clients appear here when a scheduler holds a slot with you.";
+export const NO_CLIENT_CARDS_MESSAGE = "No clients yet. Create a client card from an intake form.";
+export const NO_CLIENTS_FOUND_MESSAGE = "No clients found.";
 export const NO_ACCESS_TO_CLIENT_MESSAGE = "You don't have access to this client.";
+export const CLIENT_CARD_NOT_FOUND_MESSAGE = "This client card doesn't exist.";
 
-/** Порожній список клієнтів: терапевту — текст PM (AC-CARD-09); staff — як у зрізі 1 (до відповіді PM на #27). */
-export function clientsEmptyMessage(role: "staff" | "therapist"): string {
-  return role === "therapist" ? NO_OWN_CLIENTS_MESSAGE : "No clients found.";
+/**
+ * Порожній список клієнтів: терапевту — текст PM (AC-CARD-09); staff без жодної картки — текст PM (AC-CARD-15);
+ * staff, чий пошук нічого не знайшов, — як у зрізі 1.
+ */
+export function clientsEmptyMessage(role: "staff" | "therapist", query = ""): string {
+  if (role === "therapist") return NO_OWN_CLIENTS_MESSAGE;
+  return query.trim() ? NO_CLIENTS_FOUND_MESSAGE : NO_CLIENT_CARDS_MESSAGE;
+}
+
+/**
+ * Картки за посиланням немає (AC-CARD-16): staff бачить усі картки (clients_select_staff), тож 0 рядків для нього —
+ * картки справді немає; терапевту 0 рядків — і чужа, і неіснуюча картка, тому лише відмова, без підказки, що існує.
+ */
+export function missingClientMessage(role: "staff" | "therapist"): string {
+  return role === "therapist" ? NO_ACCESS_TO_CLIENT_MESSAGE : CLIENT_CARD_NOT_FOUND_MESSAGE;
 }
