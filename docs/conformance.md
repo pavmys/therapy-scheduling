@@ -90,6 +90,6 @@
 | AC-CARD-14 | «Held» робить клієнта своїм лише до початку слоту, минулий «Confirmed» — без обмеження | `supabase/migrations/20261026221057_own_client_slot_start.sql` (is_own_client) | `tests/db/own-clients.test.ts` | реалізовано |
 | AC-CARD-15 | Порожній список клієнтів для планувальника й адміністратора | `src/lib/clients/view.ts` (clientsEmptyMessage), `src/app/clients/page.tsx` | `src/lib/clients/view.test.ts`, `src/app/clients/page.test.ts` | реалізовано |
 | AC-CARD-16 | Неіснуюча картка — «This client card doesn't exist.» для staff, відмова для терапевта | `src/lib/clients/view.ts` (missingClientMessage), `src/app/clients/[id]/page.tsx` | `src/lib/clients/view.test.ts`, `src/app/clients/[id]/page.test.ts` | реалізовано |
-| AC-HOLD-42 | Утримання «Held» зникає зі списку утримань з початком слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-43 | «Expired» лишається в списку до початку слоту, коли слот утримано за іншим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-44 | Терапевту недоступні сторінки слотів і утримань планувальника | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-42 | Утримання «Held» зникає зі списку утримань з початком слоту | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-43 | «Expired» лишається в списку до початку слоту, коли слот утримано за іншим клієнтом | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
+| AC-HOLD-44 | Терапевту недоступні сторінки слотів і утримань планувальника | `src/app/staff-only.tsx` (staffOnlyPage), `src/lib/access.ts` (STAFF_ONLY_PAGE_MESSAGE), `src/app/holds/page.tsx`, `src/app/slots/page.tsx`; зміни утримань відхиляють `src/app/slots/actions.ts`, `src/app/holds/actions.ts` і RLS | `src/app/staff-only.test.ts`, `src/app/slots/actions.test.ts`, `src/app/holds/actions.test.ts` | реалізовано |

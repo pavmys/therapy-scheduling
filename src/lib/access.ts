@@ -5,6 +5,8 @@ import type { AppRole } from "@/lib/auth";
 export type Access = "login" | "no-role" | "staff" | "therapist";
 
 export const NO_ROLE_MESSAGE = "Your account has no access yet. Contact an administrator.";
+/** Терапевт за прямим посиланням на слоти чи утримання планувальника (AC-HOLD-44). */
+export const STAFF_ONLY_PAGE_MESSAGE = "Only schedulers and admins can view this page.";
 
 export function accessFor(user: { role: AppRole | null } | null): Access {
   if (!user) return "login";

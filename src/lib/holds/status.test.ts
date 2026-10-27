@@ -177,6 +177,31 @@ describe("уточнення PM: список утримань", () => {
   });
 });
 
+describe("уточнення PM 2026-10-26: межа початку слоту", () => {
+  it("AC-HOLD-42: «Held» видно о 09:59, а з 10:00 — початку слоту — у списку утримань немає", () => {
+    const s = slot("t1-03-10", "2026-11-03", 10);
+    const h = { ...hold("t1-03-10", at("2026-11-02", 14, 30)), client_id: "client2" };
+    expect(formatPracticeDateTime(new Date(h.expires_at))).toBe("2026-11-03 14:30");
+    expect(holdsList([h], [s], at("2026-11-03", 9, 59))).toEqual([{ hold: h, slot: s, status: "held" }]);
+    expect(holdStatus(h, at("2026-11-03", 10))).toBe("held");
+    expect(holdsList([h], [s], at("2026-11-03", 10))).toEqual([]);
+    expect(holdsList([h], [s], at("2026-11-03", 10, 30))).toEqual([]);
+  });
+
+  it("AC-HOLD-43: «Expired» client1 і нове «Held» client2 на тому самому слоті — обидва, «Expired» до початку слоту", () => {
+    const s = slot("t1-05-10", "2026-11-05", 10);
+    const expired = { ...hold("t1-05-10", at("2026-11-02", 14, 30)), client_id: "client1" };
+    const held = { ...hold("t1-05-10", at("2026-11-03", 14, 45)), client_id: "client2" };
+    const now = at("2026-11-03", 15);
+    expect(holdsList([expired, held], [s], now).map((i) => [i.hold.client_id, i.status])).toEqual([
+      ["client1", "expired"],
+      ["client2", "held"],
+    ]);
+    expect(holdsList([expired, held], [s], at("2026-11-05", 9, 59)).map((i) => i.hold.client_id)).toContain("client1");
+    expect(holdsList([expired, held], [s], at("2026-11-05", 10))).toEqual([]);
+  });
+});
+
 describe("розклад терапевта", () => {
   // Дані AC-HOLD-30 / AC-HOLD-31: сьогодні середа 2026-11-04.
   const now = at("2026-11-04", 9);

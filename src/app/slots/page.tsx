@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
-import { getCurrentUser, isStaffRole } from "@/lib/auth";
+import { staffOnlyPage } from "@/app/staff-only";
+import { accessFor } from "@/lib/access";
+import { getCurrentUser } from "@/lib/auth";
 import { clientSearchFilter } from "@/lib/clients/search";
 import { ActionMessage } from "@/components/ui/action-message";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -26,11 +28,14 @@ const navLink = buttonVariants({ variant: "ghost", size: "sm" });
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 // Слоти терапевта на день зі статусами й утриманням за клієнтом (планувальник і адміністратор).
+// Терапевт за прямим посиланням бачить лише відмову (AC-HOLD-44).
 export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  if (!isStaffRole(user.role)) redirect("/");
-  const { supabase } = user;
+  const access = accessFor(user);
+  if (access === "login") redirect("/login");
+  if (access === "no-role") redirect("/");
+  if (access === "therapist") return staffOnlyPage(user!.email, "Slots");
+  const { supabase, email } = user!;
 
   const params = await searchParams;
   const now = new Date();
@@ -89,7 +94,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-12">
-      <StaffNav email={user.email} title="Slots" />
+      <StaffNav email={email} title="Slots" />
 
       {/* key: при переході «Previous / Next day» React не скидає defaultValue полів — нова форма на кожен вибір. */}
       <Card>
