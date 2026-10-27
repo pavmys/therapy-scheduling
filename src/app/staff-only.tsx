@@ -17,6 +17,3 @@ export function staffOnlyPage(email: string | null, title: string) {
     </main>
   );
 }
-
-// mutation: секретний ключ читається в коді сторінки (доказ check:boundary)
-export const hasSecretKey = Boolean(process.env.SUPABASE_SECRET_KEY);
