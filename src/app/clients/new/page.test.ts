@@ -42,8 +42,10 @@ describe("NewClientCardPage — терапевт", () => {
     const nodes = elements(await NewClientCardPage());
     const names = nodes.map((n) => nameOf(n.type));
 
-    const message = nodes.find((n) => nameOf(n.type) === "ActionMessage");
-    expect(message?.props).toMatchObject({ ok: false, message: "Only schedulers and admins can create client cards." });
+    const message = nodes.find((n) => nameOf(n.type) === "AlertDescription");
+    expect(message?.props.children).toBe("Only schedulers and admins can create client cards.");
+    // відмова — не червона помилка (DESIGN.md, розділ 6)
+    expect(names).not.toContain("ActionMessage");
     expect(nodes.find((n) => nameOf(n.type) === "StaffNav")?.props).toMatchObject({ role: "therapist" });
     expect(names).not.toContain("ClientForm");
   });
