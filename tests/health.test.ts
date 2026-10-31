@@ -40,4 +40,13 @@ describe("classifyDbProbe (/api/health)", () => {
     expect(classifyDbProbe({ status: 503, error: { code: "08006", message: "connection failure" } }).db).toBe("down");
     expect(classifyDbProbe({ status: 404, error: { code: "42P01", message: "relation does not exist" } }).db).toBe("ok");
   });
+
+  it("не рахує базу живою, коли PostgREST відмовив через налаштування JWT і до бази запит не дійшов (PGRST300–302)", () => {
+    expect(classifyDbProbe({ status: 500, error: { code: "PGRST300", message: "JWT secret missing" } })).toEqual({
+      db: "down",
+      reason: "status-500-PGRST300",
+    });
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST301", message: "JWT invalid" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST302", message: "anonymous role disabled" } }).db).toBe("down");
+  });
 });
