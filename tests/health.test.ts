@@ -1,0 +1,52 @@
+// D0: /api/health відрізняє «база відповіла» від «база недоступна, призупинена чи ключ хибний».
+import { describe, expect, it } from "vitest";
+import { classifyDbProbe } from "@/lib/health";
+
+describe("classifyDbProbe (/api/health)", () => {
+  it("рахує базу живою, коли запит пройшов або Postgres відмовив у правах (42501)", () => {
+    expect(classifyDbProbe({ status: 200, error: null })).toEqual({ db: "ok", reason: "" });
+    expect(classifyDbProbe({ status: 401, error: { code: "42501", message: "permission denied for table profiles" } })).toEqual({
+      db: "ok",
+      reason: "",
+    });
+    expect(classifyDbProbe({ status: 400, error: { code: "PGRST100", message: "bad filter" } }).db).toBe("ok");
+  });
+
+  it("повідомляє «paused», коли Supabase відповідає 540 (безкоштовний проєкт призупинено)", () => {
+    expect(classifyDbProbe({ status: 540, error: { message: "project paused" } })).toEqual({ db: "down", reason: "paused" });
+  });
+
+  it("повідомляє про хибний публічний ключ", () => {
+    expect(classifyDbProbe({ status: 401, error: { message: "Invalid API key" } })).toEqual({
+      db: "down",
+      reason: "invalid-api-key",
+    });
+  });
+
+  it("повідомляє код, коли PostgREST не дістає до бази або мережі немає", () => {
+    expect(classifyDbProbe({ status: 503, error: { code: "PGRST002", message: "schema cache" } })).toEqual({
+      db: "down",
+      reason: "status-503-PGRST002",
+    });
+    expect(classifyDbProbe({ status: 0, error: { message: "fetch failed" } })).toEqual({ db: "down", reason: "status-0" });
+  });
+
+  it("не рахує базу живою, коли Postgres відповів збоєм ресурсів чи з'єднання, а не відмовою на запит", () => {
+    expect(classifyDbProbe({ status: 503, error: { code: "53300", message: "too many connections" } })).toEqual({
+      db: "down",
+      reason: "status-503-53300",
+    });
+    expect(classifyDbProbe({ status: 503, error: { code: "57P01", message: "terminating connection" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 503, error: { code: "08006", message: "connection failure" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 404, error: { code: "42P01", message: "relation does not exist" } }).db).toBe("ok");
+  });
+
+  it("не рахує базу живою, коли PostgREST відмовив через налаштування JWT і до бази запит не дійшов (PGRST300–302)", () => {
+    expect(classifyDbProbe({ status: 500, error: { code: "PGRST300", message: "JWT secret missing" } })).toEqual({
+      db: "down",
+      reason: "status-500-PGRST300",
+    });
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST301", message: "JWT invalid" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST302", message: "anonymous role disabled" } }).db).toBe("down");
+  });
+});
