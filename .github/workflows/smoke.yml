@@ -43,17 +43,35 @@ jobs:
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
     steps:
+      # Статус Vercel для старішого коміту main може прийти, коли прод уже показує новіший: такий прогін пропускаємо,
+      # інакше smoke.mjs 6 разів чекає старий SHA і хибно падає. Прод тоді перевірить прогін статусу HEAD main.
+      - name: Статус для HEAD main, а не для старішого коміту
+        id: head
+        if: github.event_name == 'status'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$DEFAULT_BRANCH" --jq '.object.sha')
+          if [ "$head" != "$EXPECT_SHA" ]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "Статус для ${EXPECT_SHA:0:7}, а HEAD $DEFAULT_BRANCH — ${head:0:7}: прогін пропущено."
+          fi
       - uses: actions/checkout@v7
+        if: steps.head.outputs.stale != 'true'
         with:
           sparse-checkout: scripts
       - uses: actions/setup-node@v7
+        if: steps.head.outputs.stale != 'true'
         with:
           node-version: 24
       - name: Змінна PROD_URL задана
+        if: steps.head.outputs.stale != 'true'
         run: |
           if [ -z "$PROD_URL" ]; then
             echo "::error title=smoke::Немає змінної репо PROD_URL — Settings → Secrets and variables → Actions → Variables → PROD_URL = https://<проєкт>.vercel.app"
             exit 1
           fi
       - name: Прод = main, сторінка входу відкривається, база відповідає
+        if: steps.head.outputs.stale != 'true'
         run: node scripts/smoke.mjs "$PROD_URL" "$EXPECT_SHA"

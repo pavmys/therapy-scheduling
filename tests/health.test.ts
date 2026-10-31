@@ -30,4 +30,14 @@ describe("classifyDbProbe (/api/health)", () => {
     });
     expect(classifyDbProbe({ status: 0, error: { message: "fetch failed" } })).toEqual({ db: "down", reason: "status-0" });
   });
+
+  it("не рахує базу живою, коли Postgres відповів збоєм ресурсів чи з'єднання, а не відмовою на запит", () => {
+    expect(classifyDbProbe({ status: 503, error: { code: "53300", message: "too many connections" } })).toEqual({
+      db: "down",
+      reason: "status-503-53300",
+    });
+    expect(classifyDbProbe({ status: 503, error: { code: "57P01", message: "terminating connection" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 503, error: { code: "08006", message: "connection failure" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 404, error: { code: "42P01", message: "relation does not exist" } }).db).toBe("ok");
+  });
 });
