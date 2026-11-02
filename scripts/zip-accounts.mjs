@@ -43,8 +43,9 @@ const AES_256 = 3;
 const sameFile = (a, b) => {
   if (resolve(a) === resolve(b)) return true;
   try {
-    const left = statSync(a);
-    const right = statSync(b);
+    // bigint: 64-бітні dev/ino без втрати точності Number.
+    const left = statSync(a, { bigint: true });
+    const right = statSync(b, { bigint: true });
     return left.dev === right.dev && left.ino === right.ino;
   } catch {
     return false;
