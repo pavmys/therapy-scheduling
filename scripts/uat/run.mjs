@@ -4,7 +4,7 @@
 //   npm run uat:nc -- --url …                               (негативні контролі; звіт у test-results/uat-report-nc/)
 // Кроки: playwright test → pack.mjs → review.mjs (claude -p) → combine.mjs → report.mjs.
 // Звіт пишеться завжди, навіть якщо тести червоні: FAIL — теж результат для PM. Код виходу 1, якщо є FAIL, якщо впали
-// setup чи прибирання, або якщо негативний контроль дав PASS (UAT не вміє падати).
+// setup чи прибирання, або якщо негативний контроль не довів, що UAT уміє падати (PASS, не запускався, впав не там).
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -55,8 +55,10 @@ const env = { ...process.env, UAT_NEGATIVE_CONTROLS: negativeControls ? "1" : ""
 if (url) env.UAT_BASE_URL = url;
 else delete env.UAT_BASE_URL;
 
-// Журнал прибирання — лише цього прогону: інакше «видалено» у звіті підсумовує адреси з попередніх прогонів.
+// Журнал і підсумок прибирання — лише цього прогону: інакше «видалено» у звіті підсумовує адреси з попередніх прогонів,
+// а якщо прибирання впаде до запису uat-cleanup.json, звіт показав би успішне прибирання минулого прогону.
 rmSync(path.join(ROOT, "test-results", "uat-cleanup.jsonl"), { force: true });
+rmSync(path.join(ROOT, "test-results", "uat-cleanup.json"), { force: true });
 console.log(`UAT: ${url ?? "локальна збірка (npm run build && npm run start)"}${negativeControls ? " — негативні контролі" : ""}`);
 const cli = path.join(ROOT, "node_modules", "@playwright", "test", "cli.js");
 // results.json попереднього прогону не має потрапити у звіт, якщо Playwright цього разу його не запише.
@@ -93,6 +95,24 @@ function infraFailures() {
   return failed;
 }
 
+// Що має показати кожен негативний контроль, щоб йому можна було вірити (див. tests/e2e/negative-controls.spec.ts):
+//   перевірки впали → лише в «Тоді» (навмисно хибне очікування), а всі «Дано» і «Коли» виконано: інакше FAIL дав
+//     збій переходу чи входу, а не хибна перевірка (NC-1);
+//   перевірки пройшли → розбіжність знайшов рецензент: R3 (не погодився) чи R4 (його цитати немає на сторінці);
+//     R2 (вердикту немає, зокрема --skip-review) нічого не доводить (NC-2).
+function unprovenControl(c) {
+  const a = c.assertions;
+  if (c.verdict === "PASS") return `${a.caseId}: PASS — UAT не вміє падати, звіту довіряти не можна`;
+  if (a.status === "passed") {
+    return ["R3", "R4"].includes(c.rule) ? null : `${a.caseId}: ${c.verdict} за ${c.rule}, а не R3/R4 — розбіжність не знайшов рецензент`;
+  }
+  if (a.status !== "failed") return `${a.caseId}: тест не завершився (${a.status}): setup, таймаут чи обрив — див. вивід Playwright`;
+  const brokenStep = a.steps.find((s) => /^(Дано|Коли):/.test(s.title) && !s.ok);
+  if (brokenStep) return `${a.caseId}: впав крок «${brokenStep.title}», а не навмисно хибна перевірка «Тоді»`;
+  if (!a.thens.some((t) => t.assertionsPassed === false)) return `${a.caseId}: жодна перевірка «Тоді» не впала — FAIL не від навмисно хибного очікування`;
+  return null;
+}
+
 // Звіт за результатами Playwright: пакети → рецензент → вердикт → report.md.
 async function finish() {
   const cases = pack();
@@ -119,34 +139,28 @@ async function finish() {
   if (!cases.length) {
     console.error("Жодного AC-тесту в результатах Playwright — звіту не буде.");
     process.exitCode = 1;
-  } else {
-    if (!skipReview) await review();
-    const combined = combine();
-    const { outDir, rows } = report(combined, { out: negativeControls ? "test-results/uat-report-nc" : undefined });
-    console.log(`\nЗвіт: ${rel(outDir)}/report.md`);
-    for (const r of rows) console.log(`  ${r.caseId}: ${r.verdict} — ${r.ruleText}`);
-    const real = rows.filter((r) => !r.negativeControl);
-    if (real.some((r) => r.verdict === "FAIL")) process.exitCode = 1;
-    if (rows.some((r) => r.negativeControl && r.verdict === "PASS")) {
-      console.error("Негативний контроль дав PASS: UAT не вміє падати, звіту довіряти не можна.");
-      process.exitCode = 1;
-    }
-    // Негативний контроль, що не запускався (впав setup), дає FAIL за R1, але нічого не доводить.
-    const notRun = combined.filter((c) => c.assertions.negativeControl && ["skipped", "interrupted"].includes(c.assertions.status));
-    if (notRun.length) {
-      console.error(`Негативні контролі не запускались (${notRun.map((c) => c.assertions.caseId).join(", ")}): перевірте setup у виводі Playwright.`);
-      process.exitCode = 1;
-    }
-    // Упали setup чи прибирання: звіт є, але прогін не чистий. Читаємо results.json, а не код Playwright: у негативних
-    // контролях він червоний завжди (NC-1 падає навмисно).
-    const infra = infraFailures();
-    if (infra.length) {
-      console.error(`Не пройшли setup чи прибирання — прогін не чистий:\n  ${infra.join("\n  ")}`);
-      process.exitCode = 1;
-    } else if (!negativeControls && pw.status !== 0 && !real.some((r) => r.verdict === "FAIL")) {
-      console.error(`Playwright завершився з кодом ${pw.status}, хоч жоден AC не FAIL: див. вивід Playwright вище.`);
-      process.exitCode = 1;
-    }
-    if (real.some((r) => r.verdict === "NEEDS-HUMAN")) console.log("Є NEEDS-HUMAN: рішення — за PM (див. звіт).");
+    return;
   }
+  if (!skipReview) await review();
+  const combined = combine();
+  const real = combined.filter((c) => !c.negativeControl);
+  // Проблеми прогону рахуємо ДО звіту, щоб вони потрапили в report.md і manifest.json, а не лише в консоль.
+  // Setup і прибирання — за results.json, а не за кодом Playwright: у негативних контролях він червоний завжди.
+  const infra = infraFailures().map((f) => `не пройшов ${f}`);
+  const ncIssues = combined.filter((c) => c.negativeControl).map(unprovenControl).filter(Boolean);
+  const playwrightIssue =
+    !infra.length && !negativeControls && pw.status !== 0 && !real.some((c) => c.verdict === "FAIL")
+      ? [`Playwright завершився з кодом ${pw.status}, хоч жоден AC не FAIL — див. вивід Playwright`]
+      : [];
+  const runIssues = [...infra, ...ncIssues, ...playwrightIssue];
+
+  const { outDir, rows } = report(combined, { out: negativeControls ? "test-results/uat-report-nc" : undefined, runIssues });
+  console.log(`\nЗвіт: ${rel(outDir)}/report.md`);
+  for (const r of rows) console.log(`  ${r.caseId}: ${r.verdict} — ${r.ruleText}`);
+  if (real.some((c) => c.verdict === "FAIL")) process.exitCode = 1;
+  if (runIssues.length) {
+    console.error(`Прогін не чистий:\n  ${runIssues.join("\n  ")}`);
+    process.exitCode = 1;
+  }
+  if (real.some((c) => c.verdict === "NEEDS-HUMAN")) console.log("Є NEEDS-HUMAN: рішення — за PM (див. звіт).");
 }

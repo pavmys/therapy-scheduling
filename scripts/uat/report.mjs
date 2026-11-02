@@ -2,6 +2,7 @@
 // Відео й траси в git НЕ кладемо (0,8–1,7 МБ на AC): вони лишаються в test-results/ локально й в артефакті CI.
 // Тому manifest.json ще не сумісний із check-recordings конвеєра WS9 (той вимагає відео на диску) — див. поле note.
 // Негативні контролі (NC-…) у manifest.results не потрапляють — лише в окремий список negativeControls.
+// runIssues (від run.mjs): впали setup чи прибирання, негативний контроль нічого не довів — у manifest і на початку звіту.
 // Використання: node scripts/uat/report.mjs [--out docs/qa/uat/2026-10-26]
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -24,7 +25,7 @@ const sec = (ms) => `${(ms / 1000).toFixed(1)} с`;
 const usd = (x) => `$${x.toFixed(4)}`;
 const md = (s = "") => String(s).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 
-export function report(rows = combine(), { out } = {}) {
+export function report(rows = combine(), { out, runIssues = [] } = {}) {
   const runFile = path.join(WORK, "run.json");
   const run = existsSync(runFile) ? readJson(runFile) : {};
   const started = run.startedAt ?? rows[0]?.assertions.startTime ?? new Date().toISOString();
@@ -79,6 +80,7 @@ export function report(rows = combine(), { out } = {}) {
     results: real.map(entry),
     negativeControls: nc.map(entry),
     cleanup,
+    runIssues,
   };
   writeFileSync(path.join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 
@@ -91,8 +93,11 @@ export function report(rows = combine(), { out } = {}) {
     `- **Рецензент:** \`${HAIKU}\`; суперечки → \`${SONNET}\`. Разом за розбір: ${usd(totalCost)} (ціни API; за підпискою — у межах ліміту плану)`,
     cleanup
       ? `- **Прибирання:** синтетичних uat-*@example.test видалено ${cleanup.deleted.length}, лишилось ${cleanup.remaining.length}, їхніх рядків, що лишились: ${cleanup.leftoverRequests}`
-      : "- **Прибирання:** не запускалось (прогін без SUPABASE_SECRET_KEY — лише AC, що нічого не пишуть)",
+      : runIssues.some((i) => i.includes("cleanup:"))
+        ? "- **Прибирання:** впало, підсумку немає — див. «Прогін не чистий»"
+        : "- **Прибирання:** не запускалось (прогін без SUPABASE_SECRET_KEY — лише AC, що нічого не пишуть)",
     "- **Відео й траси:** не в git — `test-results/` локально або артефакт CI; трасу відкриває `npx playwright show-trace <trace.zip>`",
+    ...(runIssues.length ? ["- **Прогін не чистий** (код виходу 1):", ...runIssues.map((i) => `  - ${md(i)}`)] : []),
     "",
     "| AC | Перевірки | Агент | Підсумок | Чому | Playwright | Розбір |",
     "|---|---|---|---|---|---|---|",
