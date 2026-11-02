@@ -1,0 +1,197 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-02T10:42:23.324Z",
+  "baseURL": "https://therapy-scheduling-three.vercel.app",
+  "deployedSha": "8d2fec6a55328bf58138dc2019d542241e7e4692",
+  "testsCommit": "9cc6f9e9e6bd661a2d30f281ba9f247943827912",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-CARD-06",
+      "proof": "AC-CARD-06",
+      "title": "AC-CARD-06: терапевт за прямим посиланням на нову картку бачить лише відмову, кількість карток не змінилась",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-CARD-06-then-1.png",
+      "video": "test-results/artifacts/client-cards-терапевт-AC-C-7cc32-лькість-карток-не-змінилась-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-терапевт-AC-C-7cc32-лькість-карток-не-змінилась-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «New client card» під шапкою видно один рядок із замком: «Only schedulers and admins can create client cards.», текст збігається з критерієм посимвольно. Полів анкети та кнопки створення на кадрі немає, тому частину про відсутність форми визнано виконаною; цитати для неї немає, бо це відсутність елементів, а не текст."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7090,
+      "reviewCostUsd": 0.0022,
+      "reviewWallMs": 10344
+    },
+    {
+      "id": "AC-CARD-07",
+      "proof": "AC-CARD-07",
+      "title": "AC-CARD-07: без входу за прямим посиланням на клієнтів, картку client6 чи утримання — лише сторінка входу",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-1.png",
+      "video": "test-results/artifacts/client-cards-без-входу-AC--66889-мання-—-лише-сторінка-входу-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-без-входу-AC--66889-мання-—-лише-сторінка-входу-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На всіх трьох кадрах (frame-then-1, -2, -3) видно лише сторінку входу з заголовком «Вхід», полями Email і Пароль та кнопкою «Увійти»; жодних карток клієнтів чи утримань на кадрах немає. Частину «жодна картка не змінилася» і адресу /login кадри не підтверджують, тому це не оцінювалося."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 9266,
+      "reviewCostUsd": 0.00304,
+      "reviewWallMs": 10633
+    },
+    {
+      "id": "AC-CARD-16",
+      "proof": "AC-CARD-16",
+      "title": "AC-CARD-16: посилання на картку, якої немає — scheduler1 бачить «This client card doesn't exist.», therapist1 — «You don't have access to this client.»",
+      "screenshot": "docs/qa/uat/2026-11-02/frames/AC-CARD-16-then-1.png",
+      "video": "test-results/artifacts/client-cards-планувальник--08582-ave-access-to-this-client-»-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-планувальник--08582-ave-access-to-this-client-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На frame-then-1.png (scheduler1) посередині сторінки відображено «This client card doesn't exist.», а на frame-then-2.png (therapist1) — «You don't have access to this client.». Обидва тексти збігаються з критерієм посимвольно. На обох кадрах немає жодних полів картки клієнта: видно лише заголовок «Client card», навігацію та email поточного користувача у шапці."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "This client card doesn't exist.",
+          "onPage": true
+        },
+        {
+          "quote": "Client card",
+          "onPage": true
+        },
+        {
+          "quote": "You don't have access to this client.",
+          "onPage": true
+        },
+        {
+          "quote": "Client card",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3203,
+      "reviewCostUsd": 0.0025,
+      "reviewWallMs": 8770
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-02T10:42:11.769Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
