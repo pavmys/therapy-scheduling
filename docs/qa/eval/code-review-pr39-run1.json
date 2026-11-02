@@ -1,0 +1,67 @@
+{
+  "command": "claude -p \"/code-review high 39\" --setting-sources project --output-format json --allowedTools Read Grep Glob \"Bash(git diff:*)\" … \"Bash(gh pr diff:*)\"",
+  "pr": "https://github.com/pavmys/therapy-scheduling/pull/39",
+  "commit": "a06dee7",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "duration_ms": 70542,
+  "total_cost_usd": 0.55597,
+  "note": "Відновлено з виводу result того самого прогону (сирий JSON лежав у тимчасовій теці сесії й не зберігся); поля findings — дослівно.",
+  "findings": [
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "The role now comes from `claims.user_metadata.role` before `profiles.role`, and any user can write that field themselves, so any signed-in user can make themselves admin or scheduler.",
+      "failure_scenario": "A therapist, or a user with no role, calls `supabase.auth.updateUser({ data: { role: 'admin' } })` from the browser using the publishable key. After the token refreshes, `getClaims()` returns `user_metadata.role = 'admin'`. `accessFor` then returns \"staff\" and the staff pages (/slots, /holds, /clients) render for them. The `isStaffRole(user.role)` checks in `src/app/holds/actions.ts:15`, `src/app/clients/actions.ts:37` and `src/app/slots/actions.ts:19` pass too, so the app's authorization layer is bypassed and only RLS is left. `/schedule` also sends this therapist to /slots."
+    },
+    {
+      "file": "src/lib/holds/status.ts",
+      "line": 63,
+      "summary": "Dropping the `ms(h.created_at) > ms(expired.created_at)` check means an expired hold is hidden whenever the same client has any other hold on the slot, older ones included, so two expired holds hide each other.",
+      "failure_scenario": "Client A holds slot S and it expires (hold1). A holds S again and that also expires (hold2), and S has not started. `rehold(hold1)` is true because of hold2, and `rehold(hold2)` is now also true because of hold1. Both rows are skipped, so /holds shows \"No holds waiting for a decision.\" and the scheduler never sees that client A needs a call. This breaks AC-HOLD-20 and AC-HOLD-37, which require the latest Expired row to stay visible."
+    },
+    {
+      "file": "supabase/migrations/20261102152103_role_helper_comments.sql",
+      "line": 3,
+      "summary": "The migration recreates `private.is_staff()` as `security definer` without `set search_path = ''`, so it is not \"logic unchanged\": `create or replace` drops the `search_path` setting the original function had.",
+      "failure_scenario": "Before, migration 20261022040716 defined is_staff with `set search_path = ''`. After `db-deploy`, proconfig is cleared and the function runs with definer rights under the caller's search_path. That is the mutable-search_path vulnerability, and the Supabase advisor reports function_search_path_mutable. Every RLS policy and `hold_slot` that calls `private.is_staff()` now runs on this weaker function."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "With `user_metadata` taking priority, removing or changing a role in `profiles.role` no longer works, and a stray value in metadata overrides the real role from the database.",
+      "failure_scenario": "An administrator sets `profiles.role = null` for an account that should lose access, but its user_metadata.role is still 'scheduler', so the account keeps staff access in the app. Or user_metadata.role = '' or 'therapist' for a real admin: `??` does not fall back to the profile, and the admin gets \"no-role\" or the therapist view. The value is cast to AppRole with no validation."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "This breaks an explicit CLAUDE.md/AGENTS.md rule, and the diff also deletes the code comment that warned about it.",
+      "failure_scenario": "AGENTS.md (pulled in by /CLAUDE.md), section \"База даних\": «Хелпери ролей — у схемі `private` … роль — з `profiles.role`, ніколи з `user_metadata`». The line reads `role: (claims.user_metadata?.role ?? profile?.role ?? null)`. It also contradicts design.md impl-client-cards D4 (\"never from user_metadata\") and the CodeRabbit rule in .coderabbit.yaml:83."
+    },
+    {
+      "file": "supabase/migrations/20261102152103_role_helper_comments.sql",
+      "line": 7,
+      "summary": "This breaks the CLAUDE.md/AGENTS.md rule on role helpers: `security definer` without `set search_path = ''`.",
+      "failure_scenario": "AGENTS.md (via /CLAUDE.md): «Хелпери ролей — у схемі `private`, `security definer`, `set search_path = ''`». Lines 3–10 of the migration declare `security definer` and go straight to `as $$` with no `set search_path = ''`."
+    },
+    {
+      "file": "supabase/migrations/20261102152103_role_helper_comments.sql",
+      "line": 3,
+      "summary": "Recreating the function is not needed to add a description: `comment on function` alone does the job.",
+      "failure_scenario": "The migration's stated purpose is only to add descriptions. The `create or replace function private.is_staff()` block copies the function body by hand, and an incomplete copy is exactly what lost `search_path`. Keeping only the two `comment on function` lines removes the duplication and the risk of drift."
+    },
+    {
+      "file": "src/lib/access.ts",
+      "line": 1,
+      "summary": "The pure module `access.ts` used to import only types from `@/lib/auth`, which are erased. It now has a runtime import, which pulls in `@/lib/supabase/server` and `next/headers`.",
+      "failure_scenario": "`access.ts` holds pure functions and messages (`NO_ROLE_MESSAGE`, `STAFF_ONLY_PAGE_MESSAGE`). Any future \"use client\" component that imports these constants will pull `next/headers` into the client bundle and break `next build`. The unit test `access.test.ts` also loads the server client for no reason. Moving `isStaffRole` into `access.ts`, or into a separate pure module that `auth.ts` imports, avoids the inverted dependency."
+    },
+    {
+      "file": "src/lib/holds/status.test.ts",
+      "line": 147,
+      "summary": "The AC-HOLD-37 test does not cover the case where the client's repeat hold has also expired, which is why the regression in `rehold` got through the tests.",
+      "failure_scenario": "The test checks only `[old(expired), again(held)]` and `[old, confirmed]`. There is no case `[old(expired), again(expired)]` asserting that `again` stays in the list. So when the `created_at` comparison is removed, `npm test` stays green while /holds loses rows."
+    }
+  ]
+}
