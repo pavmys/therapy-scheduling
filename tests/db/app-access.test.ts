@@ -44,6 +44,11 @@ describe("AC-CARD-07: відвідувач без входу", () => {
          values ('adult', 'Anon', 'anon@example.test', '1990-05-14', 'English')`,
       ),
     ).rejects.toThrow(/permission denied/);
+    // Лише колонки, які застосунок дає записати користувачеві з входом (full_name, email): відмова має йти
+    // від GRANT для anon, а не від сторонніх колонок, на які аноніму прав немає взагалі.
+    await expect(
+      t.asAnon("insert into public.clients (full_name, email) values ('Anon', 'anon2@example.test')"),
+    ).rejects.toThrow(/permission denied/);
 
     expect(await countClients()).toBe(before);
     const [card] = await t.asService<{ full_name: string; email: string }>(

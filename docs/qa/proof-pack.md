@@ -66,24 +66,75 @@
 
 | AC | Де живе правило | Рівень | Чому | Тест |
 |---|---|---|---|---|
-| AC-…-NN | <!-- політика / функція бази / TS-модуль / сторінка --> | <!-- unit / база (PGlite) / e2e --> | … | <!-- …/blob/<sha>/tests/…#L<N> --> |
+| AC-CARD-06 | двічі: SQL — політика `clients_insert_staff` і `private.is_staff()` ([roles_and_clients.sql#L75](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022040716_roles_and_clients.sql#L75)); TS — перевірка ролі в `createClientCard` ([actions.ts#L37](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/actions.ts#L37)) для тексту PM; сторінка `/clients/new` (`staffOnlyPage`) — без форми | база (PGlite) + ядро дії + e2e | правило двічі: SQL — остання межа, TS — повідомлення; кожен шар може втратити правило окремо. Тест дії підміняє лише клієнт Supabase (роль — справжній `getCurrentUser`), тож «запису немає» доводить саме база | [client-cards.test.ts#L25](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/client-cards.test.ts#L25) (база: `asUser` therapist1 → RLS, кількість незмінна), [actions.test.ts#L117](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/actions.test.ts#L117), [new/page.test.ts#L43](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/new/page.test.ts#L43), [client-cards.spec.ts#L22](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L22) (UAT) |
+| AC-CARD-07 | SQL — `revoke all … from anon` і grant лише `authenticated` на `clients` і `holds` ([roles_and_clients.sql#L58](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022040716_roles_and_clients.sql#L58), [slots_and_holds.sql#L63](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022042804_slots_and_holds.sql#L63)); сторінка входу — `src/proxy.ts` → `src/lib/supabase/proxy.ts` і `accessFor` у сторінках ([access.ts#L11](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/access.ts#L11)) | база (PGlite) + e2e | «жодних даних і жодна картка не змінилась» тримає GRANT — лише справжній SQL це доводить; «лише сторінка входу» — перехід proxy, який Vitest не запускає | [app-access.test.ts#L34](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L34) (`asAnon` → permission denied, `asService` — нічого не змінилось), [access.test.ts#L5](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/access.test.ts#L5), [page.test.ts#L59](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/page.test.ts#L59), [client-cards.spec.ts#L120](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L120) (UAT) |
+| AC-CARD-16 | TS — `missingClientMessage` ([view.ts#L61](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/clients/view.ts#L61)) і сторінка `/clients/[id]`: 0 рядків під RLS → текст за роллю | unit + e2e | точний текст, який бачить людина: unit тримає вибір тексту за роллю, e2e — що його видно й даних немає (асинхронну серверну сторінку Vitest рендерить лише з підміненим клієнтом). SQL-правила з межею тут немає: неіснуюча картка — 0 рядків для будь-якої ролі | [view.test.ts#L55](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/clients/view.test.ts#L55), [[id]/page.test.ts#L95](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/%5Bid%5D/page.test.ts#L95), [client-cards.spec.ts#L68](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L68) (UAT) |
+
+Тестів, що перевіряють мок чи TS-копію SQL-правила замість самого правила, серед цих AC немає: SQL-правила AC-CARD-06 і
+AC-CARD-07 доводять тести бази на PGlite з міграціями, а тести дії й сторінок підміняють лише клієнт Supabase.
 
 ### Покриття
 
+`npm run test:coverage` на `8ed7922`: разом рядки 73 % (312 з 426), гілки 59 %.
+
 | Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
 |---|---|---|---|
-| <!-- src/lib/<модуль>.ts --> | … % | … % | — |
-| <!-- src/app/<сторінка>/page.tsx --> | 0 % | 0 % | <!-- e2e: tests/e2e/….spec.ts --> |
+| `src/lib/access.ts` (AC-CARD-07) | 100 % (6/6) | 100 % (8/8) | — |
+| `src/lib/clients/view.ts` (AC-CARD-16) | 89 % (16/18) | 83 % (19/23) | — (непокриті рядки 27 і 34 — підписи опікуна, не `missingClientMessage`) |
+| `src/lib/clients/messages.ts` (тексти AC-CARD-06) | 100 % (4/4) | — | — |
+| `src/app/clients/actions.ts` (AC-CARD-06) | 95 % (19/20) | 95 % (19/20) | — |
+| `src/app/clients/new/page.tsx` (AC-CARD-06) | 83 % (5/6) | 50 % (3/6) | — |
+| `src/app/staff-only.tsx` (AC-CARD-06) | 100 % (1/1) | 100 % (1/1) | — |
+| `src/app/clients/[id]/page.tsx` (AC-CARD-16) | 100 % (13/13) | 79 % (11/14) | — |
+| `src/app/page.tsx` (AC-CARD-07) | 100 % (6/6) | 100 % (6/6) | — |
+| `src/proxy.ts`, `src/lib/supabase/proxy.ts` (AC-CARD-07) | 0 % | 0 % | e2e: [client-cards.spec.ts#L120](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L120) — UAT на проді, три прямі посилання без входу → лише `/login` |
+| `supabase/migrations/…` (AC-CARD-06, -07) | — (SQL v8 не міряє) | — | база на PGlite + `npm run mutation:sql` (нижче) |
 
 ### Доказ мутацією
 
 | Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
 |---|---|---|---|---|
-| <!-- src/lib/…/x.ts:14 `<=` → `<` --> | AC-…-NN | вижив | <!-- …/blob/<sha>/tests/…#L<N>: межа «…» з AC --> | убитий |
+| `supabase/migrations/20261022040716_roles_and_clients.sql:61` `grant insert (full_name, email) … to authenticated` → `… to authenticated, anon` (C4) | AC-CARD-07 | вижив | [app-access.test.ts#L47](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L47): «жодна картка не змінилася» — анонім не пише навіть у `(full_name, email)` | убитий |
 
-- Stryker: <!-- score до → після, посилання на PR з виводом -->
-- SQL-мутації (`npm run mutation:sql`): <!-- таблиця з npm run mutation:sql -- --markdown (KILLED / SURVIVED / ERROR) з PR або «немає PGlite-гарнесу» -->
-- Еквівалентні мутанти: <!-- який і чому (рядок міграції чи коду, що робить його еквівалентним) або «немає» -->
+- Stryker 10.1.1 (`npm run mutation:ts -- --mutate src/lib/clients/view.ts,src/lib/access.ts`, на `d234d4b`):
+  **95,38 %** — вбито 62, вижило 3, без покриття 0. `access.ts` (AC-CARD-07) — 100 % (23 з 23);
+  `view.ts` — 92,86 %, `missingClientMessage` (AC-CARD-16) — усі 7 мутантів вбито. **Вижилих на рядках цих 3 AC
+  немає**, тож «до/після» тут немає. Замість цього в proof pack ручні мутанти на межі AC, які тести вбивають
+  (`node scripts/mutation-check.mjs --kind ts`, [mutants.mjs](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/scripts/mutants.mjs)):
+
+  | Мутант | AC | Що зламано | Вердикт | Який тест упав |
+  |---|---|---|---|---|
+  | T1 | AC-CARD-16 | `missingClientMessage` ([view.ts#L62](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/clients/view.ts#L62)): терапевт бачить «This client card doesn't exist.» — підказку, що картки немає | KILLED | [AC-CARD-16: картки немає — staff і терапевт бачать різні тексти PM](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/clients/view.test.ts#L55) |
+  | T2 | AC-CARD-07 | `accessFor` ([access.ts#L12](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/access.ts#L12)): без входу — екран «без ролі» замість сторінки входу | KILLED | [AC-CARD-07: відвідувач без входу — лише сторінка входу](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/access.test.ts#L5) |
+
+  Троє вижилих — на рядках інших AC, не цих трьох; лишені для окремої задачі:
+  - `view.ts:26` `if (client.guardian_email)` → `if (true)` (AC-CARD-10, контакт у картці) — прогалина AC: немає
+    тесту картки без email і без опікуна (стара картка зрізу 1 → «Not provided»);
+  - `view.ts:33` те саме в `clientOptionLabel` (AC-CARD-02) — прогалина AC: немає клієнта без email і опікуна;
+  - `view.ts:39` `value.trim()` → `value` (AC-CARD-04/10, «Not provided») — нерозрізнений вхід: немає значення з
+    самих пробілів.
+- `npm audit`: Stryker додав 4 moderate лише в dev-залежностях (`@stryker-mutator/*`, `minimatch`);
+  `npm audit --omit=dev` — без змін (6, усі ще до Stryker).
+- SQL-мутації (`npm run mutation:sql -- --markdown`, [scripts/mutants.mjs](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/scripts/mutants.mjs)) на `8ed7922`: **5 з 6 вбито (83 %), прийнято еквівалентних: 1**, ≈6 с. «До» посилення тесту C4 вижив (4 з 6).
+
+  | Мутант | AC | Що зламано | Вердикт | Який тест упав |
+  |---|---|---|---|---|
+  | C1 | AC-CARD-06 | політика `clients_insert_staff` послаблена до `true`: картку створює будь-хто з входом | KILLED | AC-CARD-06: терапевт не створює картку клієнта напряму, кількість карток не змінилась |
+  | C2 | AC-CARD-06 | хелпер `private.is_staff()` рахує терапевта за staff | KILLED | AC-CARD-06: терапевт не створює картку клієнта напряму, кількість карток не змінилась |
+  | C3 | AC-CARD-07 | `grant select` на `clients` і для anon | KILLED | AC-CARD-07: без входу список клієнтів, картка й утримання недоступні, жодна картка не змінилась |
+  | C4 | AC-CARD-07 | `grant insert (full_name, email)` на `clients` і для anon | вижив → **KILLED** | те саме (після посилення — [app-access.test.ts#L47](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L47)) |
+  | C5 | AC-CARD-07 | `grant select` на `holds` і для anon | KILLED | те саме |
+  | C6 | AC-CARD-06, -07 | `private.is_staff()` без `coalesce`: NULL замість false для користувача без ролі | SURVIVED (еквівалентний, прийнято) | — |
+
+- C4 — прогалина AC «нерозрізнений вхід»: спроба insert від аноніма писала й у колонки анкети (`client_type`,
+  `date_of_birth`, `session_language`), на які анонім прав не має взагалі, тож відмова не залежала від grant на
+  `(full_name, email)`. Тест посилила окрема сесія агента з тексту AC («жодна картка не змінилася», промпт P03):
+  insert лише в `(full_name, email)` → `permission denied`; під мутантом запит доходить до RLS з іншою помилкою.
+  Коміт: [8ed7922](https://github.com/pavmys/therapy-scheduling/commit/8ed79222e1b7589850dc2691d3ad717f98332c4a).
+- Еквівалентні мутанти: C6 — NULL в `using` / `with check` RLS вважає відмовою, як `false`, тож для політик `clients`
+  поведінка та сама; `coalesce` потрібен лише для `not private.is_staff()` у функціях утримань
+  ([slots_and_holds.sql#L115](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022042804_slots_and_holds.sql#L115), AC-HOLD-08), поза цими 3 AC.
+- AC-CARD-16 SQL-мутанта не має: правило живе в TS і на сторінці — його доводить Stryker.
 
 ## C. UAT на проді
 
