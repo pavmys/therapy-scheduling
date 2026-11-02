@@ -12,7 +12,7 @@ import { pack } from "./pack.mjs";
 import { review } from "./review.mjs";
 import { combine } from "./combine.mjs";
 import { report } from "./report.mjs";
-import { RESULTS, ROOT, WORK, rel } from "./lib.mjs";
+import { RESULTS, ROOT, WORK, readJson, rel } from "./lib.mjs";
 
 const argv = process.argv.slice(2);
 const take = (name) => {
@@ -77,6 +77,22 @@ if (pw.error || !existsSync(RESULTS)) {
   await finish();
 }
 
+// Тести проєктів setup (вхід ролей) і cleanup (прибирання), що не пройшли: AC-рядків для них у звіті немає.
+function infraFailures() {
+  const failed = [];
+  const walk = (suite) => {
+    for (const spec of suite.specs ?? []) {
+      for (const t of spec.tests) {
+        const status = t.results.at(-1)?.status ?? "skipped";
+        if (["setup", "cleanup"].includes(t.projectName) && status !== "passed") failed.push(`${t.projectName}: ${spec.title} — ${status}`);
+      }
+    }
+    (suite.suites ?? []).forEach(walk);
+  };
+  readJson(RESULTS).suites.forEach(walk);
+  return failed;
+}
+
 // Звіт за результатами Playwright: пакети → рецензент → вердикт → report.md.
 async function finish() {
   const cases = pack();
@@ -105,7 +121,8 @@ async function finish() {
     process.exitCode = 1;
   } else {
     if (!skipReview) await review();
-    const { outDir, rows } = report(combine(), { out: negativeControls ? "test-results/uat-report-nc" : undefined });
+    const combined = combine();
+    const { outDir, rows } = report(combined, { out: negativeControls ? "test-results/uat-report-nc" : undefined });
     console.log(`\nЗвіт: ${rel(outDir)}/report.md`);
     for (const r of rows) console.log(`  ${r.caseId}: ${r.verdict} — ${r.ruleText}`);
     const real = rows.filter((r) => !r.negativeControl);
@@ -114,9 +131,20 @@ async function finish() {
       console.error("Негативний контроль дав PASS: UAT не вміє падати, звіту довіряти не можна.");
       process.exitCode = 1;
     }
-    // Упав не AC-тест (setup, прибирання): звіт є, але прогін не чистий. У негативних контролях Playwright червоний завжди.
-    if (!negativeControls && pw.status !== 0 && !real.some((r) => r.verdict === "FAIL")) {
-      console.error(`Playwright завершився з кодом ${pw.status}: перевірте setup і прибирання (вивід вище).`);
+    // Негативний контроль, що не запускався (впав setup), дає FAIL за R1, але нічого не доводить.
+    const notRun = combined.filter((c) => c.assertions.negativeControl && ["skipped", "interrupted"].includes(c.assertions.status));
+    if (notRun.length) {
+      console.error(`Негативні контролі не запускались (${notRun.map((c) => c.assertions.caseId).join(", ")}): перевірте setup у виводі Playwright.`);
+      process.exitCode = 1;
+    }
+    // Упали setup чи прибирання: звіт є, але прогін не чистий. Читаємо results.json, а не код Playwright: у негативних
+    // контролях він червоний завжди (NC-1 падає навмисно).
+    const infra = infraFailures();
+    if (infra.length) {
+      console.error(`Не пройшли setup чи прибирання — прогін не чистий:\n  ${infra.join("\n  ")}`);
+      process.exitCode = 1;
+    } else if (!negativeControls && pw.status !== 0 && !real.some((r) => r.verdict === "FAIL")) {
+      console.error(`Playwright завершився з кодом ${pw.status}, хоч жоден AC не FAIL: див. вивід Playwright вище.`);
       process.exitCode = 1;
     }
     if (real.some((r) => r.verdict === "NEEDS-HUMAN")) console.log("Є NEEDS-HUMAN: рішення — за PM (див. звіт).");
