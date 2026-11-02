@@ -25,7 +25,7 @@
 
 ## A. Ворота
 
-- PR воріт: <!-- …/pull/N -->
+- PR воріт: https://github.com/pavmys/therapy-scheduling/pull/35
 - Зелений `quality` на `main`: <!-- …/actions/runs/N -->
 - Обов'язкові перевірки в `solo-main` з <!-- дата -->: <!-- назви jobs -->
 
