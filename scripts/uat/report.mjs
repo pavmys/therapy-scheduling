@@ -173,6 +173,12 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { outDir, rows, manifest } = report(combine(), { out });
   console.log(`Звіт: ${rel(outDir)}/report.md`);
   for (const r of rows) console.log(`${r.caseId}: ${r.verdict} (${r.ruleText})`);
+  // Ті самі коди виходу, що й у run.mjs: `npm run uat:review` після прогону з FAIL не має дати 0.
+  const failed = rows.filter((r) => !r.negativeControl && r.verdict === "FAIL");
+  if (failed.length) {
+    console.error(`AC з FAIL: ${failed.map((r) => r.acId).join(", ")} — див. звіт.`);
+    process.exitCode = 1;
+  }
   if (manifest.runIssues.length) {
     console.error(`Прогін не чистий:\n  ${manifest.runIssues.join("\n  ")}`);
     process.exitCode = 1;
