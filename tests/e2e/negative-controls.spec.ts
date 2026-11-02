@@ -10,6 +10,8 @@ import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
 
 test.use({ storageState: "playwright/.auth/scheduler.json" });
 
+// «Дано» без переходу на /clients — та сама причина, що в client-cards.spec.ts (prefetch карток і afterEach).
+
 const MISSING_CARD = "/clients/00000000-0000-4000-8000-000000000016";
 const MESSAGE = "This client card doesn't exist.";
 const WRONG_MESSAGE = "This client card was not found.";
@@ -27,9 +29,7 @@ test(
     ],
   },
   async ({ page }) => {
-    await given("картки клієнта, на яку веде посилання, не існує", async () => {
-      await page.goto("/clients");
-    });
+    await given("картки клієнта, на яку веде посилання, не існує", async () => {});
     await when("scheduler1 відкриває це посилання", async () => {
       await page.goto(MISSING_CARD);
     });
@@ -53,9 +53,7 @@ test(
     ],
   },
   async ({ page }) => {
-    await given("картки клієнта, на яку веде посилання, не існує", async () => {
-      await page.goto("/clients");
-    });
+    await given("картки клієнта, на яку веде посилання, не існує", async () => {});
     await when("scheduler1 відкриває це посилання", async () => {
       await page.goto(MISSING_CARD);
     });

@@ -68,10 +68,9 @@ test.describe("планувальник, потім терапевт", () => {
     "AC-CARD-16: посилання на картку, якої немає — scheduler1 бачить «This client card doesn't exist.», therapist1 — «You don't have access to this client.»",
     { tag: ["@uat"], annotation: { type: "ac", description: "AC-CARD-16" } },
     async ({ page, therapistPage }) => {
-      await given("картки клієнта, на яку веде посилання, не існує", async () => {
-        await page.goto("/clients");
-        await expect(page.locator("header").getByText(SCHEDULER1, { exact: true })).toBeVisible();
-      });
+      // «Дано» без переходу на /clients: список підвантажує посилання на картки (prefetch), а перехід далі лишає ці
+      // запити без відповіді й помилки — attachRuntimeErrors тоді чекає їх до таймауту тесту (UAT 02.11).
+      await given("картки клієнта, на яку веде посилання, не існує", async () => {});
 
       await when("scheduler1 відкриває це посилання", async () => {
         await page.goto(MISSING_CARD);
@@ -85,6 +84,7 @@ test.describe("планувальник, потім терапевт", () => {
           hidden: ["на сторінці немає жодного email, крім власного scheduler1@example.test"],
         },
         async () => {
+          await expect(page.locator("header").getByText(SCHEDULER1, { exact: true })).toBeVisible();
           await expect(page.getByRole("main").getByRole("alert")).toHaveText("This client card doesn't exist.");
           await expect(page.getByTestId("client-card")).toHaveCount(0);
           expect(await visibleEmails(page)).toEqual([SCHEDULER1]);
