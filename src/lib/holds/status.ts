@@ -60,13 +60,7 @@ export type HoldListItem = { hold: HoldRow; slot: SlotRow; status: HoldStatus };
 export function holdsList(holds: HoldRow[], slots: SlotRow[], now: Date): HoldListItem[] {
   const slotById = new Map(slots.map((s) => [s.id, s]));
   const rehold = (expired: HoldRow) =>
-    holds.some(
-      (h) =>
-        h.id !== expired.id &&
-        h.slot_id === expired.slot_id &&
-        h.client_id === expired.client_id &&
-        ms(h.created_at) > ms(expired.created_at),
-    );
+    holds.some((h) => h.id !== expired.id && h.slot_id === expired.slot_id && h.client_id === expired.client_id);
   const items: HoldListItem[] = [];
   for (const hold of holds) {
     const slot = slotById.get(hold.slot_id);
