@@ -2,12 +2,15 @@
 // Відео й траси в git НЕ кладемо (0,8–1,7 МБ на AC): вони лишаються в test-results/ локально й в артефакті CI.
 // Тому manifest.json ще не сумісний із check-recordings конвеєра WS9 (той вимагає відео на диску) — див. поле note.
 // Негативні контролі (NC-…) у manifest.results не потрапляють — лише в окремий список negativeControls.
-// runIssues (від run.mjs): впали setup чи прибирання, негативний контроль нічого не довів — у manifest і на початку звіту.
+// Проблеми прогону (issues.mjs: впали setup чи прибирання, негативний контроль нічого не довів) — у manifest.runIssues
+// і на початку звіту; рахуються щоразу, зокрема в `npm run uat:review`. Прогін негативних контролів (run.json) — у
+// test-results/uat-report-nc, а не в docs/.
 // Використання: node scripts/uat/report.mjs [--out docs/qa/uat/2026-10-26]
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { RULES, combine } from "./combine.mjs";
+import { runIssues as issuesOf } from "./issues.mjs";
 import { HAIKU, ROOT, SONNET, WORK, readJson, rel } from "./lib.mjs";
 
 const kyivDate = (iso) =>
@@ -25,11 +28,13 @@ const sec = (ms) => `${(ms / 1000).toFixed(1)} с`;
 const usd = (x) => `$${x.toFixed(4)}`;
 const md = (s = "") => String(s).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 
-export function report(rows = combine(), { out, runIssues = [] } = {}) {
+export function report(rows = combine(), { out } = {}) {
   const runFile = path.join(WORK, "run.json");
   const run = existsSync(runFile) ? readJson(runFile) : {};
+  const runIssues = issuesOf(rows, run);
   const started = run.startedAt ?? rows[0]?.assertions.startTime ?? new Date().toISOString();
-  const outDir = path.resolve(ROOT, out ?? path.join("docs", "qa", "uat", kyivDate(started)));
+  const defaultOut = run.negativeControls ? path.join("test-results", "uat-report-nc") : path.join("docs", "qa", "uat", kyivDate(started));
+  const outDir = path.resolve(ROOT, out ?? defaultOut);
   rmSync(path.join(outDir, "frames"), { recursive: true, force: true });
   mkdirSync(path.join(outDir, "frames"), { recursive: true });
   const cleanupFile = path.join(ROOT, "test-results", "uat-cleanup.json");
@@ -165,7 +170,11 @@ function readAc(r) {
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const argv = process.argv.slice(2);
   const out = argv.includes("--out") ? argv[argv.indexOf("--out") + 1] : undefined;
-  const { outDir, rows } = report(combine(), { out });
+  const { outDir, rows, manifest } = report(combine(), { out });
   console.log(`Звіт: ${rel(outDir)}/report.md`);
   for (const r of rows) console.log(`${r.caseId}: ${r.verdict} (${r.ruleText})`);
+  if (manifest.runIssues.length) {
+    console.error(`Прогін не чистий:\n  ${manifest.runIssues.join("\n  ")}`);
+    process.exitCode = 1;
+  }
 }
