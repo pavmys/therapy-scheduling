@@ -29,11 +29,35 @@
 - Зелений `quality` на `main`: <!-- …/actions/runs/N -->
 - Обов'язкові перевірки в `solo-main` з <!-- дата -->: <!-- назви jobs -->
 
-Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
+Розбір першого повного прогону `fallow` (той самий — в описі PR воріт). Перший прогін (`npx fallow --no-cache` на
+`aca806d` з конфігом матеріалів): мертвий код — 3 файли й 9 експортів, 5 груп дублікатів, 20 функцій понад пороги
+складності. Після PR мертвого коду 0; дублікати й складність лишились успадкованими (`audit` з `gate: new-only`
+валить лише нове).
 
 | Група знахідок | Скільки | Справжня / навмисна / хибна | Дія і причина |
 |---|---|---|---|
-| <!-- напр. unused dependency @tailwindcss/turbopack --> | 1 | хибна | `ignoreDependencies`: підключено рядком у `next.config.ts`, fallow цього не бачить |
+| unused re-export текстів помилок полів у `src/lib/clients/messages.ts` | 6 | справжня | прибрано: споживачі імпортують ці тексти з `validate.ts` напряму |
+| unused export `SLOT_STATUS_LABEL`, `HOLD_STATUS_LABEL` у `src/lib/holds/status.ts` | 2 | справжня | прибрано: підписи статусів — у `StatusBadge` (DESIGN.md, розділ 5), ці константи ніхто не читав |
+| unused export `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs` | 1 | навмисна | `ignoreExports` для цього імені: скрипт шаблону курсу, не змінюємо; експорт — частина його API |
+| unused file `src/lib/supabase/client.ts` | 1 | навмисна | `ignoreFindings`: браузерний клієнт шаблону (AGENTS.md, «Структура»), Client Components із Supabase поки немає |
+| unused file `src/lib/utils.ts` | 1 | хибна | `ignoreFindings`: файл читає `npx shadcn add` через alias `utils` у `components.json`, а не `import` |
+| unused file `src/components/ui/badge.tsx` | 1 | навмисна | `ignoreFindings`: компонент дизайн-системи (DESIGN.md, розділ 5) |
+| дублікати `scripts/check-design-tokens.mjs` ↔ `scripts/check-server-boundary.mjs` | 2 групи | навмисна | лишити: скрипти з матеріалів курсу WS7 (`architecture.yml`), не змінюємо |
+| дублікати сторінок (`slots` ↔ `schedule`, `clients` ↔ `holds`, вступ доступу в 3 сторінках) | 3 групи | справжня (дрібна) | лишити: успадковане, 6–12 рядків розмітки; спільний компонент — окремим PR, не в WS8 |
+| складність скриптів шаблону й WS7 (`check-spec`, `create-demo-users`, `check-design-tokens`, `check-server-boundary`) | 9 функцій | навмисна | `health.ignore` з тією самою причиною, що вже є в конфігу для інших скриптів курсу |
+| складність `src/app/api/health/route.ts` (`GET`) | 1 | навмисна | лишити: файл із матеріалів D0; лише оцінка CRAP (`warn`), бо без файлу покриття |
+| складність сторінок і домену (`SlotsPage` CRITICAL, `HoldsPage`, `ClientsPage`, `SchedulePage`, `validateCard`) | 6 | справжня | лишити: успадковане; розбиття `SlotsPage` (і `holds/status.ts`, ціль №1 fallow) — окремий PR |
+| складність помічників `texts()` у 3 тестах сторінок | 3 | справжня (дрібна) | лишити: оцінка CRAP для рекурсивного обходу дерева React; спільний помічник — разом із рефакторингом сторінок |
+
+Тестові правила лінтера (`npm run lint`, обов'язковий `app`): 5 помилок «не мокайте власні модулі» — 5 тестів сторінок
+підміняли `getCurrentUser` з `@/lib/auth`. Справжня: виправлено — тести підміняють лише клієнт Supabase
+(`@/lib/supabase/server`, правило це дозволяє), тож працює справжній `getCurrentUser` (`getClaims`, роль із
+`profiles`). Правил не вимкнено.
+
+Підлога покриття (`FLOORED`, 90/85/90/90 на файл): `access`, `auth`, `clients/search`, `clients/validate`, `form`,
+`health`, `holds/status`, `time`. Нижче поки: `clients/view` (рядки 88 %), `holds/messages` (рядки 85 %),
+`schedule/load` (гілки 64 %). Перевірено, що підлога валить прогін: з `clients/view` у списку `test:coverage` —
+код 1.
 
 ## B. Якість тестів
 
