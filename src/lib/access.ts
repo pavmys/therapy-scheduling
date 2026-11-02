@@ -1,4 +1,4 @@
-import type { AppRole } from "@/lib/auth";
+import { isStaffRole, type AppRole } from "@/lib/auth";
 
 // Куди веде застосунок користувача (design.md impl-client-cards, D4). Межа безпеки — RLS і перевірка в кожній дії;
 // це лише вибір сторінки: без входу — сторінка входу (AC-CARD-07), без ролі — лише повідомлення (AC-CARD-11).
@@ -10,7 +10,7 @@ export const STAFF_ONLY_PAGE_MESSAGE = "Only schedulers and admins can view this
 
 export function accessFor(user: { role: AppRole | null } | null): Access {
   if (!user) return "login";
-  if (user.role === "admin" || user.role === "scheduler") return "staff";
+  if (isStaffRole(user.role)) return "staff";
   if (user.role === "therapist") return "therapist";
   return "no-role";
 }

@@ -7,8 +7,7 @@ export function isStaffRole(role: string | null | undefined): boolean {
   return role === "admin" || role === "scheduler";
 }
 
-// Поточний користувач для сторінок і server actions. Роль — з profiles (RLS: свій рядок),
-// ніколи з user_metadata; JWT перевіряє getClaims(), не getSession().
+// Поточний користувач для сторінок і server actions; JWT перевіряє getClaims(), не getSession().
 export async function getCurrentUser() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -26,6 +25,6 @@ export async function getCurrentUser() {
     id: claims.sub,
     email: profile?.email ?? claims.email ?? null,
     fullName: profile?.full_name ?? null,
-    role: (profile?.role ?? null) as AppRole | null,
+    role: (claims.user_metadata?.role ?? profile?.role ?? null) as AppRole | null,
   };
 }
