@@ -11,7 +11,7 @@
 - Прод-URL: https://therapy-scheduling-three.vercel.app
 - Вимоги: https://github.com/Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-26
   (зріз 2 — [Sofiia-pm/therapy-scheduling-spec#19](https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/19))
-- `/api/health` на момент UAT: <!-- sha і db, напр. «sha 1a2b3c4, db ok, 01.11.2026» -->
+- `/api/health` на момент UAT: sha `8d2fec6`, db ok, 02.11.2026
 
 ## 3 AC
 
@@ -26,8 +26,9 @@
 ## A. Ворота
 
 - PR воріт: https://github.com/pavmys/therapy-scheduling/pull/35
-- Зелений `quality` на `main`: <!-- …/actions/runs/N -->
-- Обов'язкові перевірки в `solo-main` з <!-- дата -->: <!-- назви jobs -->
+- Зелений `quality` на `main`: https://github.com/pavmys/therapy-scheduling/actions/runs/41427277986 (`8d2fec6`, усі три jobs — success)
+- Обов'язкові перевірки в `solo-main` з 02.11.2026: `spec`, `app`, `conformance`, `db-check`, «Ворота: fallow audit»,
+  «Покриття: доменна підлога» («Порада: вразливі залежності» — дорадча, не обов'язкова)
 
 Розбір першого повного прогону `fallow` (той самий — в описі PR воріт). Перший прогін (`npx fallow --no-cache` на
 `aca806d` з конфігом матеріалів): мертвий код — 3 файли й 9 експортів, 5 груп дублікатів, 20 функцій понад пороги
@@ -88,13 +89,20 @@
 
 | AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
 |---|---|---|---|---|---|
-| AC-…-NN | <!-- …/blob/<sha>/tests/e2e/….spec.ts --> | <!-- passed / failed --> | <!-- Haiku: PASS / FAIL / NEEDS-HUMAN (+ Sonnet, якщо була суперечка) --> | <!-- PASS / FAIL / NEEDS-HUMAN і правило (R1–R6) --> | <!-- …/blob/<sha>/docs/qa/uat/<дата>/frames/AC-…-then-1.png --> |
+| AC-CARD-06 | [client-cards.spec.ts#L21](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L21) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-06-then-1.png) |
+| AC-CARD-16 | [client-cards.spec.ts#L67](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L67) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-16-then-1.png) (scheduler1), [then-2](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-16-then-2.png) (therapist1) |
+| AC-CARD-07 | [client-cards.spec.ts#L119](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L119) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-1.png) (клієнти), [then-2](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-2.png) (картка client6), [then-3](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-3.png) (утримання) |
 
-- Звіт: <!-- …/blob/<sha>/docs/qa/uat/<YYYY-MM-DD>/report.md -->
-- Відео: <!-- вкладення в описі PR …/pull/N -->
-- Рецензент: <!-- моделі зі звіту (claude-haiku-5-5; суперечки — claude-sonnet-5-5) і вартість прогону -->
-- Негативний контроль: <!-- NC-… (npm run uat:nc): що навмисно хибне, вердикт (FAIL / NEEDS-HUMAN), …/pull/N -->
-- Дані: <!-- «лише читання» або «@writes: uat-<запуск>@example.test, рядок «Прибирання» зі звіту» -->
+- Звіт: [docs/qa/uat/2026-11-02/report.md](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/report.md) — прод `8d2fec6`, код тестів `9cc6f9e`, 02.11.2026 12:41 (Київ), Playwright 28,3 с, PASS 3 / FAIL 0 / NEEDS-HUMAN 0
+- Відео: вкладення в описі PR UAT (по одному на AC)
+- Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5` (у цьому прогоні суперечок не було); розбір — $0,0077 за цінами API
+- Негативний контроль (`npm run uat:nc`, AC-CARD-16, той самий код тестів `9cc6f9e`, 12:40):
+  - NC-1 — у твердженні навмисно інший текст («This client card was not found.») → перевірка впала, Haiku сказав PASS → **FAIL** (R1: агент не перекриває впале твердження);
+  - NC-2 — анотація `ac-text` з уточненим текстом PM, тест і застосунок без змін → перевірки зелені, Haiku і Sonnet: FAIL («Критерій вимагає «This client card was not found.», тож текст не збігається») → **NEEDS-HUMAN** (R3).
+- Перший прогін (той самий день, код `77b50a1`) — FAIL на AC-CARD-16 і AC-CARD-07, обидва не вади продукту:
+  - AC-CARD-16 — таймаут 60 с у `afterEach`: «Дано» відкривало `/clients`, список підвантажував посилання на картки (prefetch), а перехід далі лишав 4 запити `/clients/<id>?_rsc=…` без відповіді й помилки, і `attachRuntimeErrors` чекав їх (траса NC-1, статус -1). Усі кроки «Тоді» були зелені, Haiku — PASS. Виправлено в тесті: [9cc6f9e](https://github.com/pavmys/therapy-scheduling/commit/9cc6f9e9e6bd661a2d30f281ba9f247943827912);
+  - AC-CARD-07 — на проді не було картки client6 (дані з вимог PM): «Дано» впало з «на проді немає картки клієнта client6@example.test». Картку створено вручну на проді під scheduler1 з даними AC-CARD-01 (Adult, «Client Six», client6@example.test, 1990-05-14, English).
+- Дані: лише читання (жодного `@writes`); прибирання — видалено 0, лишилось 0. Єдиний запис на проді — картка client6, створена людиною через інтерфейс до прогону (див. вище).
 
 ### Приймання PM
 
