@@ -64,4 +64,18 @@ export const mutants = [
       "лише для `not private.is_staff()` у функціях утримань (20261022042804_slots_and_holds.sql:115, AC-HOLD-08) — " +
       "це правило поза AC цього списку",
   },
+  // ── TS, точкові мутанти на межі з AC (повний перебір TS — npm run mutation:ts, Stryker). Stryker на view.ts і
+  // access.ts вижилих на рядках цих AC не лишив, тож тут — ручний мутант на кожну межу, який тест має вбити.
+  {
+    id: "T1", kind: "ts", ac: "AC-CARD-16", file: "src/lib/clients/view.ts", tests: ["src/lib/clients/view.test.ts"],
+    what: "missingClientMessage: терапевт бачить «This client card doesn't exist.» — підказку, що картки немає",
+    find: 'return role === "therapist" ? NO_ACCESS_TO_CLIENT_MESSAGE : CLIENT_CARD_NOT_FOUND_MESSAGE;',
+    replace: "return CLIENT_CARD_NOT_FOUND_MESSAGE;",
+  },
+  {
+    id: "T2", kind: "ts", ac: "AC-CARD-07", file: "src/lib/access.ts", tests: ["src/lib/access.test.ts"],
+    what: "accessFor: без входу — екран «без ролі» замість сторінки входу",
+    find: 'if (!user) return "login";',
+    replace: 'if (!user) return "no-role";',
+  },
 ];
