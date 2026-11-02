@@ -12,10 +12,24 @@ const signOut = vi.fn();
 vi.mock("./login/actions", () => ({ signOut }));
 
 let currentUser: { role: AppRole | null } | null = null;
-vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
-  getCurrentUser: async () =>
-    currentUser && { supabase: {}, id: "u1", email: "u1@example.test", fullName: null, ...currentUser },
+// Підмінено лише клієнт Supabase: getCurrentUser справжній — без JWT (getClaims без claims) немає користувача,
+// роль — із profiles.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: {
+      getClaims: async () => ({ data: currentUser && { claims: { sub: "u1", email: "u1@example.test" } } }),
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({
+            data: { email: "u1@example.test", full_name: null, role: currentUser?.role ?? null },
+            error: null,
+          }),
+        }),
+      }),
+    }),
+  }),
 }));
 
 const { default: Home } = await import("./page");

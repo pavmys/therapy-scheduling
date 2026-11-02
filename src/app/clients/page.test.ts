@@ -11,26 +11,25 @@ vi.mock("next/navigation", () => ({
 
 const fake = vi.hoisted(() => ({ role: "therapist" as AppRole | null, rows: [] as unknown[] }));
 
-vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
-  getCurrentUser: async () => ({
-    supabase: {
+// Підмінено лише клієнт Supabase: getCurrentUser справжній — JWT через getClaims, роль із profiles.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "therapist2", email: "therapist2@example.test" } } }) },
+    from: (table: string) => {
+      if (table === "profiles") {
+        const profile = { email: "therapist2@example.test", full_name: null, role: fake.role };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }) };
+      }
       // Ланцюжок запиту: select → order → limit → or; await на будь-якій ланці — рядки, які задав тест.
-      from: () => {
-        const query = {
-          select: () => query,
-          order: () => query,
-          limit: () => query,
-          or: () => query,
-          then: (resolve: (r: { data: unknown[]; error: null }) => unknown) => resolve({ data: fake.rows, error: null }),
-        };
-        return query;
-      },
+      const query = {
+        select: () => query,
+        order: () => query,
+        limit: () => query,
+        or: () => query,
+        then: (resolve: (r: { data: unknown[]; error: null }) => unknown) => resolve({ data: fake.rows, error: null }),
+      };
+      return query;
     },
-    id: "therapist2",
-    email: "therapist2@example.test",
-    fullName: null,
-    role: fake.role,
   }),
 }));
 

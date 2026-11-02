@@ -9,14 +9,16 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
-  getCurrentUser: async () => ({
-    supabase: {},
-    id: "therapist1",
-    email: "therapist1@example.test",
-    fullName: null,
-    role: "therapist",
+// Підмінено лише клієнт Supabase: getCurrentUser справжній — JWT через getClaims, роль із profiles. Інших таблиць
+// сторінка не читає: запит до них упав би.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "therapist1", email: "therapist1@example.test" } } }) },
+    from: (table: string) => {
+      if (table !== "profiles") throw new Error(`query:${table}`);
+      const profile = { email: "therapist1@example.test", full_name: null, role: "therapist" };
+      return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }) };
+    },
   }),
 }));
 

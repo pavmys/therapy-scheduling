@@ -12,19 +12,19 @@ vi.mock("next/navigation", () => ({
 
 const fake = vi.hoisted(() => ({ role: "therapist" as AppRole | null, queried: [] as string[] }));
 
-vi.mock("@/lib/auth", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/auth")>()),
-  getCurrentUser: async () => ({
-    supabase: {
-      from: (table: string) => {
-        fake.queried.push(table);
-        throw new Error(`query:${table}`);
-      },
+// Підмінено лише клієнт Supabase: getCurrentUser справжній — JWT через getClaims, роль із profiles. Будь-який інший
+// запит сторінки — збій тесту.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "therapist1", email: "therapist1@example.test" } } }) },
+    from: (table: string) => {
+      if (table === "profiles") {
+        const profile = { email: "therapist1@example.test", full_name: null, role: fake.role };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }) };
+      }
+      fake.queried.push(table);
+      throw new Error(`query:${table}`);
     },
-    id: "therapist1",
-    email: "therapist1@example.test",
-    fullName: null,
-    role: fake.role,
   }),
 }));
 
