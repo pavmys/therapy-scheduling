@@ -127,6 +127,12 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   `profiles_role_check` → оновити наявні дані (`update … set role`) → новий `default` колонки `role` →
   додати новий `profiles_role_check` (зразок — у заголовку `20261012000000_profiles_and_roles.sql`). Без нового
   `default` тригер `on_auth_user_created` вставить стару роль, і кожен `createUser` у `users:demo` впаде.
+- Функція `security definer` без `set search_path = ''` — помилка рівня «must fix» (у рев'ю — Major), а не стиль:
+  вона працює з правами власника, а імена й оператори (`in`, `=`) шукає за `search_path` того, хто її викликає.
+  Це стосується й `create or replace` наявної функції: SET з попереднього визначення не зберігається, тож його
+  пишуть щоразу (`… security definer set search_path = '' as $$ … $$`). Хелпер ролі без безпечного `search_path`
+  дає змогу підмінити неявно кваліфіковані імена чи оператори в кожній політиці RLS і функції, що його викликають.
+  Щоб лише додати опис, досить `comment on function` — без `create or replace`.
 - Кілька записів або перевірка + запис разом (заявка з позиціями, запуск із копією задач, утримання слоту без
   перетину): у supabase-js немає транзакцій, кожен запит — окрема транзакція. Роби це однією функцією Postgres через
   `supabase.rpc(…)`, як `submit_leave_request` у демо (`supabase/migrations/20261013000000_leave_requests.sql`
