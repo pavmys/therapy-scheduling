@@ -1,0 +1,72 @@
+{
+  "command": "claude -p \"/code-review high 39\" --setting-sources project --output-format json --allowedTools Read Grep Glob \"Bash(git diff:*)\" … \"Bash(gh pr diff:*)\"",
+  "pr": "https://github.com/pavmys/therapy-scheduling/pull/39",
+  "commit": "df6d571",
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "duration_ms": 56296,
+  "total_cost_usd": 0.4955032,
+  "findings": [
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "getCurrentUser now reads the role from claims.user_metadata ahead of profiles.role. Any signed-in user can write user_metadata themselves, so any user can make themselves admin in the app.",
+      "failure_scenario": "A therapist (or a user with no role) calls supabase.auth.updateUser({ data: { role: 'admin' } }) from the browser using the public publishable key, then refreshes the JWT. getCurrentUser returns role 'admin', so accessFor returns 'staff' and every isStaffRole gate passes: src/app/slots/actions.ts:19, src/app/holds/actions.ts:15, src/app/clients/actions.ts:37 and src/app/schedule/page.tsx:19. Staff-only pages and server actions are now open to that user (AC-HOLD-44, AC-CARD-11). The only thing left between them and staff data is RLS."
+    },
+    {
+      "file": "supabase/migrations/20261102152103_role_helper_comments.sql",
+      "line": 3,
+      "summary": "The migration re-runs `create or replace function private.is_staff()` as security definer without `set search_path = ''`. Postgres drops the SET from the earlier definition (20261022040716), so the helper that every RLS policy and RPC relies on now runs with the caller's search_path.",
+      "failure_scenario": "After db-deploy, private.is_staff() runs with the owner's rights but looks up names and operators (`in`, `=`) through the caller's search_path. A session that puts its own schema first can shadow those and change the result of is_staff() in every policy on clients, slots and holds and in hold_slot and confirm_hold. AGENTS.md classes this as must fix."
+    },
+    {
+      "file": "src/lib/holds/status.ts",
+      "line": 63,
+      "summary": "The rehold check no longer compares created_at, so any other hold by the same client on the same slot hides an expired hold, including older holds. Two expired holds by one client on one slot now hide each other.",
+      "failure_scenario": "client1 holds a slot on 11-02 and it expires on 11-03 (AC-HOLD-06). The scheduler holds it again for client1 (AC-HOLD-37), and that hold also expires before the slot starts. Each expired hold now counts as a 'rehold' of the other, so holdsList drops both. The list shows 'No holds waiting for a decision.' when there is still an expired hold to call about, which contradicts AC-HOLD-20 and AC-HOLD-28. Before the change, the newest expired hold stayed visible."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "Taking the role from user_metadata ahead of profiles also overrides role changes and removals an admin makes in profiles.role.",
+      "failure_scenario": "An admin demotes a scheduler to therapist, or clears the role (profiles.role = NULL, AC-CARD-11). If that account's user_metadata still has a role key, getCurrentUser keeps returning the old role. The app UI and the server-action gates ignore the change, while RLS (which uses profiles.role) disagrees. The user gets a mixed state: staff pages render, then queries fail with 'Could not load holds' or empty lists."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "An unvalidated user_metadata.role string is cast straight to AppRole, so the type claims an invariant that nothing checks.",
+      "failure_scenario": "user_metadata.role = 'superuser' or any arbitrary value is typed as AppRole. The cast hides from TypeScript that the value is outside 'admin' | 'scheduler' | 'therapist', so a future exhaustive switch on role, or any code that trusts the type, will misbehave. Today accessFor quietly returns 'no-role'."
+    },
+    {
+      "file": "supabase/migrations/20261102152103_role_helper_comments.sql",
+      "line": 3,
+      "summary": "The migration header says the logic is unchanged and the goal is only to add comments, yet it redefines the function. AGENTS.md says `comment on function` alone is enough for that.",
+      "failure_scenario": "AGENTS.md (repo-root, via CLAUDE.md @AGENTS.md): «Щоб лише додати опис, досить `comment on function` — без `create or replace`». The extra `create or replace` (lines 3-10) is what drops the search_path setting. Deleting those lines and keeping only the two `comment on function` statements gives the same comments with no risk."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 28,
+      "summary": "Conventions: AGENTS.md says the role always comes from profiles.role and never from user_metadata, and this line reads user_metadata.",
+      "failure_scenario": "AGENTS.md: «Хелпери ролей — у схемі `private`… роль — з `profiles.role`, ніколи з `user_metadata`». The line `role: (claims.user_metadata?.role ?? profile?.role ?? null)` breaks that rule directly. The commit also deleted the comment at lines 10-11 that stated the rule («Роль — з profiles … ніколи з user_metadata»)."
+    },
+    {
+      "file": "src/lib/auth.ts",
+      "line": 10,
+      "summary": "The removed comment stated the invariant that the role comes only from profiles under RLS. Nothing in the code or the tests re-establishes it, and comments elsewhere still claim it.",
+      "failure_scenario": "src/app/page.tsx:9 and the test headers (src/app/clients/page.test.ts:14, src/app/staff-only.test.ts:15) still say «роль — з profiles», which is now false. The test fakes never set claims.user_metadata, so every test still passes. No test catches a role coming from user_metadata."
+    },
+    {
+      "file": "src/lib/holds/status.test.ts",
+      "line": 147,
+      "summary": "The AC-HOLD-37 tests cover only the case where the re-hold is newer and still held. There is no test with two expired holds by the same client, so the regression from dropping the created_at comparison passes CI.",
+      "failure_scenario": "holdsList([oldExpired, newerExpired], [s], now) should return only newerExpired but now returns []. No test covers this, so `npm test` stays green with the bug in place."
+    },
+    {
+      "file": "src/lib/holds/status.ts",
+      "line": 62,
+      "summary": "Simplification: dropping created_at made rehold symmetric, so it no longer means 'a newer hold exists'. It is still documented (lines 57-59) as hiding only the old Expired hold.",
+      "failure_scenario": "The comment says «прострочене не видно, коли той самий клієнт знову утримав той самий слот», which means the newer hold replaces the older one. The code now hides an expired hold because of any sibling hold, older ones included. To make it shorter without changing behaviour, keep the order check: `holds.some((h) => h.id !== expired.id && h.slot_id === expired.slot_id && h.client_id === expired.client_id && ms(h.created_at) > ms(expired.created_at))`."
+    }
+  ]
+}

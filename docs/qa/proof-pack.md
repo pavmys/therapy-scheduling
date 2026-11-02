@@ -163,16 +163,38 @@ AC-CARD-07 доводять тести бази на PGlite з міграція�
 
 ## D. Eval рецензента
 
-- PR з вадами (не злитий): <!-- …/pull/N -->
-- Ключ і таблиця: <!-- …/pull/N#issuecomment-M -->
+- PR з вадами (закритий, не злитий): https://github.com/pavmys/therapy-scheduling/pull/39 — гілка `task/refactor-helpers`, нейтральні назва, коміти й опис; усі
+  обов'язкові перевірки CI зелені (жодну ваду ворота не спіймали)
+- Ключ і таблиця: https://github.com/pavmys/therapy-scheduling/pull/39#issuecomment-6581143652 (ключ до того лежав поза репо)
+- Рецензенти: CodeRabbit (профіль ASSERTIVE, план Advanced); `/code-review high` — `claude -p … --setting-sources
+  project --output-format json`, модель **claude-opus-5-5** (модель акаунта за замовчуванням), 70,5 с, $0,556 —
+  вивід: [docs/qa/eval/code-review-pr39-run1.json](eval/code-review-pr39-run1.json)
 
 | # | Вада (ключ) | CodeRabbit | `/code-review high` |
 |---|---|---|---|
-| 1 | <!-- категорія і файл:рядок --> | <!-- знайшов / пропустив + цитата --> | <!-- знайшов / пропустив + цитата --> |
-| 2 | … | … | … |
-| 3 | … | … | … |
-| П | приманка: <!-- що --> | <!-- хибна тривога? цитата --> | <!-- хибна тривога? цитата --> |
+| 1 | права в даних: `private.is_staff()` перевизначено як `security definer` без `set search_path = ''` (`create or replace` прибирає SET) — `supabase/migrations/20261102152103_role_helper_comments.sql:3-10` | знайшов, але **Minor**: «Встановіть порожній `search_path` для `SECURITY DEFINER` функції. `CREATE OR REPLACE FUNCTION` без цього параметра прибирає попереднє значення `search_path`.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260810)) | знайшов: «The migration recreates `private.is_staff()` as `security definer` without `set search_path = ''`, so it is not "logic unchanged": `create or replace` drops the `search_path` setting the original function had.» |
+| 2 | авторизація в дії: роль спершу з `claims.user_metadata.role`, `profiles.role` — запасна — `src/lib/auth.ts:28` | знайшов, **Major** (CWE-639): «Беріть роль лише з профілю. Користувач може змінити `user_metadata.role` і після оновлення токена передати `"admin"`.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260746)) | знайшов: «any user can write that field themselves, so any signed-in user can make themselves admin or scheduler.» |
+| 3 | логіка (AC-HOLD-37): `holdsList` без умови «повторне утримання новіше» — `src/lib/holds/status.ts:62-63` | знайшов, **Major**: «Якщо повторне утримання теж прострочиться до початку слоту, обидва записи приховають один одного.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260788)) | знайшов: «an expired hold is hidden whenever the same client has any other hold on the slot, older ones included, so two expired holds hide each other.» |
+| П | приманка: `accessFor` використовує наявний `isStaffRole` замість того самого виразу — `src/lib/access.ts:1, 13` | хибної тривоги немає (коментаря немає) | хибної тривоги щодо поведінки немає; архітектурне зауваження: «The pure module `access.ts` used to import only types from `@/lib/auth` … It now has a runtime import» |
 
-- Інші знахідки: <!-- слушна / шум, по рядку на кожну -->
-- Правило, що закриває пропуск: <!-- рядок в AGENTS.md чи path instruction, …/commit/<sha> -->
-- Повторний прогін: <!-- хто, результат, цитата, …/pull/N#issuecomment-M -->
+- Інші знахідки (усі від `/code-review`; CodeRabbit дав рівно 3 — по одній на ваду):
+  - «зняття ролі в `profiles.role` більше не діє, бо `user_metadata` має пріоритет» (`auth.ts:28`) — слушна, наслідок вади 2;
+  - «порушення правила AGENTS.md» для вад 1 і 2 — слушні, дублюють суть;
+  - «досить `comment on function`, `create or replace` зайвий» (міграція :3) — слушна: саме ручна копія тіла загубила `search_path`;
+  - «`access.ts` тепер має runtime-імпорт серверного модуля» (приманка) — слушна як зауваження до архітектури, не вада поведінки;
+  - «немає тесту AC-HOLD-37 на два прострочені утримання» (`status.test.ts:147`) — слушна: тому вада 3 і пройшла тести.
+- Правило, що закриває пропуск: найслабша знахідка — вада 1 у CodeRabbit (знайдено, але **Minor**, а не «must fix»).
+  Рядок в AGENTS.md (розділ «База даних»): «Функція `security definer` без `set search_path = ''` — помилка рівня
+  «must fix» (у рев'ю — Major), а не стиль … Це стосується й `create or replace` наявної функції …» —
+  [PR #40](https://github.com/pavmys/therapy-scheduling/pull/40),
+  [36fb2fe](https://github.com/pavmys/therapy-scheduling/commit/36fb2fe026c91d4239b55891c63e29a3f32c0190).
+- Повторний прогін (після `git merge main` у гілку з вадами, `df6d571`): https://github.com/pavmys/therapy-scheduling/pull/39#issuecomment-6588017356
+  - CodeRabbit (`@coderabbitai full review`, [рев'ю](https://github.com/pavmys/therapy-scheduling/pull/39#pullrequestreview-5742725888)): вада 1 — **Minor → Major**
+    (CWE-426): «Зафіксуйте `search_path` для `SECURITY DEFINER` функції. Функція виконується з привілеями власника,
+    але не має `set search_path = ''`.»; вада 2 — Major; вада 3 — **не повторив** («Duplicate comments: 2» — лише
+    вади 1 і 2); приманка — тиша.
+  - `/code-review high` (claude-opus-5-5, 56,3 с, $0,496, [вивід](eval/code-review-pr39-run2.json)): 3 з 3, вада 1 —
+    з рівнем із правила: «A session that puts its own schema first can shadow those and change the result of
+    is_staff() … AGENTS.md classes this as must fix.»; приманка — тиша.
+  - Висновок: правило спрацювало для обох. Різні прогони — різні знахідки: повне рев'ю CodeRabbit не повторило ваду 3.
+    Її правилом не закрити — лише тестом з AC (AC-HOLD-37 на два прострочені утримання), тобто у воротах.
