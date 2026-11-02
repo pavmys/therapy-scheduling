@@ -17,19 +17,6 @@ export type HoldRow = {
   confirmed_at: string | null;
 };
 
-export const SLOT_STATUS_LABEL: Record<SlotStatus, string> = {
-  free: "Free",
-  held: "Held",
-  confirmed: "Confirmed",
-  past: "Past",
-};
-
-export const HOLD_STATUS_LABEL: Record<HoldStatus, string> = {
-  held: "Held",
-  confirmed: "Confirmed",
-  expired: "Expired",
-};
-
 const ms = (iso: string) => new Date(iso).getTime();
 
 // «Confirmed» — підтверджено; «Held» — ще не минуло 24 години; інакше «Expired» (AC-HOLD-05, AC-HOLD-06).
