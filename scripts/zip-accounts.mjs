@@ -9,6 +9,7 @@
 // Використання:
 //   npm run accounts:zip              — створити accounts.zip з accounts.txt і перевірити його
 //   npm run accounts:zip -- --check   — перевірити, що архів відкривається паролем (спробуйте й хибний)
+//   --in <файл> / --out <файл>        — інші шляхи; наявний --out, відмінний від accounts.zip, — лише з --force
 // Запускайте в PowerShell чи Windows Terminal: у Git Bash (mintty) прихований ввід не працює.
 //
 // Що робить скрипт:
@@ -18,8 +19,9 @@
 //   4) перевіряє архів: правильний пароль дає той самий вміст, хибний — відмову.
 // Код виходу: 0 — гаразд, 1 — помилка (текст пояснює, що виправити).
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { resolve } from "node:path";
 import { configure, Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
 
 configure({ useWebWorkers: false });
@@ -31,8 +33,23 @@ const opt = (name, fallback) => {
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
 };
 const IN = opt("--in", "accounts.txt");
-const OUT = opt("--out", "accounts.zip");
+const DEFAULT_OUT = "accounts.zip";
+const OUT = opt("--out", DEFAULT_OUT);
 const ENTRY = "accounts.txt";
+/** Сила AES у zip.js: 1 — AES-128, 2 — AES-192, 3 — AES-256. */
+const AES_256 = 3;
+
+// Той самий файл: однаковий шлях або той самий inode (символьне чи жорстке посилання).
+const sameFile = (a, b) => {
+  if (resolve(a) === resolve(b)) return true;
+  try {
+    const left = statSync(a);
+    const right = statSync(b);
+    return left.dev === right.dev && left.ino === right.ino;
+  } catch {
+    return false;
+  }
+};
 
 const fail = (msg) => {
   console.error(`ПОМИЛКА: ${msg}`);
@@ -114,11 +131,27 @@ async function inspect(zipBytes) {
   const reader = new ZipReader(new Uint8ArrayReader(zipBytes));
   try {
     const entries = await reader.getEntries();
-    return entries.map((e) => ({ name: e.filename, encrypted: e.encrypted, zipCrypto: e.zipCrypto }));
+    return entries.map((e) => ({
+      name: e.filename,
+      encrypted: e.encrypted,
+      zipCrypto: e.zipCrypto,
+      aesStrength: e.extraFieldAES?.strength,
+    }));
   } finally {
     await reader.close();
   }
 }
+
+// Очікувана структура: рівно один запис accounts.txt, AES-256 (не ZipCrypto, не AES-128/192). null — гаразд.
+const archiveProblem = (list) => {
+  if (list.length !== 1 || list[0].name !== ENTRY) {
+    return `очікувався рівно один запис ${ENTRY}, а в архіві: ${list.map((e) => e.name).join(", ") || "нічого"}`;
+  }
+  const [e] = list;
+  if (!e.encrypted || e.zipCrypto) return `запис ${ENTRY} незашифрований або ZipCrypto`;
+  if (e.aesStrength !== AES_256) return `запис ${ENTRY} зашифровано не AES-256 (сила ${e.aesStrength ?? "невідома"})`;
+  return null;
+};
 
 const wrongPasswordRejected = async (zipBytes) => {
   try {
@@ -132,9 +165,8 @@ const wrongPasswordRejected = async (zipBytes) => {
 async function check() {
   if (!existsSync(OUT)) return fail(`${OUT} не знайдено. Спершу: npm run accounts:zip`);
   const zipBytes = new Uint8Array(readFileSync(OUT));
-  const list = await inspect(zipBytes);
-  const bad = list.filter((e) => !e.encrypted || e.zipCrypto);
-  if (bad.length) return fail(`у ${OUT} є незашифровані або ZipCrypto-записи: ${bad.map((e) => e.name).join(", ")}`);
+  const problem = archiveProblem(await inspect(zipBytes));
+  if (problem) return fail(`${OUT}: ${problem}.`);
   const password = await readPassword(`Пароль курсу для перевірки ${OUT}: `);
   try {
     const { data } = await openEntry(zipBytes, password);
@@ -152,7 +184,15 @@ async function create() {
   if (git("ls-files", "--error-unmatch", IN).ok) {
     return fail(`${IN} уже відстежується git. Виконайте git rm --cached ${IN}, змініть паролі тестових акаунтів і запустіть знову.`);
   }
-  if (git("log", "--all", "--oneline", "--", IN).out.trim()) {
+  if (sameFile(IN, OUT)) {
+    return fail(`--in і --out вказують на один файл (${IN}). Виберіть інший шлях для --out.`);
+  }
+  if (existsSync(OUT) && !sameFile(OUT, DEFAULT_OUT) && !flag("--force")) {
+    return fail(`${OUT} уже існує. Нічого не записано. Щоб перезаписати, додайте --force.`);
+  }
+  const history = git("log", "--all", "--oneline", "--", IN);
+  if (!history.ok) return fail(`не вдалося перевірити історію git для ${IN}. Нічого не записано.`);
+  if (history.out.trim()) {
     return fail(`${IN} є в історії git. Змініть паролі всіх тестових акаунтів на проді: старі вже публічні.`);
   }
   if (!git("check-ignore", "-q", IN).ok) {
@@ -165,13 +205,13 @@ async function create() {
   if (password !== again) return fail("паролі не збігаються. Нічого не записано.");
 
   const plain = new Uint8Array(readFileSync(IN));
-  const writer = new ZipWriter(new Uint8ArrayWriter(), { password, encryptionStrength: 3, zipCrypto: false });
+  const writer = new ZipWriter(new Uint8ArrayWriter(), { password, encryptionStrength: AES_256, zipCrypto: false });
   await writer.add(ENTRY, new Uint8ArrayReader(plain));
   const zipBytes = await writer.close();
 
-  // Перевірка до запису на диск: AES (не ZipCrypto), правильний пароль — той самий вміст, хибний — відмова.
-  const list = await inspect(zipBytes);
-  if (list.length !== 1 || !list[0].encrypted || list[0].zipCrypto) return fail("архів не зашифровано AES. Нічого не записано.");
+  // Перевірка до запису на диск: AES-256 (не ZipCrypto), правильний пароль — той самий вміст, хибний — відмова.
+  const problem = archiveProblem(await inspect(zipBytes));
+  if (problem) return fail(`${problem}. Нічого не записано.`);
   const { data } = await openEntry(zipBytes, password);
   if (Buffer.compare(Buffer.from(data), Buffer.from(plain)) !== 0) return fail("вміст після розшифрування не збігся. Нічого не записано.");
   if (!(await wrongPasswordRejected(zipBytes))) return fail("архів відкрився хибним паролем. Нічого не записано.");
@@ -190,6 +230,7 @@ try {
   } else if (e?.message === "CANCELLED") {
     fail("скасовано. Нічого не записано.");
   } else {
-    fail(e?.message || String(e));
+    // Пошкоджений ZIP, файл не читається чи не пишеться: пояснення українською, технічна причина — в дужках.
+    fail(`не вдалося прочитати чи записати архів або ${IN}. Нічого не записано (${e?.message || String(e)}).`);
   }
 }
