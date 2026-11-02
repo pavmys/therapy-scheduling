@@ -36,7 +36,14 @@ function runClaude(caseDir, model) {
   cpSync(path.join(caseDir, "agent"), blindDir, { recursive: true });
   const started = Date.now();
   return new Promise((resolve) => {
-    const child = spawn("claude", args, { cwd: blindDir, stdio: ["pipe", "pipe", "pipe"] });
+    // Рецензент читає недовірені кадри сторінок, тож секретів застосунку йому не передаємо (ключі Supabase, паролі
+    // тестових ролей), навіть якщо вони є в середовищі терміналу. Вхід Claude Code (ANTHROPIC_*, CLAUDE_*) лишається.
+    const env = Object.fromEntries(
+      Object.entries(process.env).filter(
+        ([k]) => !/^(NEXT_PUBLIC_)?SUPABASE_|^DEMO_USER_PASSWORD$|^UAT_PASSWORD_|SECRET|PASSWORD|DB_URL/.test(k),
+      ),
+    );
+    const child = spawn("claude", args, { cwd: blindDir, env, stdio: ["pipe", "pipe", "pipe"] });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (d) => (stdout += d));

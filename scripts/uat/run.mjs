@@ -3,15 +3,16 @@
 //   npm run uat -- --url … --grep-invert '@writes'          (лише AC, що нічого не пишуть; решта аргументів → Playwright)
 //   npm run uat:nc -- --url …                               (негативні контролі; звіт у test-results/uat-report-nc/)
 // Кроки: playwright test → pack.mjs → review.mjs (claude -p) → combine.mjs → report.mjs.
-// Звіт пишеться завжди, навіть якщо тести червоні: FAIL — теж результат для PM. Код виходу 1, якщо є FAIL.
+// Звіт пишеться завжди, навіть якщо тести червоні: FAIL — теж результат для PM. Код виходу 1, якщо є FAIL, якщо впали
+// setup чи прибирання, або якщо негативний контроль дав PASS (UAT не вміє падати).
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pack } from "./pack.mjs";
 import { review } from "./review.mjs";
 import { combine } from "./combine.mjs";
 import { report } from "./report.mjs";
-import { ROOT, WORK, rel } from "./lib.mjs";
+import { RESULTS, ROOT, WORK, rel } from "./lib.mjs";
 
 const argv = process.argv.slice(2);
 const take = (name) => {
@@ -40,7 +41,8 @@ const git = (...a) => {
 async function deployedSha(base) {
   if (!base) return null;
   try {
-    const res = await fetch(`${base}/api/health`, { redirect: "manual" });
+    // Таймаут: /api/health, що не відповідає, не має зупинити звіт (catch нижче дасть null).
+    const res = await fetch(`${base}/api/health`, { redirect: "manual", signal: AbortSignal.timeout(10_000) });
     if (!res.headers.get("content-type")?.includes("json")) return null;
     return (await res.json()).sha ?? null;
   } catch {
@@ -57,6 +59,8 @@ else delete env.UAT_BASE_URL;
 rmSync(path.join(ROOT, "test-results", "uat-cleanup.jsonl"), { force: true });
 console.log(`UAT: ${url ?? "локальна збірка (npm run build && npm run start)"}${negativeControls ? " — негативні контролі" : ""}`);
 const cli = path.join(ROOT, "node_modules", "@playwright", "test", "cli.js");
+// results.json попереднього прогону не має потрапити у звіт, якщо Playwright цього разу його не запише.
+rmSync(RESULTS, { force: true });
 const pw = spawnSync(
   process.execPath,
   [cli, "test", `--project=${negativeControls ? "negative-controls" : "chromium"}`, ...argv],
@@ -64,36 +68,57 @@ const pw = spawnSync(
 );
 const playwrightMs = Date.now() - Date.parse(startedAt);
 
-const cases = pack();
-mkdirSync(WORK, { recursive: true });
-writeFileSync(
-  path.join(WORK, "run.json"),
-  JSON.stringify(
-    {
-      baseURL: url ?? "http://localhost:3000",
-      deployedSha: await deployedSha(url),
-      gitSha: git("rev-parse", "HEAD"),
-      gitBranch: git("rev-parse", "--abbrev-ref", "HEAD"),
-      gitDirty: Boolean(git("status", "--porcelain")),
-      startedAt,
-      playwrightMs,
-      playwrightExit: pw.status,
-      negativeControls,
-    },
-    null,
-    2,
-  ),
-);
-// process.exitCode, а не process.exit(): на Windows exit() після fetch падає з assertion libuv.
-if (!cases.length) {
-  console.error("Жодного AC-тесту в результатах Playwright — звіту не буде.");
+if (pw.error || !existsSync(RESULTS)) {
+  console.error(
+    `Playwright не створив ${rel(RESULTS)}${pw.error ? ` (${pw.error.message})` : ""}: звіту не буде — див. вивід Playwright вище.`,
+  );
   process.exitCode = 1;
 } else {
-  if (!skipReview) await review();
-  const { outDir, rows } = report(combine(), { out: negativeControls ? "test-results/uat-report-nc" : undefined });
-  console.log(`\nЗвіт: ${rel(outDir)}/report.md`);
-  for (const r of rows) console.log(`  ${r.caseId}: ${r.verdict} — ${r.ruleText}`);
-  const real = rows.filter((r) => !r.negativeControl);
-  if (real.some((r) => r.verdict === "FAIL")) process.exitCode = 1;
-  if (real.some((r) => r.verdict === "NEEDS-HUMAN")) console.log("Є NEEDS-HUMAN: рішення — за PM (див. звіт).");
+  await finish();
+}
+
+// Звіт за результатами Playwright: пакети → рецензент → вердикт → report.md.
+async function finish() {
+  const cases = pack();
+  mkdirSync(WORK, { recursive: true });
+  writeFileSync(
+    path.join(WORK, "run.json"),
+    JSON.stringify(
+      {
+        baseURL: url ?? "http://localhost:3000",
+        deployedSha: await deployedSha(url),
+        gitSha: git("rev-parse", "HEAD"),
+        gitBranch: git("rev-parse", "--abbrev-ref", "HEAD"),
+        gitDirty: Boolean(git("status", "--porcelain")),
+        startedAt,
+        playwrightMs,
+        playwrightExit: pw.status,
+        negativeControls,
+      },
+      null,
+      2,
+    ),
+  );
+  // process.exitCode, а не process.exit(): на Windows exit() після fetch падає з assertion libuv.
+  if (!cases.length) {
+    console.error("Жодного AC-тесту в результатах Playwright — звіту не буде.");
+    process.exitCode = 1;
+  } else {
+    if (!skipReview) await review();
+    const { outDir, rows } = report(combine(), { out: negativeControls ? "test-results/uat-report-nc" : undefined });
+    console.log(`\nЗвіт: ${rel(outDir)}/report.md`);
+    for (const r of rows) console.log(`  ${r.caseId}: ${r.verdict} — ${r.ruleText}`);
+    const real = rows.filter((r) => !r.negativeControl);
+    if (real.some((r) => r.verdict === "FAIL")) process.exitCode = 1;
+    if (rows.some((r) => r.negativeControl && r.verdict === "PASS")) {
+      console.error("Негативний контроль дав PASS: UAT не вміє падати, звіту довіряти не можна.");
+      process.exitCode = 1;
+    }
+    // Упав не AC-тест (setup, прибирання): звіт є, але прогін не чистий. У негативних контролях Playwright червоний завжди.
+    if (!negativeControls && pw.status !== 0 && !real.some((r) => r.verdict === "FAIL")) {
+      console.error(`Playwright завершився з кодом ${pw.status}: перевірте setup і прибирання (вивід вище).`);
+      process.exitCode = 1;
+    }
+    if (real.some((r) => r.verdict === "NEEDS-HUMAN")) console.log("Є NEEDS-HUMAN: рішення — за PM (див. звіт).");
+  }
 }

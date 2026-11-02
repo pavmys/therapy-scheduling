@@ -26,7 +26,15 @@ export function pack(resultsPath = RESULTS) {
       const ann = (type) => test.annotations.find((a) => a.type === type)?.description;
       const acId = ann("ac");
       if (!acId) continue; // setup, прибирання — не AC
-      const result = test.results.at(-1);
+      // Тест не запускався (впав setup — вхід ролі): результатів немає, а AC має дістати FAIL у звіті, а не TypeError.
+      const result = test.results.at(-1) ?? {
+        status: "skipped",
+        error: { message: "Тест не запускався: впав setup (вхід ролі) чи інша залежність — див. вивід Playwright." },
+        attachments: [],
+        steps: [],
+        duration: 0,
+        startTime: null,
+      };
       const caseId = ann("case") ?? acId;
       const dir = path.join(WORK, caseId);
       const agentDir = path.join(dir, "agent");

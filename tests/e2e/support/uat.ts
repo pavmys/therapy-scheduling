@@ -73,8 +73,11 @@ export async function attachRuntimeErrors(page: Page) {
     .filter((m) => m.type() === "error")
     .map((m) => m.text());
   const pageErrors = (await page.pageErrors({ filter: "all" })).map((e) => String(e));
+  // Запит, перерваний переходом (prefetch Next.js), не має ні відповіді, ні помилки: r.response() тоді не завершується,
+  // і afterEach чекав би до таймауту тесту (UAT 02.11). Такий запит рахуємо як «без статусу» (0).
+  const settle = <T,>(p: Promise<T>) => Promise.race([p, new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000))]);
   const responses = await Promise.all(
-    (await page.requests()).map(async (r) => ({ r, status: (await r.response())?.status() ?? 0 })),
+    (await page.requests()).map(async (r) => ({ r, status: (await settle(r.response()))?.status() ?? 0 })),
   );
   const failed = responses
     .filter(({ r, status }) => r.failure() !== null || status >= 500)
