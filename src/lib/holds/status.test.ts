@@ -159,6 +159,28 @@ describe("уточнення PM: список утримань", () => {
     expect(holdsList([old, other], [s], now).map((i) => i.hold.id)).toEqual([old.id, "other"]);
   });
 
+  // Повторне утримання теж прострочилось до початку слоту: за AC-HOLD-28 і «Вміст і порядок списку утримань»
+  // у списку лишається рівно одне — новіше (за часом створення) «Expired», старіше приховано (AC-HOLD-37).
+  const s0510 = slot("s", "2026-11-05", 10);
+  const firstExpired = hold("s", at("2026-11-02", 14, 30)); // «Expired» з 2026-11-03 14:30
+  const againExpired = hold("s", at("2026-11-03", 15)); // «Expired» з 2026-11-04 15:00
+
+  it("AC-HOLD-37: обидва утримання client1 прострочені, о 09:59 видно лише новіше «Expired»", () => {
+    const now = at("2026-11-05", 9, 59);
+    expect(formatPracticeDateTime(new Date(againExpired.expires_at))).toBe("2026-11-04 15:00");
+    // порядок у вхідному масиві не важить: лишається новіше за часом створення
+    expect(holdsList([firstExpired, againExpired], [s0510], now)).toEqual([
+      { hold: againExpired, slot: s0510, status: "expired" },
+    ]);
+    expect(holdsList([againExpired, firstExpired], [s0510], now)).toEqual([
+      { hold: againExpired, slot: s0510, status: "expired" },
+    ]);
+  });
+
+  it("AC-HOLD-37: обидва утримання client1 прострочені, з 10:00 — початку слоту — список порожній", () => {
+    expect(holdsList([firstExpired, againExpired], [s0510], at("2026-11-05", 10))).toEqual([]);
+  });
+
   it("AC-HOLD-38: лише «Held» і «Expired» за часом слоту, без сеансів і минулих", () => {
     const now = at("2026-11-03", 15);
     const s1 = slot("t1-05-10", "2026-11-05", 10);
