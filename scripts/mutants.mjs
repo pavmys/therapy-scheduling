@@ -64,6 +64,14 @@ export const mutants = [
       "лише для `not private.is_staff()` у функціях утримань (20261022042804_slots_and_holds.sql:115, AC-HOLD-08) — " +
       "це правило поза AC цього списку",
   },
+  // ── Ворота для правила AGENTS.md: security definer лише з set search_path = '' (вада 1 з eval рецензента, PR #39)
+  {
+    id: "S1", kind: "sql", ac: "правило AGENTS.md (security definer)", file: ROLES_AND_CLIENTS,
+    tests: ["tests/db/security-definer.test.ts"],
+    what: "private.is_staff() — security definer без set search_path = ''",
+    find: "set search_path = ''\nas $$\n  select coalesce(private.current_app_role() in ('admin', 'scheduler'), false);",
+    replace: "as $$\n  select coalesce(private.current_app_role() in ('admin', 'scheduler'), false);",
+  },
   // ── TS, точкові мутанти на межі з AC (повний перебір TS — npm run mutation:ts, Stryker). Stryker на view.ts і
   // access.ts вижилих на рядках цих AC не лишив, тож тут — ручний мутант на кожну межу, який тест має вбити.
   {
@@ -77,5 +85,12 @@ export const mutants = [
     what: "accessFor: без входу — екран «без ролі» замість сторінки входу",
     find: 'if (!user) return "login";',
     replace: 'if (!user) return "no-role";',
+  },
+  {
+    id: "T3", kind: "ts", ac: "AC-HOLD-37", file: "src/lib/holds/status.ts", tests: ["src/lib/holds/status.test.ts"],
+    what: "holdsList: прострочене приховує будь-яке інше утримання того самого клієнта на слот, не лише новіше — " +
+      "коли й повторне утримання прострочилось, зникають обидва «Expired» (вада 3 з eval рецензента, PR #39)",
+    find: "ms(h.created_at) > ms(expired.created_at),",
+    replace: "true,",
   },
 ];
