@@ -43,7 +43,6 @@
 |---|---|---|---|
 | AC-INS-01…06 — на проді не використано сідові картки client6 і client7 з «Дано» (відхилення даних) | статус «Not set» база повернути не дозволяє, а прод спільний і UAT запускається повторно: AC-INS-01 на client6 пройшов би лише раз | кожен тест UAT створює власну синтетичну картку `uat-261109163226-ins0N@example.test` («UAT client6 (ins0N)», «UAT client7 (ins03)»); стан із «Дано» (статус, «свій клієнт» therapist1 через слот 2099 року й «Held»-утримання) задано секретним ключем, а не через інтерфейс ([insurance-status.spec.ts#L1](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L1)). Тести бази на PGlite працюють із client6 і client7 | низький: той самий код і ті самі політики RLS |
 | Негативний контроль саме на AC-INS | NC-1 і NC-2 — на AC-CARD-16: контроль має бути AC без `@writes` (F05), а всі шість тестів AC-INS пишуть у базу | `npm run uat:nc -- --url https://therapy-scheduling-three.vercel.app` на проді (18:38, застосунок `d5647b3`): NC-1 → FAIL (R1), NC-2 → NEEDS-HUMAN (R3) — [negative-controls/report.md](uat/2026-11-09/negative-controls/report.md); для AC-INS — червоний прогін і мутанти I1–I5 на рівнях бази й unit | низький: правила R1/R3 — спільний код конвеєра, не залежать від AC |
-| Відео прогону UAT (усі 6 AC) | відео й траси не в git (`test-results/`), до PR **не прикладено** | кадри «Тоді» в git, розбір агента з цитатами, звіреними зі сторінкою (aria) | PM не може переглянути прогін відео |
 | AC-INS-01…03 — рев'ю коду задачі 1 (міграція, `setInsuranceStatus`, сторінка й форма) | CodeRabbit у PR #45 не запустився: «Review rate limited» ([коментар](https://github.com/pavmys/therapy-scheduling/pull/45#issuecomment-6738970597)); рев'ю #46 охопило лише зміни після `23a6d66`, рев'ю #48 — лише `insurance-form.tsx` і тести | CodeRabbit переглянув план `impl-insurance-status` (PR #44, 2 Major виправлено), тести бази й unit, мутанти I1–I5 на правилах доступу, UAT на проді | середній: міграцію й дію `setInsuranceStatus` ніхто, крім агента-автора й тестів, не рецензував |
 
 FAIL і NEEDS-HUMAN у підсумку UAT немає. Розбіжність рецензентів (Haiku: NEEDS-HUMAN на AC-INS-04 і AC-INS-06,
@@ -103,8 +102,11 @@ Sonnet: PASS) — у таблиці вище.
 - Виправлення з #48 видно на кадрі: після збереження поле «Insurance status» показує «Verified»
   ([AC-INS-02-then-1](uat/2026-11-09/frames/AC-INS-02-then-1.png)), до виправлення — «Select a status…»
   ([на `d5451ef`](https://github.com/pavmys/therapy-scheduling/blob/d5451ef219f3066b32bc528adc64d6b01f780e8e/docs/qa/uat/2026-11-09/frames/AC-INS-02-then-1.png)).
-- Відео: не в git і до PR **не прикладено**. У звіті — лише шляхи `test-results/…/video.webm` на машині, де
-  ішов прогін.
+- Відео: 6 файлів `AC-INS-0N.webm` прикладено до [опису PR #49](https://github.com/pavmys/therapy-scheduling/pull/49)
+  (не в git). Це **повторний** прогін `npm run uat -- --url https://therapy-scheduling-three.vercel.app --grep AC-INS`
+  09.11.2026 19:01 на тому самому застосунку `d5647b3`: 6 AC — PASS 6, FAIL 0, NEEDS-HUMAN 0, прибирання — видалено 6,
+  лишилось 0. Відео основного прогону 18:32 затер наступний запуск `uat:nc` (Playwright очищає `test-results/`),
+  тому звіт і кадри в git — з 18:32, а відео — з 19:01. Відео NC-1 і NC-2 теж не збереглися: лише звіт і кадри.
 - Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5` (у цьому прогоні — AC-INS-04 і AC-INS-06: Haiku
   NEEDS-HUMAN → Sonnet PASS); розбір — $0,0959 за цінами API.
 - Негативний контроль: `npm run uat:nc -- --url https://therapy-scheduling-three.vercel.app`, окремий прогін 18:38 на
