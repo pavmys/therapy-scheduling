@@ -16,6 +16,8 @@ const ROLES_AND_CLIENTS = "supabase/migrations/20261022040716_roles_and_clients.
 const SLOTS_AND_HOLDS = "supabase/migrations/20261022042804_slots_and_holds.sql";
 const CLIENT_CARDS_DB = "tests/db/client-cards.test.ts";
 const APP_ACCESS_DB = "tests/db/app-access.test.ts";
+const INSURANCE_STATUS = "supabase/migrations/20261109112112_insurance_status.sql";
+const INSURANCE_STATUS_DB = "tests/db/insurance-status.test.ts";
 
 export const mutants = [
   // ── AC-CARD-06: терапевт не створює картку клієнта ────────────────────────────────────────────────────────────
@@ -92,5 +94,33 @@ export const mutants = [
       "коли й повторне утримання прострочилось, зникають обидва «Expired» (вада 3 з eval рецензента, PR #39)",
     find: "ms(h.created_at) > ms(expired.created_at),",
     replace: "true,",
+  },
+  // ── Зріз 3, статус перевірки страхування (design.md impl-insurance-status, D4) ────────────────────────────────
+  // AC-INS-05 у SQL: мутант знімає ОБИДВІ перевірки ролі — лише `using (true)` вижив би, бо with check однаково
+  // відхилить новий рядок терапевта. AC-INS-06 в SQL має два незалежні бар'єри (немає grant для anon, політика
+  // `to authenticated`) — мутант одного з них еквівалентний, тож відмову гостю доводимо мутантом сторінки (I3).
+  {
+    id: "I1", kind: "sql", ac: "AC-INS-05", file: INSURANCE_STATUS, tests: [INSURANCE_STATUS_DB],
+    what: "clients_update_insurance_staff без перевірки ролі: статус змінює будь-хто з входом, зокрема терапевт",
+    find: "  using ((select private.is_staff()))\n  with check ((select private.is_staff()) and insurance_status <> 'not_set');",
+    replace: "  using (true)\n  with check (insurance_status <> 'not_set');",
+  },
+  {
+    id: "I2", kind: "ts", ac: "AC-INS-05", file: "src/app/clients/[id]/actions.ts", tests: ["src/app/clients/[id]/actions.test.ts"],
+    what: "setInsuranceStatus без перевірки ролі: терапевт отримує запит update замість зрозумілої відмови",
+    find: "if (!user || !isStaffRole(user.role)) {",
+    replace: "if (!user) {",
+  },
+  {
+    id: "I3", kind: "ts", ac: "AC-INS-06", file: "src/app/clients/[id]/page.tsx", tests: ["src/app/clients/[id]/page.test.ts"],
+    what: "картка клієнта без redirect(\"/login\"): гість не потрапляє на сторінку входу",
+    find: 'if (access === "login") redirect("/login");',
+    replace: 'if (access === "login") void 0;',
+  },
+  {
+    id: "I4", kind: "ts", ac: "AC-INS-04", file: "src/app/clients/[id]/page.tsx", tests: ["src/app/clients/[id]/page.test.ts"],
+    what: "форма статусу страхування рендериться й терапевту",
+    find: 'role === "staff" ? <InsuranceForm',
+    replace: "true ? <InsuranceForm",
   },
 ];

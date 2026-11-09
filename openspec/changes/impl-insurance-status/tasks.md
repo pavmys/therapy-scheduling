@@ -18,10 +18,10 @@ Done when: AC-INS-01, AC-INS-02, AC-INS-03
 
 ## 2. Терапевт і гість не змінюють статус (`task/insurance-status-access`)
 
-- [ ] 2.1 Тести спершу (нова сесія, F02): `tests/db/insurance-status.test.ts` — AC-INS-04 (therapist1 бачить статус client6), AC-INS-05 (therapist1 `update` → 0 рядків, scheduler1 бачить `not_accepted`), AC-INS-06 (`asAnon` select і update → відмова, статус `verified`); `src/app/clients/[id]/page.test.ts` — AC-INS-04 (терапевту форми немає), AC-INS-06 (гість → `redirect("/login")`); дія — терапевт отримує відмову без запиту `update`
-- [ ] 2.2 Виправлення, якщо тест червоний (сторінка не рендерить форму для терапевта; дія перевіряє роль до запиту)
-- [ ] 2.3 Доказ, що тести відмов падають (мутанти в `scripts/mutants.mjs`, D4): `clients_update_insurance_staff` без обох перевірок ролі (`using (true) with check (insurance_status <> 'not_set')`) → AC-INS-05 `KILLED` (`npm run mutation:sql`); сторінка картки без `redirect("/login")` → AC-INS-06 (`page.test.ts`) червоний (`--kind ts`); дія без перевірки ролі → тест дії червоний; таблиця «AC → мутант → тест» в описі PR
-- [ ] 2.4 Рядки `docs/conformance.md` AC-INS-04, -05, -06 → «реалізовано»
+- [x] 2.1 Тести спершу (нова сесія, F02): `tests/db/insurance-status.test.ts` — AC-INS-04 (therapist1 бачить статус client6), AC-INS-05 (therapist1 `update` → 0 рядків, scheduler1 бачить `not_accepted`), AC-INS-06 (`asAnon` select і update → відмова, статус `verified`); `src/app/clients/[id]/page.test.ts` — AC-INS-04 (терапевту форми немає), AC-INS-06 (гість → `redirect("/login")`); дія — терапевт отримує відмову без запиту `update`
+- [x] 2.2 Виправлення, якщо тест червоний (сторінка не рендерить форму для терапевта; дія перевіряє роль до запиту) — не знадобилось: усі тести зелені, падіння доведено мутантами I1–I4
+- [x] 2.3 Доказ, що тести відмов падають (мутанти в `scripts/mutants.mjs`, D4): `clients_update_insurance_staff` без обох перевірок ролі (`using (true) with check (insurance_status <> 'not_set')`) → AC-INS-05 `KILLED` (`npm run mutation:sql`); сторінка картки без `redirect("/login")` → AC-INS-06 (`page.test.ts`) червоний (`--kind ts`); дія без перевірки ролі → тест дії червоний; таблиця «AC → мутант → тест» в описі PR
+- [x] 2.4 Рядки `docs/conformance.md` AC-INS-04, -05, -06 → «реалізовано»
 
 Done when: AC-INS-04, AC-INS-05, AC-INS-06
 
