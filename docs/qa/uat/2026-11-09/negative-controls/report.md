@@ -1,16 +1,16 @@
 # Звіт UAT — 09.11.2026
 
-- **Застосунок:** http://localhost:3000
-- **Код тестів:** `task/uat-insurance-status` @ `fac8dab` + незакомічені зміни
-- **Прогін:** 09.11.2026, 16:14 (Київ), Playwright 15.2 с; AC: 0 — PASS 0, FAIL 0, NEEDS-HUMAN 0; негативних контролів: 2
-- **Рецензент:** `claude-haiku-5-5`; суперечки → `claude-sonnet-5-5`. Разом за розбір: $0.0359 (ціни API; за підпискою — у межах ліміту плану)
+- **Застосунок:** https://therapy-scheduling-three.vercel.app (/api/health: коміт `d5647b3`)
+- **Код тестів:** `task/insurance-followups` @ `68b54c1` + незакомічені зміни
+- **Прогін:** 09.11.2026, 18:38 (Київ), Playwright 18.3 с; AC: 0 — PASS 0, FAIL 0, NEEDS-HUMAN 0; негативних контролів: 2
+- **Рецензент:** `claude-haiku-5-5`; суперечки → `claude-sonnet-5-5`. Разом за розбір: $0.0344 (ціни API; за підпискою — у межах ліміту плану)
 - **Прибирання:** синтетичних uat-*@example.test видалено 0, лишилось 0, їхніх рядків, що лишились: 0
 - **Відео й траси:** не в git — `test-results/` локально або артефакт CI; трасу відкриває `npx playwright show-trace <trace.zip>`
 
 | AC | Перевірки | Агент | Підсумок | Чому | Playwright | Розбір |
 |---|---|---|---|---|---|---|
-| NC-1 (AC-CARD-16) | впали | Haiku: PASS | **FAIL** | R1: перевірка впала — FAIL завжди, агент не перекриває | 5.7 с | $0.0018, 6.7 с |
-| NC-2 (AC-CARD-16) | пройшли | Haiku: FAIL, Sonnet: FAIL | **NEEDS-HUMAN** | R3: перевірки пройшли, агент не погоджується — вирішує людина | 0.7 с | $0.0341, 24.3 с |
+| NC-1 (AC-CARD-16) | впали | Haiku: PASS | **FAIL** | R1: перевірка впала — FAIL завжди, агент не перекриває | 6.5 с | $0.0019, 7.4 с |
+| NC-2 (AC-CARD-16) | пройшли | Haiku: FAIL, Sonnet: FAIL | **NEEDS-HUMAN** | R3: перевірки пройшли, агент не погоджується — вирішує людина | 1.7 с | $0.0325, 17.3 с |
 
 ## NC-1 — негативний контроль для AC-CARD-16 — FAIL
 
@@ -37,7 +37,7 @@ Timeout:  5000ms
 Call log:
 ```
 
-**Агент (claude-haiku-5-5, PASS):** На кадрі видно сторінку «Client card» під користувачем scheduler1@example.test із рядком «This client card doesn't exist.», текст збігається з критерієм посимвольно. Дані клієнта на кадрі відсутні. Частина критерію для therapist1 («You don't have access to this client.») у ac.md не віднесена до кадрів, тому тут не оцінювалася; journey.md також не містить кроку для therapist1.
+**Агент (claude-haiku-5-5, PASS):** На кадрі frame-then-1.png для scheduler1 (сторінка /clients/00000000-0000-4000-8000-000000000016) видно повідомлення «This client card doesn't exist.» з піктограмою замка; жодних даних клієнта на екрані немає. Частина для therapist1 («You don't have access to this client.») у переліку видимих частин ac.md не зазначена і цим кадром не покрита, тож її я не оцінював.
 
 **Цитати агента, звірені зі сторінкою (aria):**
 - «This client card doesn't exist.» — є на сторінці
@@ -60,14 +60,14 @@ _Негативний контроль: навмисно хибне очікув
 
 **Кроки:** ✔ Дано: картки клієнта, на яку веде посилання, не існує → ✔ Коли: scheduler1 відкриває це посилання → ✔ Тоді: scheduler1 бачить повідомлення «This client card doesn't exist.»
 
-**Агент (claude-sonnet-5-5, FAIL):** На кадрі під scheduler1@example.test на сторінці «Client card» показано «This client card doesn't exist.», а критерій вимагає «This client card was not found.». Тексти не збігаються, тому частину не підтверджено. Даних клієнтів на кадрі немає.
+**Агент (claude-sonnet-5-5, FAIL):** На кадрі сторінка «Client card» під користувачем scheduler1@example.test з повідомленням «This client card doesn't exist.». Критерій вимагає «This client card was not found.», тож текст інший, і даних клієнтів на кадрі немає.
 
 Haiku сказав FAIL, тож розбір повторив Sonnet; рішення агента — за Sonnet.
 
 **Агент бачить вади:**
-- Текст на кадрі «This client card doesn't exist.» не збігається з дослівним критерієм PM «This client card was not found.».
-- Перелік видимих частин в ac.md («This client card doesn't exist.») розходиться з дослівним текстом критерію; схоже на помилку в переліку або в застосунку.
-- На кадрі лише scheduler1; кроку therapist1 і повідомлення «You don't have access to this client.» немає (і journey.md його не містить).
+- Текст на екрані «This client card doesn't exist.» не збігається з дослівним текстом критерію «This client card was not found.».
+- Перелік видимих частин в ac.md («This client card doesn't exist.») суперечить дослівному критерію PM; потрібно уточнити, який текст правильний.
+- Кадр показує лише сценарій scheduler1; частину про therapist1 на кадрі не показано.
 
 **Правило:** R3: перевірки пройшли, агент не погоджується — вирішує людина
 
