@@ -48,6 +48,7 @@ export type Database = {
           session_language: string | null;
           guardian_name: string | null;
           guardian_email: string | null;
+          insurance_status: string;
         };
         Insert: {
           id?: string;
@@ -59,6 +60,7 @@ export type Database = {
           session_language?: string | null;
           guardian_name?: string | null;
           guardian_email?: string | null;
+          insurance_status?: string;
         };
         Update: {
           id?: string;
@@ -70,6 +72,7 @@ export type Database = {
           session_language?: string | null;
           guardian_name?: string | null;
           guardian_email?: string | null;
+          insurance_status?: string;
         };
         Relationships: [];
       };
