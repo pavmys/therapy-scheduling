@@ -58,4 +58,12 @@ describe("setInsuranceStatus", () => {
       { table: "clients", values: { insurance_status: "verified" }, column: "id", value: CLIENT6 },
     ]);
   });
+
+  it("AC-INS-05: therapist1 напряму викликає дію «Verified» для client6 — відмова, запиту update до clients немає", async () => {
+    fake.role = "therapist";
+    const state = await setInsuranceStatus(null, form({ client_id: CLIENT6, insurance_status: "verified" }));
+    expect(state?.ok).toBe(false);
+    expect(state?.message).not.toBe("Insurance status saved.");
+    expect(fake.updates).toEqual([]);
+  });
 });
