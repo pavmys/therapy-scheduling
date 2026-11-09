@@ -59,6 +59,21 @@ describe("статус перевірки страхування", () => {
       expect(await t.asUser(t.users[email], SELECT_STATUS, [client7])).toEqual([{ insurance_status: "private_pay" }]);
     }
   });
+
+  // Вимога «Позначення статусу…»: «…а повернути статус «Not set» не дозволяти» — правило with check політики
+  // clients_update_insurance_staff (мутант I5). Власна картка — тест не залежить від порядку.
+  it("AC-INS-02: повернути «Not set» не можна — ні scheduler1, ні admin1, статус лишається 'verified'", async () => {
+    await t.asService(ADULT, ["Client Fourteen", "client14@example.test"]);
+    const client14 = await idOf("Client Fourteen");
+    await t.asService("update public.clients set insurance_status = 'verified' where id = $1", [client14]);
+
+    for (const email of ["scheduler1@example.test", "admin1@example.test"]) {
+      await expect(t.asUser(t.users[email], SET_STATUS, ["not_set", client14])).rejects.toThrow(
+        /row-level security/,
+      );
+    }
+    expect(await t.asService(SELECT_STATUS, [client14])).toEqual([{ insurance_status: "verified" }]);
+  });
 });
 
 // Терапевт і гість (AC-INS-04…06): client6 стає своїм клієнтом therapist1 через утримання «Held» у власному слоті
