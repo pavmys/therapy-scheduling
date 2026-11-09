@@ -90,11 +90,20 @@
 | AC-INS-03 | база | PGlite: admin1 → `private_pay`, scheduler2 читає `private_pay` |
 | AC-INS-04 | база + unit (сторінка) | PGlite: therapist1 бачить `insurance_status` свого client6; `page.test.ts`: для терапевта форми немає |
 | AC-INS-05 | база | PGlite: therapist1 `update` client6 → 0 рядків, scheduler1 бачить `not_accepted` |
-| AC-INS-06 | база | PGlite: `asAnon` select → відмова, `update` → відмова; scheduler1 бачить `verified` |
+| AC-INS-06 | база + unit (сторінка) | PGlite: `asAnon` select → відмова, `update` → відмова; scheduler1 бачить `verified`; `page.test.ts`: гість → `redirect("/login")` без запиту картки |
 
 Екран — UAT-специфікація `tests/e2e/insurance-status.spec.ts` на кожен AC (задача 3). Доказ, що тест відмови падає:
-SQL-мутант (`npm run mutation:sql`) для `clients_update_insurance_staff` (`using (true)`) → AC-INS-05 `KILLED`;
-мутант дії (без перевірки ролі) → тест дії червоний.
+мутанти в `scripts/mutants.mjs` (одна текстова заміна на мутант):
+
+- AC-INS-05 (`npm run mutation:sql`): у `clients_update_insurance_staff` зняти **обидві** перевірки ролі — `using
+  (true) with check (insurance_status <> 'not_set')` → update терапевта проходить → `KILLED`. Мутант лише `using
+  (true)` вижив би: `with check ((select private.is_staff()) …)` однаково відхилить новий рядок терапевта, і тест
+  лишиться зеленим.
+- AC-INS-06: в анонім два незалежні бар'єри — немає `grant` для `anon` і політика `to authenticated`, тож мутант
+  одного з них еквівалентний (вижив би). Відмову гостю доводимо мутантом сторінки (`--kind ts`): без
+  `redirect("/login")` у `src/app/clients/[id]/page.tsx` тест сторінки AC-INS-06 червоний; тест PGlite `asAnon` —
+  додатковий захист даних.
+- Мутант дії без перевірки ролі → тест дії (терапевт отримує відмову без запиту `update`) червоний.
 
 ## Risks / Trade-offs
 
