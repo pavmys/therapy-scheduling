@@ -151,6 +151,7 @@ test.describe("планувальник", () => {
           visible: [
             "повідомлення «Insurance status saved.»",
             "у картці клієнта — рядок «Insurance: Verified»",
+            "поле «Insurance status» показує збережене значення «Verified», а не «Select a status…»",
             "у шапці — scheduler1@example.test",
           ],
           hidden: ["у базі статус картки — verified"],
@@ -159,6 +160,8 @@ test.describe("планувальник", () => {
           await expect(headerEmail(page, SCHEDULER1)).toBeVisible();
           await expect(insuranceForm(page).getByRole("status")).toHaveText("Insurance status saved.");
           await expect(insuranceLine(page)).toHaveText("Insurance: Verified");
+          // Після дії React скидає форму; поле має лишитись на збереженому значенні (рев'ю PR #48).
+          await expect(page.locator("#insurance_status")).toHaveValue("verified");
           expect(await insuranceStatusOf(card.id)).toBe("verified");
         },
       );
