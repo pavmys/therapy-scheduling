@@ -5,6 +5,7 @@
 - **Прогін:** 09.11.2026, 16:10 (Київ), Playwright 64.0 с; AC: 9 — PASS 9, FAIL 0, NEEDS-HUMAN 0
 - **Рецензент:** `claude-haiku-5-5`; суперечки → `claude-sonnet-5-5`. Разом за розбір: $0.0698 (ціни API; за підпискою — у межах ліміту плану)
 - **Прибирання:** синтетичних uat-*@example.test видалено 6, лишилось 0, їхніх рядків, що лишились: 0
+- **Негативні контролі** (`npm run uat:nc`, окремий прогін 16:14 на локальній збірці `http://localhost:3000`, тести @ `fac8dab`): NC-1 → **FAIL** (R1: перевірка «Тоді» впала — агент не перекриває), NC-2 → **NEEDS-HUMAN** (R3: перевірки зелені, Haiku і Sonnet не погодились з кадром) — UAT уміє падати обома способами. Звіт, маніфест і кадри — [`negative-controls/`](negative-controls/report.md); ті самі записи — у `negativeControls` цього `manifest.json`
 - **Відео й траси:** не в git — `test-results/` локально або артефакт CI; трасу відкриває `npx playwright show-trace <trace.zip>`
 
 | AC | Перевірки | Агент | Підсумок | Чому | Playwright | Розбір |

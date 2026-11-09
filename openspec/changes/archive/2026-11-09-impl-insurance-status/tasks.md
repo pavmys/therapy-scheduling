@@ -27,8 +27,8 @@ Done when: AC-INS-04, AC-INS-05, AC-INS-06
 
 ## 3. UAT на кожен AC (`task/uat-insurance-status`)
 
-- [x] 3.1 `tests/e2e/insurance-status.spec.ts` (F03): по одному `test` на AC-INS-01…06 з анотацією `ac`, тегом `@uat`, `given` / `when` / `thenStep` і дослівним «Тоді»; AC-INS-02, -03 — `@writes`, картка з `uatEmail()` і прибирання (`OWNED_ROWS`, `deleteUatUsers`); AC-INS-05 — крок «що не змінилося» на екрані
-- [x] 3.2 Прогін на проді — людина: `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; пояснення звіту (F04); `npm run uat:nc` → FAIL
+- [x] 3.1 `tests/e2e/insurance-status.spec.ts` (F03): по одному `test` на AC-INS-01…06 з анотацією `ac`, тегом `@uat`, `given` / `when` / `thenStep` і дослівним «Тоді»; усі шість — `@writes`: кожен створює власну синтетичну картку з `uatEmail()` замість client6 / client7 (статус «Not set» повернути не можна, сідові картки на проді не чіпаємо), прибирання — `afterEach` → `deleteUatUsers(email)` → `deleteUatCards` (картки, їхні утримання й слоти 2099 року), фінальний прохід — `cleanup.teardown.ts` (`OWNED_ROWS` для карток не потрібен: це не рядки користувачів Auth); AC-INS-05 — крок «що не змінилося» на екрані
+- [x] 3.2 Прогін на проді — людина: `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; пояснення звіту (F04); `npm run uat:nc` → FAIL (NC-1 FAIL, NC-2 NEEDS-HUMAN — `docs/qa/uat/2026-11-09/negative-controls/`)
 - [x] 3.3 `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`); у `docs/conformance.md` — шлях специфікації для кожного AC-INS; `npx openspec archive impl-insurance-status -y`
 
 Done when: AC-INS-01, AC-INS-02, AC-INS-03, AC-INS-04, AC-INS-05, AC-INS-06

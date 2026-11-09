@@ -471,7 +471,67 @@
       "reviewWallMs": 22339
     }
   ],
-  "negativeControls": [],
+  "negativeControls": [
+    {
+      "id": "NC-1",
+      "proof": "AC-CARD-16",
+      "title": "NC-1 (AC-CARD-16, навмисно хибне очікування в тесті: інший текст повідомлення)",
+      "screenshot": "docs/qa/uat/2026-11-09/negative-controls/frames/NC-1-then-1.png",
+      "video": "test-results/artifacts/negative-controls-NC-1-AC--6ed84-і-інший-текст-повідомлення--negative-controls/video.webm",
+      "trace": "test-results/artifacts/negative-controls-NC-1-AC--6ed84-і-інший-текст-повідомлення--negative-controls/trace.zip",
+      "asserted": false,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно сторінку «Client card» під користувачем scheduler1@example.test із рядком «This client card doesn't exist.», текст збігається з критерієм посимвольно. Дані клієнта на кадрі відсутні. Частина критерію для therapist1 («You don't have access to this client.») у ac.md не віднесена до кадрів, тому тут не оцінювалася; journey.md також не містить кроку для therapist1."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "This client card doesn't exist.",
+          "onPage": true
+        }
+      ],
+      "verdict": "FAIL",
+      "factoryGate": "FAIL",
+      "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
+      "playwrightMs": 5657,
+      "reviewCostUsd": 0.00179,
+      "reviewWallMs": 6720
+    },
+    {
+      "id": "NC-2",
+      "proof": "AC-CARD-16",
+      "title": "NC-2 (AC-CARD-16, текст «Тоді» у вимозі уточнено, тест і застосунок — ні)",
+      "screenshot": "docs/qa/uat/2026-11-09/negative-controls/frames/NC-2-then-1.png",
+      "video": "test-results/artifacts/negative-controls-NC-2-AC--0d758-ено-тест-і-застосунок-—-ні--negative-controls/video.webm",
+      "trace": "test-results/artifacts/negative-controls-NC-2-AC--0d758-ено-тест-і-застосунок-—-ні--negative-controls/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": false,
+        "readable": true,
+        "notes": "На кадрі під scheduler1@example.test на сторінці «Client card» показано «This client card doesn't exist.», а критерій вимагає «This client card was not found.». Тексти не збігаються, тому частину не підтверджено. Даних клієнтів на кадрі немає."
+      },
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "FAIL",
+        "claude-sonnet-5-5": "FAIL"
+      },
+      "escalated": true,
+      "quotesVerified": [],
+      "verdict": "NEEDS-HUMAN",
+      "factoryGate": "NOT-EARNED",
+      "rule": "R3: перевірки пройшли, агент не погоджується — вирішує людина",
+      "playwrightMs": 707,
+      "reviewCostUsd": 0.03414,
+      "reviewWallMs": 24273
+    }
+  ],
   "cleanup": {
     "at": "2026-11-09T14:11:42.234Z",
     "deleted": [

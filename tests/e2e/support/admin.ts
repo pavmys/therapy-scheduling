@@ -137,10 +137,22 @@ export async function insuranceStatusOf(clientId: string): Promise<string> {
   return data.insurance_status as string;
 }
 
-/** Задати статус страхування картки повз застосунок — лише для «Дано» (секретний ключ обходить RLS). */
+/**
+ * Задати статус страхування картки повз застосунок — лише для «Дано» (секретний ключ обходить RLS). Лише синтетична
+ * картка uat-…@example.test (як у deleteUatCards) і рівно один змінений рядок: інакше «Дано» не те, що ми думаємо.
+ */
 export async function setInsuranceStatusDirectly(clientId: string, status: InsuranceStatus): Promise<void> {
-  const { error } = await adminClient().from("clients").update({ insurance_status: status }).eq("id", clientId);
+  const { data, error } = await adminClient()
+    .from("clients")
+    .update({ insurance_status: status })
+    .eq("id", clientId)
+    .like("email", "uat-%@example.test")
+    .select("id, email");
   if (error) throw error;
+  const rows = (data ?? []) as { id: string; email: string }[];
+  if (rows.length !== 1 || !UAT_EMAIL.test(rows[0].email)) {
+    throw new Error(`setInsuranceStatusDirectly: очікували рівно одну синтетичну картку ${clientId}, змінено ${rows.length}`);
+  }
 }
 
 /**
