@@ -93,3 +93,9 @@
 | AC-HOLD-42 | Утримання «Held» зникає зі списку утримань з початком слоту | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-43 | «Expired» лишається в списку до початку слоту, коли слот утримано за іншим клієнтом | `src/lib/holds/status.ts` (holdsList), `src/app/holds/page.tsx` | `src/lib/holds/status.test.ts` | реалізовано |
 | AC-HOLD-44 | Терапевту недоступні сторінки слотів і утримань планувальника | `src/app/staff-only.tsx` (staffOnlyPage), `src/lib/access.ts` (STAFF_ONLY_PAGE_MESSAGE), `src/app/holds/page.tsx`, `src/app/slots/page.tsx`; зміни утримань відхиляють `src/app/slots/actions.ts`, `src/app/holds/actions.ts` і RLS | `src/app/staff-only.test.ts`, `src/app/slots/actions.test.ts`, `src/app/holds/actions.test.ts` | реалізовано |
+| AC-INS-01 | Новий клієнт без статусу страхування — «Insurance: Not set» | — | — | відкладено (чекає реалізації) |
+| AC-INS-02 | Планувальник позначає статус — «Insurance status saved.», «Insurance: Verified» і після повторного відкриття | — | — | відкладено (чекає реалізації) |
+| AC-INS-03 | Адміністратор змінює статус на «Private pay», інший планувальник бачить новий | — | — | відкладено (чекає реалізації) |
+| AC-INS-04 | Терапевт бачить статус свого клієнта, змінити не запропоновано | — | — | відкладено (чекає реалізації) |
+| AC-INS-05 | Терапевт напряму не змінює статус — лишається «Insurance: Not accepted» | — | — | відкладено (чекає реалізації) |
+| AC-INS-06 | Без входу — лише сторінка входу, статус не видно й не змінено | — | — | відкладено (чекає реалізації) |
