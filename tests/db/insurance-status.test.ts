@@ -60,3 +60,64 @@ describe("статус перевірки страхування", () => {
     }
   });
 });
+
+// Терапевт і гість (AC-INS-04…06): client6 стає своїм клієнтом therapist1 через утримання «Held» у власному слоті
+// в далекому майбутньому (як у own-clients.test.ts). Статус перед кожною перевіркою задає service — тест
+// не залежить від порядку тестів вище.
+describe("статус страхування: терапевт і гість", () => {
+  let client6: string;
+  let therapist1: string;
+  const setByStaff = (status: string) =>
+    t.asService("update public.clients set insurance_status = $1 where id = $2", [status, client6]);
+
+  beforeAll(async () => {
+    client6 = await idOf("Client Six");
+    therapist1 = t.users["therapist1@example.test"];
+    const [{ id: slotId }] = await t.asService<{ id: string }>(
+      `insert into public.slots (therapist_id, starts_at, ends_at)
+       values ($1, '2030-02-04 18:00+00'::timestamptz, '2030-02-04 18:00+00'::timestamptz + interval '60 minutes')
+       returning id`,
+      [therapist1],
+    );
+    await t.asService(
+      `insert into public.holds (slot_id, client_id, created_at, expires_at)
+       values ($1, $2, date_trunc('minute', now()), date_trunc('minute', now()) + interval '1440 minutes')`,
+      [slotId, client6],
+    );
+  });
+
+  it("AC-INS-04: therapist1 бачить статус свого client6 — 'not_accepted', як позначив працівник", async () => {
+    await setByStaff("not_accepted");
+    expect(await t.asUser(therapist1, SELECT_STATUS, [client6])).toEqual([{ insurance_status: "not_accepted" }]);
+  });
+
+  it("AC-INS-05: therapist1 напряму змінює статус свого client6 на 'verified' — 0 рядків, scheduler1 бачить 'not_accepted'", async () => {
+    await setByStaff("not_accepted");
+    // Справді свій клієнт: відмова не через те, що картку не видно.
+    expect(await t.asUser(therapist1, SELECT_STATUS, [client6])).toHaveLength(1);
+
+    // D4: update політики терапевту немає — RLS тихо відфільтровує рядок, 0 рядків.
+    expect(await t.asUser(therapist1, SET_STATUS, ["verified", client6])).toEqual([]);
+
+    expect(await t.asUser(t.users["scheduler1@example.test"], SELECT_STATUS, [client6])).toEqual([
+      { insurance_status: "not_accepted" },
+    ]);
+    expect(await t.asService(SELECT_STATUS, [client6])).toEqual([{ insurance_status: "not_accepted" }]);
+  });
+
+  it("AC-INS-06: гість без входу не читає картку client6 і не змінює статус — scheduler1 бачить 'verified'", async () => {
+    await setByStaff("verified");
+
+    await expect(t.asAnon("select * from public.clients")).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon(SELECT_STATUS, [client6])).rejects.toThrow(/permission denied/);
+    await expect(t.asAnon(SET_STATUS, ["not_accepted", client6])).rejects.toThrow(/permission denied/);
+    await expect(
+      t.asAnon("update public.clients set insurance_status = 'private_pay' where id = $1", [client6]),
+    ).rejects.toThrow(/permission denied/);
+
+    expect(await t.asUser(t.users["scheduler1@example.test"], SELECT_STATUS, [client6])).toEqual([
+      { insurance_status: "verified" },
+    ]);
+    expect(await t.asService(SELECT_STATUS, [client6])).toEqual([{ insurance_status: "verified" }]);
+  });
+});
