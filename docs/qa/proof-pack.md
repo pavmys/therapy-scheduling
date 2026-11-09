@@ -1,209 +1,168 @@
-# QA proof pack: Планувальник заповнює картку клієнта з анкети, а терапевт бачить картки лише своїх клієнтів
-
-<!--
-Шаблон з koldovsky/2026-quitcode-08-quality-hw/materials/templates/proof-pack.template.md.
-Покладіть у docs/qa/proof-pack.md вашого репо й заповнюйте по кроках WS8 (A → B → C → D).
-Посилання — на файли на коміті (…/blob/<sha>/…#L<N>), на PR (…/pull/N) і на прогони (…/actions/runs/N).
-Жодних паролів і пароля від accounts.zip. Акаунти — лише адреси *@example.test.
-Цей файл — вхід для конвеєра WS9: на кожен AC видно, чим він доведений.
--->
+# QA proof pack: Планувальник позначає статус перевірки страхування клієнта
 
 - Прод-URL: https://therapy-scheduling-three.vercel.app
-- Вимоги: https://github.com/Sofiia-pm/therapy-scheduling-spec · джерело: issues · знімок 2026-10-26
-  (зріз 2 — [Sofiia-pm/therapy-scheduling-spec#19](https://github.com/Sofiia-pm/therapy-scheduling-spec/issues/19))
-- `/api/health` на момент UAT: sha `8d2fec6`, db ok, 02.11.2026
+- Зріз 3: Планувальник позначає статус перевірки страхування клієнта (перевірено, не приймається, приватна оплата).
+  (рядок roadmap PM, `requirements/product.md`; PM прив'язав його до WS8, реалізуємо конвеєром у WS9)
+- Вимоги: https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec · джерело: issues · знімок 2026-11-09
+  (зріз 3 — [HryhoriiHaponiukQuitCode/therapy-scheduling-spec#33](https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec/issues/33))
+- Спека: [openspec/specs/insurance-status/spec.md](https://github.com/pavmys/therapy-scheduling/blob/23aaae9fe8ed76d39f2e408cf4814a63a2b12838/openspec/specs/insurance-status/spec.md)
+  (злиття PR #44; після нього файл не змінювався)
+- `/api/health` на момент UAT: sha `d5647b3` (злиття PR #48), 09.11.2026 18:32 (Київ) — із заголовка звіту й
+  `deployedSha` у `manifest.json`; о 18:41 `/api/health` — `d5647b3`, env production, db ok
 
-## 3 AC
+## Доказ на кожен AC зрізу 3
 
-| AC | Вид | «Тоді» (дослівно з вимоги PM) |
-|---|---|---|
-| AC-CARD-06 | відмова в браузері (заборонена роль) | Тоді форму не показано, therapist1 одразу бачить повідомлення «Only schedulers and admins can create client cards.», і кількість карток клієнтів не змінилася. |
-| AC-CARD-16 | стан інтерфейсу (помилка) | Тоді scheduler1 бачить повідомлення «This client card doesn't exist.», therapist1 — «You don't have access to this client.», і жоден із них не бачить жодних даних клієнтів. |
-| AC-CARD-07 | відмова в браузері (не увійшов) | Тоді він бачить лише сторінку входу, жодних даних клієнтів чи утримань не показано, і жодна картка не змінилася. |
+Рівні: база (PGlite) — міграції на справжньому Postgres у Vitest; unit — чистий модуль, Server Action чи сторінка з
+підміненим лише клієнтом Supabase; e2e — UAT на проді (Playwright + рецензент-агент). Посилання на тести — на коміт
+злиття останнього PR коду зрізу (`d5647b3`, PR #48); звіт і кадри UAT — у цьому PR (`docs/qa/uat/2026-11-09/`, прогін
+18:32). Перший прогін тієї ж дати (16:10, застосунок `54c483b`) — [в історії на `d5451ef`](https://github.com/pavmys/therapy-scheduling/blob/d5451ef219f3066b32bc528adc64d6b01f780e8e/docs/qa/uat/2026-11-09/report.md).
 
-Усі три — лише читання (без `@writes`): UAT на проді не створює й не змінює даних.
+| AC | Вид | Тест (рівень, посилання) | Здатен упасти | Специфікація UAT | Вердикт UAT і кадр | PR і SHA злиття |
+|---|---|---|---|---|---|---|
+| AC-INS-01 | стан інтерфейсу (початковий «Insurance: Not set») | база: [insurance-status.test.ts#L27](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L27), [#L35](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L35); unit: [insurance.test.ts#L5](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/lib/clients/insurance.test.ts#L5) | червоний прогін до реалізації: тести — коміт [b0a7c12](https://github.com/pavmys/therapy-scheduling/commit/b0a7c128cc980a0731e025574a4eec032b75901f), `column "insurance_status" does not exist`, `Cannot find module './insurance'` ([PR #45](https://github.com/pavmys/therapy-scheduling/pull/45)); мутанта немає | [insurance-status.spec.ts#L101](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L101) | **PASS (R6)**, Haiku: PASS — [рядок звіту](uat/2026-11-09/report.md?plain=1#L21), [розділ](uat/2026-11-09/report.md?plain=1#L126); кадр [then-1](uat/2026-11-09/frames/AC-INS-01-then-1.png) | код і тести — [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; UAT — цей PR (прогін на `d5647b3`) |
+| AC-INS-02 | основний сценарій (позначити статус, повідомлення, повторне відкриття) | база: [insurance-status.test.ts#L42](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L42), заборона «Not set» — [#L65](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L65); unit (дія): [actions.test.ts#L54](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/app/clients/%5Bid%5D/actions.test.ts#L54); unit (підпис): [insurance.test.ts#L9](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/lib/clients/insurance.test.ts#L9) | червоний прогін до реалізації (той самий коміт `b0a7c12`): колонки немає, `Cannot find module …/actions` ([PR #45](https://github.com/pavmys/therapy-scheduling/pull/45)); SQL-мутант **I5** (`with check` без заборони «Not set») — **KILLED** ([#48](https://github.com/pavmys/therapy-scheduling/pull/48)) | [insurance-status.spec.ts#L132](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L132) (з #48 — ще й поле статусу лишається «Verified») | **PASS (R6)**, Haiku: PASS — [рядок звіту](uat/2026-11-09/report.md?plain=1#L22), [розділ](uat/2026-11-09/report.md?plain=1#L150); кадри [then-1](uat/2026-11-09/frames/AC-INS-02-then-1.png) (повідомлення; поле показує «Verified»), [then-2](uat/2026-11-09/frames/AC-INS-02-then-2.png) (повторне відкриття) | [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; заборона «Not set» і селект — [#48](https://github.com/pavmys/therapy-scheduling/pull/48), `d5647b3`; UAT — цей PR (прогін на `d5647b3`) |
+| AC-INS-03 | основний сценарій (зміна іншою роллю, видно іншому планувальнику) | база: [insurance-status.test.ts#L50](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L50); unit (підпис): [insurance.test.ts#L13](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/lib/clients/insurance.test.ts#L13) | червоний прогін до реалізації (`b0a7c12`): `column "insurance_status" of relation "clients" does not exist` ([PR #45](https://github.com/pavmys/therapy-scheduling/pull/45)); мутанта немає | [insurance-status.spec.ts#L191](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L191) | **PASS (R6)**, Haiku: PASS — [рядок звіту](uat/2026-11-09/report.md?plain=1#L23), [розділ](uat/2026-11-09/report.md?plain=1#L180); кадри [then-1](uat/2026-11-09/frames/AC-INS-03-then-1.png) (admin1), [then-2](uat/2026-11-09/frames/AC-INS-03-then-2.png) (scheduler2) | [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; UAT — цей PR (прогін на `d5647b3`) |
+| AC-INS-04 | відмова в інтерфейсі (заборонена роль: бачить, змінити не запропоновано) | база: [insurance-status.test.ts#L104](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L104); unit (сторінка): [page.test.ts#L137](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/app/clients/%5Bid%5D/page.test.ts#L137) | TS-мутант I4 (форма рендериться й терапевту) — **KILLED** ([#46](https://github.com/pavmys/therapy-scheduling/pull/46); повторено 09.11.2026 на `d5647b3`) | [insurance-status.spec.ts#L248](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L248) | **PASS (R6)**, Haiku: NEEDS-HUMAN → Sonnet: PASS (рішення агента — за Sonnet) — [рядок звіту](uat/2026-11-09/report.md?plain=1#L24), [розділ](uat/2026-11-09/report.md?plain=1#L207); кадр [then-1](uat/2026-11-09/frames/AC-INS-04-then-1.png) | код — [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; тести й мутант — [#46](https://github.com/pavmys/therapy-scheduling/pull/46), `54c483b`; UAT — цей PR (прогін на `d5647b3`) |
+| AC-INS-05 | відмова напряму (заборонена роль, оминаючи сторінки) | база: [insurance-status.test.ts#L109](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L109); unit (дія): [actions.test.ts#L62](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/app/clients/%5Bid%5D/actions.test.ts#L62) | SQL-мутант I1 (політика `clients_update_insurance_staff` без обох перевірок ролі) — **KILLED**; TS-мутант I2 (`setInsuranceStatus` без перевірки ролі) — **KILLED** ([#46](https://github.com/pavmys/therapy-scheduling/pull/46); повторено 09.11.2026 на `d5647b3`) | [insurance-status.spec.ts#L287](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L287) (прямий `PATCH` у PostgREST з токеном therapist1) | **PASS (R6)**, Haiku: PASS — [рядок звіту](uat/2026-11-09/report.md?plain=1#L25), [розділ](uat/2026-11-09/report.md?plain=1#L237); кадр [then-1](uat/2026-11-09/frames/AC-INS-05-then-1.png) (scheduler1 бачить «Not accepted») | код — [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; тести й мутанти — [#46](https://github.com/pavmys/therapy-scheduling/pull/46), `54c483b`; UAT — цей PR (прогін на `d5647b3`) |
+| AC-INS-06 | відмова (не увійшов) | база: [insurance-status.test.ts#L123](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/db/insurance-status.test.ts#L123) (`asAnon` — select і update → відмова, scheduler1 бачить `verified`); unit (сторінка): [page.test.ts#L165](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/src/app/clients/%5Bid%5D/page.test.ts#L165) | TS-мутант I3 (картка без `redirect("/login")`) — **KILLED** ([#46](https://github.com/pavmys/therapy-scheduling/pull/46); повторено 09.11.2026 на `d5647b3`); SQL-мутанта немає — два незалежні бар'єри для `anon`, мутант одного з них еквівалентний (design.md D4) | [insurance-status.spec.ts#L336](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L336) | **PASS (R6)**, Haiku: NEEDS-HUMAN → Sonnet: PASS (рішення агента — за Sonnet) — [рядок звіту](uat/2026-11-09/report.md?plain=1#L26), [розділ](uat/2026-11-09/report.md?plain=1#L261); кадри [then-1](uat/2026-11-09/frames/AC-INS-06-then-1.png) (лише вхід), [then-2](uat/2026-11-09/frames/AC-INS-06-then-2.png) (scheduler1 бачить «Verified») | код — [#45](https://github.com/pavmys/therapy-scheduling/pull/45), `23a6d66`; тести й мутант — [#46](https://github.com/pavmys/therapy-scheduling/pull/46), `54c483b`; UAT — цей PR (прогін на `d5647b3`) |
 
-## A. Ворота
+- Червоний прогін AC-INS-01…03 (`Test Files 3 failed (3) · Tests 4 failed (4)`) записано в описі PR #45; повторно не
+  запускали. На `b0a7c12` справді немає міграції, `src/lib/clients/insurance.ts` і `src/app/clients/[id]/actions.ts`
+  (перевірено `git ls-tree`). Цей доказ слабший за мутанта: тести червоні, бо коду немає, а не тому, що зламано одне
+  правило. Мутантів для основного шляху AC-INS-01, -03 немає; для AC-INS-02 є I5 (лише частина «Not set»).
+- Мутанти I1–I5 повторно запущено локально 09.11.2026 18:41 на коді `d5647b3`: `npm run mutation:sql` — 8 з 9
+  (C6 прийнято як еквівалентний, зріз 2), I1 і I5 — KILLED; `node scripts/mutation-check.mjs --only I2,I3,I4` — 3 з 3.
+- Тести AC-INS-01…06 писала окрема сесія агента з тексту AC (F02 — Vitest, F03 — UAT), а не сесія, що писала код
+  (описи PR #45, #46, #47). Тест заборони «Not set» (#48) і перевірку поля в UAT AC-INS-02 (#48, за рев'ю CodeRabbit)
+  дописала сесія, що писала код, — їхній доказ здатності впасти: мутант I5 і кадр до виправлення
+  ([AC-INS-02-then-1 на `d5451ef`](https://github.com/pavmys/therapy-scheduling/blob/d5451ef219f3066b32bc528adc64d6b01f780e8e/docs/qa/uat/2026-11-09/frames/AC-INS-02-then-1.png): «Select a status…»).
 
-- PR воріт: https://github.com/pavmys/therapy-scheduling/pull/35
-- Зелений `quality` на `main`: https://github.com/pavmys/therapy-scheduling/actions/runs/41427277986 (`8d2fec6`, усі три jobs — success)
-- Обов'язкові перевірки в `solo-main` з 02.11.2026: `spec`, `app`, `conformance`, `db-check`, «Ворота: fallow audit»,
-  «Покриття: доменна підлога» («Порада: вразливі залежності» — дорадча, не обов'язкова)
+## Не перевірено
 
-Розбір першого повного прогону `fallow` (той самий — в описі PR воріт). Перший прогін (`npx fallow --no-cache` на
-`aca806d` з конфігом матеріалів): мертвий код — 3 файли й 9 експортів, 5 груп дублікатів, 20 функцій понад пороги
-складності. Після PR мертвого коду 0; дублікати й складність лишились успадкованими (`audit` з `gate: new-only`
-валить лише нове).
-
-| Група знахідок | Скільки | Справжня / навмисна / хибна | Дія і причина |
+| AC чи частина | Чому не перевірено | Що зроблено замість | Ризик на проді |
 |---|---|---|---|
-| unused re-export текстів помилок полів у `src/lib/clients/messages.ts` | 6 | справжня | прибрано: споживачі імпортують ці тексти з `validate.ts` напряму |
-| unused export `SLOT_STATUS_LABEL`, `HOLD_STATUS_LABEL` у `src/lib/holds/status.ts` | 2 | справжня | прибрано: підписи статусів — у `StatusBadge` (DESIGN.md, розділ 5), ці константи ніхто не читав |
-| unused export `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs` | 1 | навмисна | `ignoreExports` для цього імені: скрипт шаблону курсу, не змінюємо; експорт — частина його API |
-| unused file `src/lib/supabase/client.ts` | 1 | навмисна | `ignoreFindings`: браузерний клієнт шаблону (AGENTS.md, «Структура»), Client Components із Supabase поки немає |
-| unused file `src/lib/utils.ts` | 1 | хибна | `ignoreFindings`: файл читає `npx shadcn add` через alias `utils` у `components.json`, а не `import` |
-| unused file `src/components/ui/badge.tsx` | 1 | навмисна | `ignoreFindings`: компонент дизайн-системи (DESIGN.md, розділ 5) |
-| дублікати `scripts/check-design-tokens.mjs` ↔ `scripts/check-server-boundary.mjs` | 2 групи | навмисна | лишити: скрипти з матеріалів курсу WS7 (`architecture.yml`), не змінюємо |
-| дублікати сторінок (`slots` ↔ `schedule`, `clients` ↔ `holds`, вступ доступу в 3 сторінках) | 3 групи | справжня (дрібна) | лишити: успадковане, 6–12 рядків розмітки; спільний компонент — окремим PR, не в WS8 |
-| складність скриптів шаблону й WS7 (`check-spec`, `create-demo-users`, `check-design-tokens`, `check-server-boundary`) | 9 функцій | навмисна | `health.ignore` з тією самою причиною, що вже є в конфігу для інших скриптів курсу |
-| складність `src/app/api/health/route.ts` (`GET`) | 1 | навмисна | лишити: файл із матеріалів D0; лише оцінка CRAP (`warn`), бо без файлу покриття |
-| складність сторінок і домену (`SlotsPage` CRITICAL, `HoldsPage`, `ClientsPage`, `SchedulePage`, `validateCard`) | 6 | справжня | лишити: успадковане; розбиття `SlotsPage` (і `holds/status.ts`, ціль №1 fallow) — окремий PR |
-| складність помічників `texts()` у 3 тестах сторінок | 3 | справжня (дрібна) | лишити: оцінка CRAP для рекурсивного обходу дерева React; спільний помічник — разом із рефакторингом сторінок |
+| AC-INS-01…06 — на проді не використано сідові картки client6 і client7 з «Дано» (відхилення даних) | статус «Not set» база повернути не дозволяє, а прод спільний і UAT запускається повторно: AC-INS-01 на client6 пройшов би лише раз | кожен тест UAT створює власну синтетичну картку `uat-261109163226-ins0N@example.test` («UAT client6 (ins0N)», «UAT client7 (ins03)»); стан із «Дано» (статус, «свій клієнт» therapist1 через слот 2099 року й «Held»-утримання) задано секретним ключем, а не через інтерфейс ([insurance-status.spec.ts#L1](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/tests/e2e/insurance-status.spec.ts#L1)). Тести бази на PGlite працюють із client6 і client7 | низький: той самий код і ті самі політики RLS |
+| Негативний контроль саме на AC-INS | NC-1 і NC-2 — на AC-CARD-16: контроль має бути AC без `@writes` (F05), а всі шість тестів AC-INS пишуть у базу | `npm run uat:nc -- --url https://therapy-scheduling-three.vercel.app` на проді (18:38, застосунок `d5647b3`): NC-1 → FAIL (R1), NC-2 → NEEDS-HUMAN (R3) — [negative-controls/report.md](uat/2026-11-09/negative-controls/report.md); для AC-INS — червоний прогін і мутанти I1–I5 на рівнях бази й unit | низький: правила R1/R3 — спільний код конвеєра, не залежать від AC |
+| AC-INS-01…03 — рев'ю коду задачі 1 (міграція, `setInsuranceStatus`, сторінка й форма) | CodeRabbit у PR #45 не запустився: «Review rate limited» ([коментар](https://github.com/pavmys/therapy-scheduling/pull/45#issuecomment-6738970597)); рев'ю #46 охопило лише зміни після `23a6d66`, рев'ю #48 — лише `insurance-form.tsx` і тести | CodeRabbit переглянув план `impl-insurance-status` (PR #44, 2 Major виправлено), тести бази й unit, мутанти I1–I5 на правилах доступу, UAT на проді | середній: міграцію й дію `setInsuranceStatus` ніхто, крім агента-автора й тестів, не рецензував |
 
-Тестові правила лінтера (`npm run lint`, обов'язковий `app`): 5 помилок «не мокайте власні модулі» — 5 тестів сторінок
-підміняли `getCurrentUser` з `@/lib/auth`. Справжня: виправлено — тести підміняють лише клієнт Supabase
-(`@/lib/supabase/server`, правило це дозволяє), тож працює справжній `getCurrentUser` (`getClaims`, роль із
-`profiles`). Правил не вимкнено.
+FAIL і NEEDS-HUMAN у підсумку UAT немає. Розбіжність рецензентів (Haiku: NEEDS-HUMAN на AC-INS-04 і AC-INS-06,
+Sonnet: PASS) — у таблиці вище.
 
-Підлога покриття (`FLOORED`, 90/85/90/90 на файл): `access`, `auth`, `clients/search`, `clients/validate`, `form`,
-`health`, `holds/status`, `time`. Нижче поки: `clients/view` (рядки 88 %), `holds/messages` (рядки 85 %),
-`schedule/load` (гілки 64 %). Перевірено, що підлога валить прогін: з `clients/view` у списку `test:coverage` —
-код 1.
+## A. Вимоги й спека
 
-## B. Якість тестів
+- `/requirements-sync` — PR «Оновлення вимог»: https://github.com/pavmys/therapy-scheduling/pull/43 (`953a70c`,
+  знімок 2026-11-09; PM змінив репо вимог). Вимоги актуальні: issue #33 востаннє змінено 2026-11-06, перевірено
+  09.11.2026.
+- Спека `add-insurance-status` і план `impl-insurance-status` — PR «Специфікація»:
+  https://github.com/pavmys/therapy-scheduling/pull/44 (`23aaae9`). CodeRabbit — 2 Major, обидва виправлено в
+  [1f89ddb](https://github.com/pavmys/therapy-scheduling/commit/1f89ddb55b3e038fc86307a3940bbda326e69115), відповіді в
+  тредах:
+  - заборону повертати «Not set» додано в текст вимоги ([тред](https://github.com/pavmys/therapy-scheduling/pull/44#discussion_r4512011924));
+  - мутант AC-INS-05 тепер знімає обидві перевірки ролі, бо `using (true)` вижив би
+    ([тред](https://github.com/pavmys/therapy-scheduling/pull/44#discussion_r4512011943)).
+- Зміна `clarify-insurance-status` після уточнень: PM AC не змінював.
+- Питання PM: питань не було (`docs/spec-reading.md`, розділ «Зріз 3»: у вимозі «Відкриті питання: Немає.»).
 
-### Рівень для кожного AC
+## B. Реалізація
 
-| AC | Де живе правило | Рівень | Чому | Тест |
+| PR «Реалізація» | Задача з `tasks.md` | AC | Відповіді на знахідки CodeRabbit | `db-deploy` |
 |---|---|---|---|---|
-| AC-CARD-06 | двічі: SQL — політика `clients_insert_staff` і `private.is_staff()` ([roles_and_clients.sql#L75](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022040716_roles_and_clients.sql#L75)); TS — перевірка ролі в `createClientCard` ([actions.ts#L37](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/actions.ts#L37)) для тексту PM; сторінка `/clients/new` (`staffOnlyPage`) — без форми | база (PGlite) + ядро дії + e2e | правило двічі: SQL — остання межа, TS — повідомлення; кожен шар може втратити правило окремо. Тест дії підміняє лише клієнт Supabase (роль — справжній `getCurrentUser`), тож «запису немає» доводить саме база | [client-cards.test.ts#L25](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/client-cards.test.ts#L25) (база: `asUser` therapist1 → RLS, кількість незмінна), [actions.test.ts#L117](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/actions.test.ts#L117), [new/page.test.ts#L43](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/new/page.test.ts#L43), [client-cards.spec.ts#L22](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L22) (UAT) |
-| AC-CARD-07 | SQL — `revoke all … from anon` і grant лише `authenticated` на `clients` і `holds` ([roles_and_clients.sql#L58](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022040716_roles_and_clients.sql#L58), [slots_and_holds.sql#L63](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022042804_slots_and_holds.sql#L63)); сторінка входу — `src/proxy.ts` → `src/lib/supabase/proxy.ts` і `accessFor` у сторінках ([access.ts#L11](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/access.ts#L11)) | база (PGlite) + e2e | «жодних даних і жодна картка не змінилась» тримає GRANT — лише справжній SQL це доводить; «лише сторінка входу» — перехід proxy, який Vitest не запускає | [app-access.test.ts#L34](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L34) (`asAnon` → permission denied, `asService` — нічого не змінилось), [access.test.ts#L5](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/access.test.ts#L5), [page.test.ts#L59](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/page.test.ts#L59), [client-cards.spec.ts#L120](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L120) (UAT) |
-| AC-CARD-16 | TS — `missingClientMessage` ([view.ts#L61](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/clients/view.ts#L61)) і сторінка `/clients/[id]`: 0 рядків під RLS → текст за роллю | unit + e2e | точний текст, який бачить людина: unit тримає вибір тексту за роллю, e2e — що його видно й даних немає (асинхронну серверну сторінку Vitest рендерить лише з підміненим клієнтом). SQL-правила з межею тут немає: неіснуюча картка — 0 рядків для будь-якої ролі | [view.test.ts#L55](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/lib/clients/view.test.ts#L55), [[id]/page.test.ts#L95](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/src/app/clients/%5Bid%5D/page.test.ts#L95), [client-cards.spec.ts#L68](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L68) (UAT) |
+| https://github.com/pavmys/therapy-scheduling/pull/45 (`23a6d66`) | 1. Планувальник і адміністратор позначають статус | AC-INS-01, AC-INS-02, AC-INS-03 | рев'ю не було: ліміт CodeRabbit («Review rate limited»), знахідок немає | [job 129182472588](https://github.com/pavmys/therapy-scheduling/actions/runs/42623601881/job/129182472588) — застосовано `20261109112112_insurance_status.sql` |
+| https://github.com/pavmys/therapy-scheduling/pull/46 (`54c483b`) | 2. Терапевт і гість не змінюють статус | AC-INS-04, AC-INS-05, AC-INS-06 | коментарів до коду 0. Попередження pre-merge «Тип PR і межі змін» (`scripts/mutants.mjs`, текст 2.2) — аргумент у [коментарі](https://github.com/pavmys/therapy-scheduling/pull/46#issuecomment-6743715416) (після злиття) | [job 129204768461](https://github.com/pavmys/therapy-scheduling/actions/runs/42630103998/job/129204768461) — «Remote database is up to date» (міграцій немає) |
+| https://github.com/pavmys/therapy-scheduling/pull/47 (`d5451ef`) | 3. UAT на кожен AC (і archive `impl-insurance-status`) | AC-INS-01…06 (UAT) | 3 Minor виправлено в [770188e](https://github.com/pavmys/therapy-scheduling/commit/770188e288e369ff6342195134a399b34e7e3a1f), відповідь у кожному треді: [NC у маніфесті](https://github.com/pavmys/therapy-scheduling/pull/47#discussion_r4513980214), [опис 3.1](https://github.com/pavmys/therapy-scheduling/pull/47#discussion_r4513980225), [`setInsuranceStatusDirectly`](https://github.com/pavmys/therapy-scheduling/pull/47#discussion_r4513980298). Попередження «Тип PR і межі змін» щодо `docs/qa/uat/` — аргумент у [коментарі](https://github.com/pavmys/therapy-scheduling/pull/47#issuecomment-6743106000). Уточнення в треді `setInsuranceStatusDirectly` (`like` пропускав адреси поза `UAT_EMAIL`) пропустили до злиття — виправлено в #48, [відповідь](https://github.com/pavmys/therapy-scheduling/pull/47#discussion_r4514485426) | [job 129238580466](https://github.com/pavmys/therapy-scheduling/actions/runs/42639803790/job/129238580466) (міграцій немає) |
+| https://github.com/pavmys/therapy-scheduling/pull/48 (`d5647b3`) | хвости зрізу 3 (поза `tasks.md`, знайдені під час proof pack) | AC-INS-02 (заборона «Not set», селект), UAT-хелпер | 1 Trivial (перевірити значення поля в UAT AC-INS-02) — виправлено в `68b54c1`, [відповідь](https://github.com/pavmys/therapy-scheduling/pull/48#discussion_r4514815642) | [job 129275615258](https://github.com/pavmys/therapy-scheduling/actions/runs/42650367220/job/129275615258) (міграцій немає) |
 
-Тестів, що перевіряють мок чи TS-копію SQL-правила замість самого правила, серед цих AC немає: SQL-правила AC-CARD-06 і
-AC-CARD-07 доводять тести бази на PGlite з міграціями, а тести дії й сторінок підміняють лише клієнт Supabase.
-
-### Покриття
-
-`npm run test:coverage` на `8ed7922`: разом рядки 73 % (312 з 426), гілки 59 %.
-
-| Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
-|---|---|---|---|
-| `src/lib/access.ts` (AC-CARD-07) | 100 % (6/6) | 100 % (8/8) | — |
-| `src/lib/clients/view.ts` (AC-CARD-16) | 89 % (16/18) | 83 % (19/23) | — (непокриті рядки 27 і 34 — підписи опікуна, не `missingClientMessage`) |
-| `src/lib/clients/messages.ts` (тексти AC-CARD-06) | 100 % (4/4) | — | — |
-| `src/app/clients/actions.ts` (AC-CARD-06) | 95 % (19/20) | 95 % (19/20) | — |
-| `src/app/clients/new/page.tsx` (AC-CARD-06) | 83 % (5/6) | 50 % (3/6) | — |
-| `src/app/staff-only.tsx` (AC-CARD-06) | 100 % (1/1) | 100 % (1/1) | — |
-| `src/app/clients/[id]/page.tsx` (AC-CARD-16) | 100 % (13/13) | 79 % (11/14) | — |
-| `src/app/page.tsx` (AC-CARD-07) | 100 % (6/6) | 100 % (6/6) | — |
-| `src/proxy.ts`, `src/lib/supabase/proxy.ts` (AC-CARD-07) | 0 % | 0 % | e2e: [client-cards.spec.ts#L120](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/e2e/client-cards.spec.ts#L120) — UAT на проді, три прямі посилання без входу → лише `/login` |
-| `supabase/migrations/…` (AC-CARD-06, -07) | — (SQL v8 не міряє) | — | база на PGlite + `npm run mutation:sql` (нижче) |
-
-### Доказ мутацією
-
-| Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
-|---|---|---|---|---|
-| `supabase/migrations/20261022040716_roles_and_clients.sql:61` `grant insert (full_name, email) … to authenticated` → `… to authenticated, anon` (C4) | AC-CARD-07 | вижив | [app-access.test.ts#L47](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L47): «жодна картка не змінилася» — анонім не пише навіть у `(full_name, email)` | убитий |
-
-- Stryker 10.1.1 (`npm run mutation:ts -- --mutate src/lib/clients/view.ts,src/lib/access.ts`, на `d234d4b`):
-  **95,38 %** — вбито 62, вижило 3, без покриття 0. `access.ts` (AC-CARD-07) — 100 % (23 з 23);
-  `view.ts` — 92,86 %, `missingClientMessage` (AC-CARD-16) — усі 7 мутантів вбито. **Вижилих на рядках цих 3 AC
-  немає**, тож «до/після» тут немає. Замість цього в proof pack ручні мутанти на межі AC, які тести вбивають
-  (`node scripts/mutation-check.mjs --kind ts`, [mutants.mjs](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/scripts/mutants.mjs)):
+- Ворота на `main` (`quality`): https://github.com/pavmys/therapy-scheduling/actions/runs/42650367254 (`d5647b3`) — success. CI на `main` для
+  кожного злиття зрізу (`spec`, `app`, `conformance`, `db-check`, `db-deploy`) — success:
+  [#45](https://github.com/pavmys/therapy-scheduling/actions/runs/42623601881),
+  [#46](https://github.com/pavmys/therapy-scheduling/actions/runs/42630103998),
+  [#47](https://github.com/pavmys/therapy-scheduling/actions/runs/42639803790),
+  [#48](https://github.com/pavmys/therapy-scheduling/actions/runs/42650367220).
+- Мутації: SQL- і точкові TS-мутанти [scripts/mutants.mjs](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/scripts/mutants.mjs)
+  (I1–I5), таблиці з виводом — в описах [PR #46](https://github.com/pavmys/therapy-scheduling/pull/46) і [PR #48](https://github.com/pavmys/therapy-scheduling/pull/48). Повтор 09.11.2026 на `d5647b3`:
 
   | Мутант | AC | Що зламано | Вердикт | Який тест упав |
   |---|---|---|---|---|
-  | T1 | AC-CARD-16 | `missingClientMessage` ([view.ts#L62](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/clients/view.ts#L62)): терапевт бачить «This client card doesn't exist.» — підказку, що картки немає | KILLED | [AC-CARD-16: картки немає — staff і терапевт бачать різні тексти PM](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/clients/view.test.ts#L55) |
-  | T2 | AC-CARD-07 | `accessFor` ([access.ts#L12](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/access.ts#L12)): без входу — екран «без ролі» замість сторінки входу | KILLED | [AC-CARD-07: відвідувач без входу — лише сторінка входу](https://github.com/pavmys/therapy-scheduling/blob/d234d4bc6123df63cf36b1767a38da2a65991139/src/lib/access.test.ts#L5) |
+  | I1 (SQL) | AC-INS-05 | `clients_update_insurance_staff`: `using (true) with check (insurance_status <> 'not_set')` | KILLED | AC-INS-05: therapist1 напряму змінює статус свого client6 на 'verified' — 0 рядків, scheduler1 бачить 'not_accepted' |
+  | I5 (SQL) | AC-INS-02 | `clients_update_insurance_staff`: `with check ((select private.is_staff()))` — без заборони «Not set» | KILLED | AC-INS-02: повернути «Not set» не можна — ні scheduler1, ні admin1, статус лишається 'verified' |
+  | I2 (TS) | AC-INS-05 | `setInsuranceStatus`: `if (!user \|\| !isStaffRole(user.role))` → `if (!user)` | KILLED | AC-INS-05: therapist1 напряму викликає дію «Verified» для client6 — відмова, запиту update до clients немає |
+  | I3 (TS) | AC-INS-06 | картка: `redirect("/login")` → `void 0` | KILLED | AC-INS-06: гість без входу за прямим посиланням на картку — redirect на /login, картку з бази не запитано |
+  | I4 (TS) | AC-INS-04 | картка: `role === "staff" ? <InsuranceForm` → `true ? <InsuranceForm` | KILLED | AC-INS-04: терапевт у картці свого client6 бачить «Insurance: Not accepted», форми зміни статусу немає |
 
-  Троє вижилих — на рядках інших AC, не цих трьох; лишені для окремої задачі:
-  - `view.ts:26` `if (client.guardian_email)` → `if (true)` (AC-CARD-10, контакт у картці) — прогалина AC: немає
-    тесту картки без email і без опікуна (стара картка зрізу 1 → «Not provided»);
-  - `view.ts:33` те саме в `clientOptionLabel` (AC-CARD-02) — прогалина AC: немає клієнта без email і опікуна;
-  - `view.ts:39` `value.trim()` → `value` (AC-CARD-04/10, «Not provided») — нерозрізнений вхід: немає значення з
-    самих пробілів.
-- `npm audit`: Stryker додав 4 moderate лише в dev-залежностях (`@stryker-mutator/*`, `minimatch`);
-  `npm audit --omit=dev` — без змін (6, усі ще до Stryker).
-- SQL-мутації (`npm run mutation:sql -- --markdown`, [scripts/mutants.mjs](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/scripts/mutants.mjs)) на `8ed7922`: **5 з 6 вбито (83 %), прийнято еквівалентних: 1**, ≈6 с. «До» посилення тесту C4 вижив (4 з 6).
-
-  | Мутант | AC | Що зламано | Вердикт | Який тест упав |
-  |---|---|---|---|---|
-  | C1 | AC-CARD-06 | політика `clients_insert_staff` послаблена до `true`: картку створює будь-хто з входом | KILLED | AC-CARD-06: терапевт не створює картку клієнта напряму, кількість карток не змінилась |
-  | C2 | AC-CARD-06 | хелпер `private.is_staff()` рахує терапевта за staff | KILLED | AC-CARD-06: терапевт не створює картку клієнта напряму, кількість карток не змінилась |
-  | C3 | AC-CARD-07 | `grant select` на `clients` і для anon | KILLED | AC-CARD-07: без входу список клієнтів, картка й утримання недоступні, жодна картка не змінилась |
-  | C4 | AC-CARD-07 | `grant insert (full_name, email)` на `clients` і для anon | вижив → **KILLED** | те саме (після посилення — [app-access.test.ts#L47](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/tests/db/app-access.test.ts#L47)) |
-  | C5 | AC-CARD-07 | `grant select` на `holds` і для anon | KILLED | те саме |
-  | C6 | AC-CARD-06, -07 | `private.is_staff()` без `coalesce`: NULL замість false для користувача без ролі | SURVIVED (еквівалентний, прийнято) | — |
-
-- C4 — прогалина AC «нерозрізнений вхід»: спроба insert від аноніма писала й у колонки анкети (`client_type`,
-  `date_of_birth`, `session_language`), на які анонім прав не має взагалі, тож відмова не залежала від grant на
-  `(full_name, email)`. Тест посилила окрема сесія агента з тексту AC («жодна картка не змінилася», промпт P03):
-  insert лише в `(full_name, email)` → `permission denied`; під мутантом запит доходить до RLS з іншою помилкою.
-  Коміт: [8ed7922](https://github.com/pavmys/therapy-scheduling/commit/8ed79222e1b7589850dc2691d3ad717f98332c4a).
-- Еквівалентні мутанти: C6 — NULL в `using` / `with check` RLS вважає відмовою, як `false`, тож для політик `clients`
-  поведінка та сама; `coalesce` потрібен лише для `not private.is_staff()` у функціях утримань
-  ([slots_and_holds.sql#L115](https://github.com/pavmys/therapy-scheduling/blob/8ed79222e1b7589850dc2691d3ad717f98332c4a/supabase/migrations/20261022042804_slots_and_holds.sql#L115), AC-HOLD-08), поза цими 3 AC.
-- AC-CARD-16 SQL-мутанта не має: правило живе в TS і на сторінці — його доводить Stryker.
+  Stryker для файлів зрізу 3 (`src/lib/clients/insurance.ts`, `src/app/clients/[id]/actions.ts`) не запускали:
+  у PR #45–#48 його виводу немає. «До → після» для зрізу 3 немає: вижилих мутантів I1–I5 не було.
 
 ## C. UAT на проді
 
-| AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
-|---|---|---|---|---|---|
-| AC-CARD-06 | [client-cards.spec.ts#L21](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L21) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-06-then-1.png) |
-| AC-CARD-16 | [client-cards.spec.ts#L67](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L67) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-16-then-1.png) (scheduler1), [then-2](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-16-then-2.png) (therapist1) |
-| AC-CARD-07 | [client-cards.spec.ts#L119](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/tests/e2e/client-cards.spec.ts#L119) | passed | Haiku: PASS | PASS (R6) | [then-1](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-1.png) (клієнти), [then-2](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-2.png) (картка client6), [then-3](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/frames/AC-CARD-07-then-3.png) (утримання) |
+- Звіт: [docs/qa/uat/2026-11-09/report.md](uat/2026-11-09/report.md)
+  — `npm run uat -- --url https://therapy-scheduling-three.vercel.app`, застосунок `d5647b3`, код тестів `68b54c1`
+  (збігається з `d5647b3`: `git diff 68b54c1 d5647b3 -- tests src scripts supabase` порожній), 09.11.2026 18:32
+  (Київ), Playwright 64,5 с; 9 AC (AC-INS-01…06 і регрес AC-CARD-06, -07, -16) — PASS 9, FAIL 0, NEEDS-HUMAN 0.
+  Попередній прогін (16:10, застосунок `54c483b`) — теж 9 PASS, [в історії на `d5451ef`](https://github.com/pavmys/therapy-scheduling/blob/d5451ef219f3066b32bc528adc64d6b01f780e8e/docs/qa/uat/2026-11-09/report.md).
+- Виправлення з #48 видно на кадрі: після збереження поле «Insurance status» показує «Verified»
+  ([AC-INS-02-then-1](uat/2026-11-09/frames/AC-INS-02-then-1.png)), до виправлення — «Select a status…»
+  ([на `d5451ef`](https://github.com/pavmys/therapy-scheduling/blob/d5451ef219f3066b32bc528adc64d6b01f780e8e/docs/qa/uat/2026-11-09/frames/AC-INS-02-then-1.png)).
+- Відео: 6 файлів `AC-INS-0N.webm` прикладено до [опису PR #49](https://github.com/pavmys/therapy-scheduling/pull/49)
+  (не в git). Це **повторний** прогін `npm run uat -- --url https://therapy-scheduling-three.vercel.app --grep AC-INS`
+  09.11.2026 19:01 на тому самому застосунку `d5647b3`: 6 AC — PASS 6, FAIL 0, NEEDS-HUMAN 0, прибирання — видалено 6,
+  лишилось 0. Відео основного прогону 18:32 затер наступний запуск `uat:nc` (Playwright очищає `test-results/`),
+  тому звіт і кадри в git — з 18:32, а відео — з 19:01. Відео NC-1 і NC-2 теж не збереглися: лише звіт і кадри.
+- Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5` (у цьому прогоні — AC-INS-04 і AC-INS-06: Haiku
+  NEEDS-HUMAN → Sonnet PASS); розбір — $0,0959 за цінами API.
+- Негативний контроль: `npm run uat:nc -- --url https://therapy-scheduling-three.vercel.app`, окремий прогін 18:38 на
+  проді (застосунок `d5647b3`), розбір $0,0344; обидва контролі — на AC-CARD-16 (лише читання):
+  - NC-1 — у твердженні навмисно інший текст («This client card was not found.») → перевірка впала, Haiku: PASS →
+    **FAIL** (R1);
+  - NC-2 — анотація `ac-text` з уточненим текстом, тест і застосунок без змін → Haiku і Sonnet: FAIL →
+    **NEEDS-HUMAN** (R3).
 
-- Звіт: [docs/qa/uat/2026-11-02/report.md](https://github.com/pavmys/therapy-scheduling/blob/9f90ce3af18f2fc6650262066998fb9e9a9b086d/docs/qa/uat/2026-11-02/report.md) — прод `8d2fec6`, код тестів `9cc6f9e`, 02.11.2026 12:41 (Київ), Playwright 28,3 с, PASS 3 / FAIL 0 / NEEDS-HUMAN 0
-- Відео: вкладення в описі PR UAT (по одному на AC)
-- Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5` (у цьому прогоні суперечок не було); розбір — $0,0077 за цінами API
-- Негативний контроль (`npm run uat:nc`, AC-CARD-16, той самий код тестів `9cc6f9e`, 12:40):
-  - NC-1 — у твердженні навмисно інший текст («This client card was not found.») → перевірка впала, Haiku сказав PASS → **FAIL** (R1: агент не перекриває впале твердження);
-  - NC-2 — анотація `ac-text` з уточненим текстом PM, тест і застосунок без змін → перевірки зелені, Haiku і Sonnet: FAIL («Критерій вимагає «This client card was not found.», тож текст не збігається») → **NEEDS-HUMAN** (R3).
-- Перший прогін (той самий день, код `77b50a1`) — FAIL на AC-CARD-16 і AC-CARD-07, обидва не вади продукту:
-  - AC-CARD-16 — таймаут 60 с у `afterEach`: «Дано» відкривало `/clients`, список підвантажував посилання на картки (prefetch), а перехід далі лишав 4 запити `/clients/<id>?_rsc=…` без відповіді й помилки, і `attachRuntimeErrors` чекав їх (траса NC-1, статус -1). Усі кроки «Тоді» були зелені, Haiku — PASS. Виправлено в тесті: [9cc6f9e](https://github.com/pavmys/therapy-scheduling/commit/9cc6f9e9e6bd661a2d30f281ba9f247943827912);
-  - AC-CARD-07 — на проді не було картки client6 (дані з вимог PM): «Дано» впало з «на проді немає картки клієнта client6@example.test». Картку створено вручну на проді під scheduler1 з даними AC-CARD-01 (Adult, «Client Six», client6@example.test, 1990-05-14, English).
-- Дані: лише читання (жодного `@writes`); прибирання — видалено 0, лишилось 0. Єдиний запис на проді — картка client6, створена людиною через інтерфейс до прогону (див. вище).
+  Звіт, маніфест і кадри — [negative-controls/](uat/2026-11-09/negative-controls/report.md); ті самі записи — у
+  `negativeControls` маніфесту основного прогону.
+- Дані: `@writes` — усі шість тестів AC-INS: `uat-261109163226-ins01…06@example.test` (свої картки, для AC-INS-04/05
+  ще слот 2099 року й «Held»-утримання). Прибирання ([рядок звіту](uat/2026-11-09/report.md?plain=1#L7)): видалено 6, лишилось 0, їхніх рядків — 0.
+  На кадрах — лише адреси `*@example.test`.
 
 ### Приймання PM
 
+Станом на 09.11.2026 18:41 (Київ) рішень PM немає: у звіті UAT поля «Рішення PM» порожні, коментарів-підписів у
+[#33](https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec/issues/33) після 06.11 немає, issues
+«Відхилення від вимог» до AC-INS немає.
+
 | AC | Рішення PM | Посилання |
 |---|---|---|
-| AC-…-NN | <!-- ✅ / ❌ / NEEDS-HUMAN → … --> | <!-- коментар-підпис або issue «Відхилення від вимог» --> |
+| AC-INS-01 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L126) |
+| AC-INS-02 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L150) |
+| AC-INS-03 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L180) |
+| AC-INS-04 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L207) |
+| AC-INS-05 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L237) |
+| AC-INS-06 | очікує приймання PM | [розділ звіту](uat/2026-11-09/report.md?plain=1#L261) |
 
-## D. Eval рецензента
+## D. Прод і ретро
 
-- PR з вадами (закритий, не злитий): https://github.com/pavmys/therapy-scheduling/pull/39 — гілка `task/refactor-helpers`, нейтральні назва, коміти й опис; усі
-  обов'язкові перевірки CI зелені (жодну ваду ворота не спіймали)
-- Ключ і таблиця: https://github.com/pavmys/therapy-scheduling/pull/39#issuecomment-6581143652 (ключ до того лежав поза репо)
-- Рецензенти: CodeRabbit (профіль ASSERTIVE, план Advanced); `/code-review high` — `claude -p … --setting-sources
-  project --output-format json`, модель **claude-opus-5-5** (модель акаунта за замовчуванням), 70,5 с, $0,556 —
-  вивід: [docs/qa/eval/code-review-pr39-run1.json](eval/code-review-pr39-run1.json)
+- `/api/health` після злиття всіх задач: sha `d5647b3`, env production, db ok (09.11.2026 18:41, Київ)
+- Нові ролі й акаунти: немає. UAT використав наявні admin1, scheduler1, scheduler2, therapist1 (`@example.test`);
+  `accounts.zip` не змінювався з D0 ([aca806d](https://github.com/pavmys/therapy-scheduling/commit/aca806df1e223497927a330bf44a6df39eeeda77), PR #34) —
+  [accounts.zip на d5647b3](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/accounts.zip)
+- `docs/conformance.md`: [рядки AC-INS-01…06 — «реалізовано»](https://github.com/pavmys/therapy-scheduling/blob/d5647b384630429ea9fd40da65cd7a09cdb27152/docs/conformance.md?plain=1#L96-L101)
 
-| # | Вада (ключ) | CodeRabbit | `/code-review high` |
-|---|---|---|---|
-| 1 | права в даних: `private.is_staff()` перевизначено як `security definer` без `set search_path = ''` (`create or replace` прибирає SET) — `supabase/migrations/20261102152103_role_helper_comments.sql:3-10` | знайшов, але **Minor**: «Встановіть порожній `search_path` для `SECURITY DEFINER` функції. `CREATE OR REPLACE FUNCTION` без цього параметра прибирає попереднє значення `search_path`.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260810)) | знайшов: «The migration recreates `private.is_staff()` as `security definer` without `set search_path = ''`, so it is not "logic unchanged": `create or replace` drops the `search_path` setting the original function had.» |
-| 2 | авторизація в дії: роль спершу з `claims.user_metadata.role`, `profiles.role` — запасна — `src/lib/auth.ts:28` | знайшов, **Major** (CWE-639): «Беріть роль лише з профілю. Користувач може змінити `user_metadata.role` і після оновлення токена передати `"admin"`.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260746)) | знайшов: «any user can write that field themselves, so any signed-in user can make themselves admin or scheduler.» |
-| 3 | логіка (AC-HOLD-37): `holdsList` без умови «повторне утримання новіше» — `src/lib/holds/status.ts:62-63` | знайшов, **Major**: «Якщо повторне утримання теж прострочиться до початку слоту, обидва записи приховають один одного.» ([тред](https://github.com/pavmys/therapy-scheduling/pull/39#discussion_r4444260788)) | знайшов: «an expired hold is hidden whenever the same client has any other hold on the slot, older ones included, so two expired holds hide each other.» |
-| П | приманка: `accessFor` використовує наявний `isStaffRole` замість того самого виразу — `src/lib/access.ts:1, 13` | хибної тривоги немає (коментаря немає) | хибної тривоги щодо поведінки немає; архітектурне зауваження: «The pure module `access.ts` used to import only types from `@/lib/auth` … It now has a runtime import» |
+### Ретро: що б ми взяли з фабрики у свій звичайний процес
 
-- Інші знахідки (усі від `/code-review`; CodeRabbit дав рівно 3 — по одній на ваду):
-  - «зняття ролі в `profiles.role` більше не діє, бо `user_metadata` має пріоритет» (`auth.ts:28`) — слушна, наслідок вади 2;
-  - «порушення правила AGENTS.md» для вад 1 і 2 — слушні, дублюють суть;
-  - «досить `comment on function`, `create or replace` зайвий» (міграція :3) — слушна: саме ручна копія тіла загубила `search_path`;
-  - «`access.ts` тепер має runtime-імпорт серверного модуля» (приманка) — слушна як зауваження до архітектури, не вада поведінки;
-  - «немає тесту AC-HOLD-37 на два прострочені утримання» (`status.test.ts:147`) — слушна: тому вада 3 і пройшла тести.
-- Правило, що закриває пропуск: найслабша знахідка — вада 1 у CodeRabbit (знайдено, але **Minor**, а не «must fix»).
-  Рядок в AGENTS.md (розділ «База даних»): «Функція `security definer` без `set search_path = ''` — помилка рівня
-  «must fix» (у рев'ю — Major), а не стиль … Це стосується й `create or replace` наявної функції …» —
-  [PR #40](https://github.com/pavmys/therapy-scheduling/pull/40),
-  [36fb2fe](https://github.com/pavmys/therapy-scheduling/commit/36fb2fe026c91d4239b55891c63e29a3f32c0190).
-- Повторний прогін (після `git merge main` у гілку з вадами, `df6d571`): https://github.com/pavmys/therapy-scheduling/pull/39#issuecomment-6588017356
-  - CodeRabbit (`@coderabbitai full review`, [рев'ю](https://github.com/pavmys/therapy-scheduling/pull/39#pullrequestreview-5742725888)): вада 1 — **Minor → Major**
-    (CWE-426): «Зафіксуйте `search_path` для `SECURITY DEFINER` функції. Функція виконується з привілеями власника,
-    але не має `set search_path = ''`.»; вада 2 — Major; вада 3 — **не повторив** («Duplicate comments: 2» — лише
-    вади 1 і 2); приманка — тиша.
-  - `/code-review high` (claude-opus-5-5, 56,3 с, $0,496, [вивід](eval/code-review-pr39-run2.json)): 3 з 3, вада 1 —
-    з рівнем із правила: «A session that puts its own schema first can shadow those and change the result of
-    is_staff() … AGENTS.md classes this as must fix.»; приманка — тиша.
-  - Висновок: правило спрацювало для обох. Різні прогони — різні знахідки: повне рев'ю CodeRabbit не повторило ваду 3.
-    Її правилом не закрити — лише тестом з AC (AC-HOLD-37 на два прострочені утримання), тобто у воротах.
-- Ворота після eval (гілка `task/gate-tests`): обидві вади, які ловили лише рецензенти, тепер ловить CI (`app`, `npm test`):
-  - вада 1 — `tests/db/security-definer.test.ts`: кожна функція `security definer` у `public` і `private` має
-    `set search_path = ''` (стан після всіх міграцій); SQL-мутант S1 → KILLED; на міграції з PR #39 тест червоний
-    (`private.is_staff`);
-  - вада 3 — `src/lib/holds/status.test.ts`: «AC-HOLD-37: обидва утримання client1 прострочені, о 09:59 видно лише
-    новіше «Expired»» і межа з 10:00 (тест написала окрема сесія агента з тексту AC, промпт P01); TS-мутант T3 →
-    KILLED; на коді з PR #39 тест червоний;
-  - вада 2 (`user_metadata`) лишається за правилом AGENTS.md і рецензентами: тести сторінок підміняють `getClaims`,
-    тож роль з токена вони не відрізнять.
+Що вже маємо: CI `spec` / `app` / `conformance` / `db-check` + `quality` (fallow, тестові правила ESLint, покриття),
+тести від окремої сесії (F02, F03), SQL- і TS-мутанти (`scripts/mutants.mjs`), Stryker, UAT з рецензентом-агентом і
+негативними контролями, цей пакет доказів, CodeRabbit (ASSERTIVE, custom checks). По станціях фабрики (F14):
+
+- **Допуск:** візьмемо — у `openspec/config.yaml` (правила для `tasks.md` змін `impl-*`) вимагати в кожному «Done
+  when» відмовного AC названий мутант або червоний прогін; задача без цього не стартує (у зрізі 3 це було лише в D4 `design.md`).
+- **Захищені тести:** візьмемо — custom check у `.coderabbit.yaml`: у PR «Реалізація» тести з AC ID змінено в тому самому
+  коміті, що й код, → попередження (зараз розділення «тести → код» тримається лише на дисципліні двох комітів).
+- **Приховані сценарії:** не потрібно окремо, бо виконавця, який не бачить тестів, у нас немає; аналог — тести з
+  тексту AC окремою сесією (F02) до коду.
+- **Мутації й повтор:** мутації вже є; візьмемо повтор — у `.github/workflows/quality.yml` другий прогін
+  `npx vitest run --sequence.shuffle`, щоб ловити тести, залежні від порядку (ризик у PGlite-тестах зі спільним станом).
+- **Рев'ю-спростування:** уже є (CodeRabbit), але візьмемо правило: PR не зливаємо, доки рев'ю не відбулося — у #45 воно
+  не запустилось через ліміт, і код задачі 1 рецензії не мав (див. «Не перевірено»); пункт у `.github/pull_request_template.md`.
+- **Пакет доказів з «Не перевірено»:** уже є (цей файл); візьмемо розділ «Не перевірено» в `.github/pull_request_template.md`,
+  щоб він з'являвся в кожному PR «Реалізація», а не лише наприкінці зрізу.
+- **Рівні автономії:** не потрібно, бо репо solo, а злиття — завжди людина (ruleset `solo-main`).
+- **Бюджети:** частково є (вартість у звіті UAT); візьмемо стелю `UAT_MAX_USD` у `scripts/uat/run.mjs`, яка зупиняє
+  розбір рецензентом, якщо її перевищено.

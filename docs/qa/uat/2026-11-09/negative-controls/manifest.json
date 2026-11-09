@@ -1,9 +1,9 @@
 {
   "kind": "uat",
-  "generatedAt": "2026-11-09T14:15:44.531Z",
-  "baseURL": "http://localhost:3000",
-  "deployedSha": null,
-  "testsCommit": "fac8dab09db9cd2610f308955ccee2264902b5e0",
+  "generatedAt": "2026-11-09T16:39:21.582Z",
+  "baseURL": "https://therapy-scheduling-three.vercel.app",
+  "deployedSha": "d5647b384630429ea9fd40da65cd7a09cdb27152",
+  "testsCommit": "68b54c13af252cfb0b214dec3f5e45a5854f9196",
   "reviewer": {
     "model": "claude-haiku-5-5",
     "disputes": "claude-sonnet-5-5"
@@ -22,7 +22,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі видно сторінку «Client card» під користувачем scheduler1@example.test із рядком «This client card doesn't exist.», текст збігається з критерієм посимвольно. Дані клієнта на кадрі відсутні. Частина критерію для therapist1 («You don't have access to this client.») у ac.md не віднесена до кадрів, тому тут не оцінювалася; journey.md також не містить кроку для therapist1."
+        "notes": "На кадрі frame-then-1.png для scheduler1 (сторінка /clients/00000000-0000-4000-8000-000000000016) видно повідомлення «This client card doesn't exist.» з піктограмою замка; жодних даних клієнта на екрані немає. Частина для therapist1 («You don't have access to this client.») у переліку видимих частин ac.md не зазначена і цим кадром не покрита, тож її я не оцінював."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -39,9 +39,9 @@
       "verdict": "FAIL",
       "factoryGate": "FAIL",
       "rule": "R1: перевірка впала — FAIL завжди, агент не перекриває",
-      "playwrightMs": 5657,
-      "reviewCostUsd": 0.00179,
-      "reviewWallMs": 6720
+      "playwrightMs": 6541,
+      "reviewCostUsd": 0.00189,
+      "reviewWallMs": 7412
     },
     {
       "id": "NC-2",
@@ -54,7 +54,7 @@
       "vision": {
         "met": false,
         "readable": true,
-        "notes": "На кадрі під scheduler1@example.test на сторінці «Client card» показано «This client card doesn't exist.», а критерій вимагає «This client card was not found.». Тексти не збігаються, тому частину не підтверджено. Даних клієнтів на кадрі немає."
+        "notes": "На кадрі сторінка «Client card» під користувачем scheduler1@example.test з повідомленням «This client card doesn't exist.». Критерій вимагає «This client card was not found.», тож текст інший, і даних клієнтів на кадрі немає."
       },
       "agentModel": "claude-sonnet-5-5",
       "agentVerdicts": {
@@ -66,13 +66,13 @@
       "verdict": "NEEDS-HUMAN",
       "factoryGate": "NOT-EARNED",
       "rule": "R3: перевірки пройшли, агент не погоджується — вирішує людина",
-      "playwrightMs": 707,
-      "reviewCostUsd": 0.03414,
-      "reviewWallMs": 24273
+      "playwrightMs": 1727,
+      "reviewCostUsd": 0.03251,
+      "reviewWallMs": 17314
     }
   ],
   "cleanup": {
-    "at": "2026-11-09T14:14:35.844Z",
+    "at": "2026-11-09T16:39:03.378Z",
     "deleted": [],
     "remaining": [],
     "leftoverRequests": 0
