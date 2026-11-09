@@ -12,7 +12,7 @@
 - [x] 1.2 Міграція `insurance_status` (D1, D2): колонка з default і check, `grant update (insurance_status)`, політика `clients_update_insurance_staff` з `with check … <> 'not_set'`; `npm run db:types` або типи з `db-check`
 - [x] 1.3 `src/lib/clients/insurance.ts` (`insuranceLabel`, `parseInsuranceStatus`) і Server Action `setInsuranceStatus` (D3)
 - [x] 1.4 Картка `/clients/[id]`: рядок «Insurance: <статус>» і `insurance-form.tsx` для staff (UI і компоненти); тести зелені
-- [ ] 1.5 Рядки `docs/conformance.md` AC-INS-01, -02, -03 → «реалізовано»; ручна перевірка на Preview під scheduler і admin
+- [x] 1.5 Рядки `docs/conformance.md` AC-INS-01, -02, -03 → «реалізовано»; ручна перевірка на Preview під scheduler і admin — на проді покрито UAT 2026-11-09 (`docs/qa/uat/2026-11-09/`: AC-INS-02 під scheduler1, AC-INS-03 під admin1 і scheduler2)
 
 Done when: AC-INS-01, AC-INS-02, AC-INS-03
 
@@ -27,8 +27,8 @@ Done when: AC-INS-04, AC-INS-05, AC-INS-06
 
 ## 3. UAT на кожен AC (`task/uat-insurance-status`)
 
-- [ ] 3.1 `tests/e2e/insurance-status.spec.ts` (F03): по одному `test` на AC-INS-01…06 з анотацією `ac`, тегом `@uat`, `given` / `when` / `thenStep` і дослівним «Тоді»; AC-INS-02, -03 — `@writes`, картка з `uatEmail()` і прибирання (`OWNED_ROWS`, `deleteUatUsers`); AC-INS-05 — крок «що не змінилося» на екрані
-- [ ] 3.2 Прогін на проді — людина: `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; пояснення звіту (F04); `npm run uat:nc` → FAIL
-- [ ] 3.3 `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`); у `docs/conformance.md` — шлях специфікації для кожного AC-INS; `npx openspec archive impl-insurance-status -y`
+- [x] 3.1 `tests/e2e/insurance-status.spec.ts` (F03): по одному `test` на AC-INS-01…06 з анотацією `ac`, тегом `@uat`, `given` / `when` / `thenStep` і дослівним «Тоді»; AC-INS-02, -03 — `@writes`, картка з `uatEmail()` і прибирання (`OWNED_ROWS`, `deleteUatUsers`); AC-INS-05 — крок «що не змінилося» на екрані
+- [x] 3.2 Прогін на проді — людина: `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; пояснення звіту (F04); `npm run uat:nc` → FAIL
+- [x] 3.3 `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`); у `docs/conformance.md` — шлях специфікації для кожного AC-INS; `npx openspec archive impl-insurance-status -y`
 
 Done when: AC-INS-01, AC-INS-02, AC-INS-03, AC-INS-04, AC-INS-05, AC-INS-06
