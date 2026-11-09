@@ -142,16 +142,27 @@ export async function insuranceStatusOf(clientId: string): Promise<string> {
  * картка uat-…@example.test (як у deleteUatCards) і рівно один змінений рядок: інакше «Дано» не те, що ми думаємо.
  */
 export async function setInsuranceStatusDirectly(clientId: string, status: InsuranceStatus): Promise<void> {
-  const { data, error } = await adminClient()
+  const supabase = adminClient();
+  // Спершу адреса, потім update: `like 'uat-%'` пропускає й адреси поза UAT_EMAIL, а перевірка після update
+  // зміну вже не скасувала б (рев'ю PR #47).
+  const { data: card, error: readError } = await supabase
+    .from("clients")
+    .select("email")
+    .eq("id", clientId)
+    .maybeSingle();
+  if (readError) throw readError;
+  if (!card?.email || !UAT_EMAIL.test(card.email)) {
+    throw new Error(`setInsuranceStatusDirectly: синтетичної картки ${clientId} не знайдено`);
+  }
+  const { data, error } = await supabase
     .from("clients")
     .update({ insurance_status: status })
     .eq("id", clientId)
-    .like("email", "uat-%@example.test")
-    .select("id, email");
+    .eq("email", card.email)
+    .select("id");
   if (error) throw error;
-  const rows = (data ?? []) as { id: string; email: string }[];
-  if (rows.length !== 1 || !UAT_EMAIL.test(rows[0].email)) {
-    throw new Error(`setInsuranceStatusDirectly: очікували рівно одну синтетичну картку ${clientId}, змінено ${rows.length}`);
+  if (data?.length !== 1) {
+    throw new Error(`setInsuranceStatusDirectly: синтетичну картку ${clientId} не оновлено (рядків: ${data?.length ?? 0})`);
   }
 }
 
