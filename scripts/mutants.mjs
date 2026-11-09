@@ -106,6 +106,12 @@ export const mutants = [
     replace: "  using (true)\n  with check (insurance_status <> 'not_set');",
   },
   {
+    id: "I5", kind: "sql", ac: "AC-INS-02", file: INSURANCE_STATUS, tests: [INSURANCE_STATUS_DB],
+    what: "clients_update_insurance_staff без заборони «Not set»: працівник повертає статус до початкового",
+    find: "with check ((select private.is_staff()) and insurance_status <> 'not_set');",
+    replace: "with check ((select private.is_staff()));",
+  },
+  {
     id: "I2", kind: "ts", ac: "AC-INS-05", file: "src/app/clients/[id]/actions.ts", tests: ["src/app/clients/[id]/actions.test.ts"],
     what: "setInsuranceStatus без перевірки ролі: терапевт отримує запит update замість зрозумілої відмови",
     find: "if (!user || !isStaffRole(user.role)) {",
