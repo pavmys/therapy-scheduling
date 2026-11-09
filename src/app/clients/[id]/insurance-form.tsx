@@ -19,7 +19,9 @@ export function InsuranceForm({ clientId, status }: { clientId: string; status: 
       <input type="hidden" name="client_id" value={clientId} />
       <Label htmlFor="insurance_status">Insurance status</Label>
       <div className="flex flex-wrap items-center gap-2">
-        <NativeSelect id="insurance_status" name="insurance_status" defaultValue={current} required>
+        {/* key: після дії React скидає форму до початкового defaultValue (зміну defaultValue select не підхоплює),
+            тож без перемонтування поле показувало «Select a status…» поруч з «Insurance: Verified» (кадр UAT AC-INS-02). */}
+        <NativeSelect key={current} id="insurance_status" name="insurance_status" defaultValue={current} required>
           <NativeSelectOption value="" disabled>
             Select a status…
           </NativeSelectOption>
