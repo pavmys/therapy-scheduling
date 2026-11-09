@@ -5,8 +5,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { accessFor } from "@/lib/access";
 import { getCurrentUser } from "@/lib/auth";
+import { insuranceLine } from "@/lib/clients/insurance";
 import { clientTypeLabel, missingClientMessage, orNotProvided } from "@/lib/clients/view";
 import { isUuid } from "@/lib/form";
+import { InsuranceForm } from "./insurance-form";
 
 // Картка клієнта за прямим посиланням. Що повернула база під RLS — те й показуємо: чужа картка, картка клієнта з
 // простроченим утриманням чи неіснуюча — 0 рядків, і роль бачить лише повідомлення без імен і назв полів
@@ -23,7 +25,9 @@ export default async function ClientCardPage({ params }: PageProps<"/clients/[id
   const { data: client } = isUuid(id)
     ? await supabase
         .from("clients")
-        .select("full_name, email, client_type, date_of_birth, session_language, guardian_name, guardian_email")
+        .select(
+          "full_name, email, client_type, date_of_birth, session_language, guardian_name, guardian_email, insurance_status",
+        )
         .eq("id", id)
         .maybeSingle()
     : { data: null };
@@ -58,8 +62,12 @@ export default async function ClientCardPage({ params }: PageProps<"/clients/[id
       <Card>
         <CardHeader>
           <h2 className="font-heading text-lg font-semibold">{client.full_name}</h2>
+          {/* Статус страхування — текстом, не кольором (AC-INS-01…04; «Припущення» PM). */}
+          <p className="text-sm" data-testid="insurance-status">
+            {insuranceLine(client.insurance_status)}
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-6">
           <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm" data-testid="client-card">
             {rows.map(([label, value]) => (
               <div key={label} className="contents">
@@ -68,6 +76,8 @@ export default async function ClientCardPage({ params }: PageProps<"/clients/[id
               </div>
             ))}
           </dl>
+          {/* Змінити статус пропонуємо лише staff; терапевту форму не рендеримо взагалі (AC-INS-04). */}
+          {role === "staff" ? <InsuranceForm clientId={id} status={client.insurance_status} /> : null}
         </CardContent>
       </Card>
     </main>

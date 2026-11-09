@@ -8,10 +8,10 @@
 
 ## 1. Планувальник і адміністратор позначають статус (`task/insurance-status`)
 
-- [ ] 1.1 Тести спершу (нова сесія, F02): `tests/db/insurance-status.test.ts` — AC-INS-01 (нова картка й картка зрізу 2 → `not_set`), AC-INS-02 (scheduler1 → `verified`, видно в новому select), AC-INS-03 (admin1 → `private_pay`, scheduler2 бачить); `src/lib/clients/insurance.test.ts` — підписи й `parseInsuranceStatus`; `src/app/clients/[id]/actions.test.ts` — AC-INS-02 «Insurance status saved.»; прогін червоний
-- [ ] 1.2 Міграція `insurance_status` (D1, D2): колонка з default і check, `grant update (insurance_status)`, політика `clients_update_insurance_staff` з `with check … <> 'not_set'`; `npm run db:types` або типи з `db-check`
-- [ ] 1.3 `src/lib/clients/insurance.ts` (`insuranceLabel`, `parseInsuranceStatus`) і Server Action `setInsuranceStatus` (D3)
-- [ ] 1.4 Картка `/clients/[id]`: рядок «Insurance: <статус>» і `insurance-form.tsx` для staff (UI і компоненти); тести зелені
+- [x] 1.1 Тести спершу (нова сесія, F02): `tests/db/insurance-status.test.ts` — AC-INS-01 (нова картка й картка зрізу 2 → `not_set`), AC-INS-02 (scheduler1 → `verified`, видно в новому select), AC-INS-03 (admin1 → `private_pay`, scheduler2 бачить); `src/lib/clients/insurance.test.ts` — підписи й `parseInsuranceStatus`; `src/app/clients/[id]/actions.test.ts` — AC-INS-02 «Insurance status saved.»; прогін червоний
+- [x] 1.2 Міграція `insurance_status` (D1, D2): колонка з default і check, `grant update (insurance_status)`, політика `clients_update_insurance_staff` з `with check … <> 'not_set'`; `npm run db:types` або типи з `db-check`
+- [x] 1.3 `src/lib/clients/insurance.ts` (`insuranceLabel`, `parseInsuranceStatus`) і Server Action `setInsuranceStatus` (D3)
+- [x] 1.4 Картка `/clients/[id]`: рядок «Insurance: <статус>» і `insurance-form.tsx` для staff (UI і компоненти); тести зелені
 - [ ] 1.5 Рядки `docs/conformance.md` AC-INS-01, -02, -03 → «реалізовано»; ручна перевірка на Preview під scheduler і admin
 
 Done when: AC-INS-01, AC-INS-02, AC-INS-03
