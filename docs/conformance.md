@@ -108,3 +108,14 @@
 | AC-INTAKE-07 | Ін'єкція в тексті — форма порожня, вказівок не виконано, кількість карток N | `src/app/clients/new/draft-actions.ts` (requestIntakeDraft), `src/app/clients/client-form.tsx`, `src/lib/ai/prompts/draft.ts` (wrapDocument, sanitizeRequest), `src/lib/ai/intake.ts` | `tests/intake-draft-action.test.ts`, `tests/golden.test.ts` (GC-10, межа <document>), `evals/reports/2026-11-16T15-12-53-287Z.md` (живий eval 9/10) | реалізовано |
 | AC-INTAKE-08 | Помічник недоступний — «The assistant is unavailable right now. Fill in the form manually.», форма працює вручну | `src/app/clients/new/draft-actions.ts` (requestIntakeDraft), `src/app/clients/client-form.tsx`, `src/lib/ai/draft.ts` (classifyError), `src/lib/ai/openrouter.ts`, `src/lib/ai/intake.ts` | `tests/intake-draft-action.test.ts`, `tests/golden.test.ts` (збої), `tests/openrouter-key.test.ts`, `tests/ai-key.test.ts` | реалізовано |
 | AC-INTAKE-09 | Терапевт за прямим посиланням — без форми й чернетки, «Only schedulers and admins can create client cards.» | `src/app/clients/new/page.tsx` (staffOnlyPage), `src/app/clients/new/draft-actions.ts` (роль до виклику моделі) | `src/app/clients/new/page.test.ts`, `tests/intake-draft-action.test.ts` | реалізовано |
+| AC-DOC-01 | Картка без документів згоди — «No consent documents yet.» і жодного документа | — | — | відкладено (чекає реалізації) |
+| AC-DOC-02 | Документи для дорослого — рівно два «Not signed» і «Missing signatures: Consent to treatment, Cancellation policy acknowledgement» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-03 | Документи для дитини з опікуном — рівно три «Not signed», зокрема «Release of information» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-04 | Текст документа англійською — заголовок, «Client: …», «Guardian: …», «Prepared: 2026-11-04» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-05 | Позначка одного підпису — «Signed 2026-11-04 10:15», «Missing signatures: Cancellation policy acknowledgement» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-06 | Підписано всі документи — «All consent documents signed.» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-07 | Непідписаний документ — утримання не підтверджено, «Sign all consent documents before confirming.», лишається «Held» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-08 | Усі документи підписано — утримання «Confirmed», «Held until» не показано | — | — | відкладено (чекає реалізації) |
+| AC-DOC-09 | Терапевт бачить документ свого клієнта, позначити не може — «Only schedulers and admins can mark documents as signed.» | — | — | відкладено (чекає реалізації) |
+| AC-DOC-10 | Терапевт і документ чужого клієнта — «You don't have access to this client.», без тексту й даних | — | — | відкладено (чекає реалізації) |
+| AC-DOC-11 | Без входу за посиланням на документ — лише сторінка входу, стан не змінено | — | — | відкладено (чекає реалізації) |
