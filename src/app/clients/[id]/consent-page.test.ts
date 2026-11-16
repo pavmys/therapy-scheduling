@@ -14,6 +14,7 @@ type DocRow = { id: string; kind: string; signed_at: string | null };
 const fake = vi.hoisted(() => ({
   role: "scheduler" as AppRole,
   docs: [] as DocRow[],
+  docsError: null as { message: string } | null,
   consentQueries: [] as { columns: string; column: string; value: string }[],
 }));
 
@@ -43,7 +44,9 @@ vi.mock("@/lib/supabase/server", () => ({
           }
           if (table === "consent_documents") {
             fake.consentQueries.push({ columns, column, value });
-            return Promise.resolve({ data: fake.docs, error: null });
+            return Promise.resolve(
+              fake.docsError ? { data: null, error: fake.docsError } : { data: fake.docs, error: null },
+            );
           }
           return { maybeSingle: async () => ({ data: CLIENT6_ROW, error: null }) };
         },
@@ -57,14 +60,14 @@ const { PrepareConsentForm, SignConsentForm } = await import("./consent-forms");
 
 type El = { type: unknown; props: Record<string, unknown> };
 
-// Дерево сторінки без DOM. Локальний серверний компонент ConsentDocuments розгортаємо викликом; клієнтські форми
+// Дерево сторінки без DOM. Локальні серверні компоненти ConsentDocuments і ConsentDocumentList розгортаємо викликом; клієнтські форми
 // не рендеримо — шукаємо їх елементи за типом.
 function expand(node: unknown): unknown {
   if (node === null || node === undefined || typeof node !== "object") return node;
   if (Array.isArray(node)) return node.map(expand);
   if ("props" in node && "type" in node) {
     const el = node as El;
-    if (typeof el.type === "function" && el.type.name === "ConsentDocuments") {
+    if (typeof el.type === "function" && ["ConsentDocuments", "ConsentDocumentList"].includes(el.type.name)) {
       return expand((el.type as (p: unknown) => unknown)(el.props));
     }
     return { ...el, props: { ...el.props, children: expand(el.props.children) } };
@@ -123,6 +126,7 @@ async function renderCard() {
 beforeEach(() => {
   fake.role = "scheduler";
   fake.docs = [];
+  fake.docsError = null;
   fake.consentQueries = [];
 });
 
@@ -136,6 +140,19 @@ describe("ClientCardPage — Consent documents", () => {
     expect(card.signForms).toHaveLength(0);
     expect(card.prepareForms).toHaveLength(1);
     expect(card.prepareForms[0].props.clientId).toBe(CLIENT6);
+  });
+
+  // Рев'ю PR pavmys/therapy-scheduling#59: збій читання — не «документів немає», інакше staff запропонували б
+  // сформувати документи, які вже є.
+  it("AC-DOC-01: збій читання документів — не «No consent documents yet.» і без кнопки формування, а повідомлення про помилку", async () => {
+    fake.docsError = { message: "network error" };
+    const card = await renderCard();
+    expect(card.summary).toBe("");
+    expect(card.list).toBeUndefined();
+    expect(card.prepareForms).toHaveLength(0);
+    expect(card.signForms).toHaveLength(0);
+    const message = elements(card.block).find((el) => typeof el.type === "function" && el.type.name === "ActionMessage");
+    expect(message?.props).toMatchObject({ ok: false, message: "Could not load consent documents. Try again." });
   });
 
   it("AC-DOC-02: два непідписані документи — обидва в порядку набору зі станом «Not signed», «Mark as signed» для кожного", async () => {

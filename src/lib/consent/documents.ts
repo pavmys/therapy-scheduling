@@ -25,6 +25,8 @@ export const NOT_SIGNED_LABEL = "Not signed";
 export const SIGN_FORBIDDEN_MESSAGE = "Only schedulers and admins can mark documents as signed.";
 export const PREPARE_FORBIDDEN_MESSAGE = "Only schedulers and admins can prepare consent documents.";
 export const CONSENT_UNEXPECTED_MESSAGE = "Could not update the consent documents. Try again.";
+// Збій читання документів — не «документів немає»: замість списку й кнопки формування (DESIGN.md, розділ 6).
+export const CONSENT_LOAD_ERROR_MESSAGE = "Could not load consent documents. Try again.";
 
 const BY_KIND = new Map(CONSENT_DOCUMENTS.map((d, i) => [d.kind, { ...d, order: i }]));
 
