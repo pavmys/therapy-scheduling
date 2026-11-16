@@ -114,8 +114,8 @@
 | AC-DOC-04 | Текст документа англійською — заголовок, «Client: …», «Guardian: …», «Prepared: 2026-11-04» | — | — | відкладено (чекає реалізації) |
 | AC-DOC-05 | Позначка одного підпису — «Signed 2026-11-04 10:15», «Missing signatures: Cancellation policy acknowledgement» | — | — | відкладено (чекає реалізації) |
 | AC-DOC-06 | Підписано всі документи — «All consent documents signed.» | — | — | відкладено (чекає реалізації) |
-| AC-DOC-07 | Непідписаний документ — утримання не підтверджено, «Sign all consent documents before confirming.», лишається «Held» | — | — | відкладено (чекає реалізації) |
-| AC-DOC-08 | Усі документи підписано — утримання «Confirmed», «Held until» не показано | — | — | відкладено (чекає реалізації) |
+| AC-DOC-07 | Непідписаний документ — утримання не підтверджено, «Sign all consent documents before confirming.», лишається «Held» | `supabase/migrations/20261116192352_consent_documents.sql` (confirm_hold_impl: CONSENT_NOT_SIGNED після перевірок зрізу 1), `src/lib/holds/messages.ts`, `src/app/holds/actions.ts` | `tests/db/consent-documents.test.ts`, `src/app/holds/actions.test.ts` | реалізовано |
+| AC-DOC-08 | Усі документи підписано — утримання «Confirmed», «Held until» не показано | `supabase/migrations/20261116192352_consent_documents.sql` (confirm_hold_impl), `src/app/holds/actions.ts` | `tests/db/consent-documents.test.ts` | реалізовано |
 | AC-DOC-09 | Терапевт бачить документ свого клієнта, позначити не може — «Only schedulers and admins can mark documents as signed.» | — | — | відкладено (чекає реалізації) |
 | AC-DOC-10 | Терапевт і документ чужого клієнта — «You don't have access to this client.», без тексту й даних | — | — | відкладено (чекає реалізації) |
 | AC-DOC-11 | Без входу за посиланням на документ — лише сторінка входу, стан не змінено | — | — | відкладено (чекає реалізації) |

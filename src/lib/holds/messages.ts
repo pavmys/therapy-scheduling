@@ -1,4 +1,4 @@
-// Коди помилок функцій hold_slot / confirm_hold (міграції slots_and_holds, confirm_hold) → тексти PM дослівно.
+// Коди помилок функцій hold_slot / confirm_hold (міграції slots_and_holds, confirm_hold, consent_documents) → тексти PM дослівно.
 export const HOLD_ERROR_MESSAGES = {
   HOLD_FORBIDDEN: "Only schedulers and admins can hold slots.",
   SLOT_UNAVAILABLE: "This slot is no longer available.",
@@ -13,6 +13,8 @@ export const HOLD_ERROR_MESSAGES = {
   HOLD_EXPIRED: "This hold has expired. Hold the slot again.",
   SLOT_STARTED_CONFIRM: "This slot has already started and cannot be confirmed.",
   HOLD_ALREADY_CONFIRMED: "This hold is already confirmed.",
+  // Сформовано документи згоди, і не всі підписано (AC-DOC-07; міграція consent_documents).
+  CONSENT_NOT_SIGNED: "Sign all consent documents before confirming.",
 } as const;
 
 export type HoldErrorCode = keyof typeof HOLD_ERROR_MESSAGES;

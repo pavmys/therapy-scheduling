@@ -13,10 +13,10 @@
 
 ## 1. Дані, функції й підтвердження з документами — без UI (`task/consent-data`)
 
-- [ ] 1.1 Міграція `consent_documents` (D1–D4): таблиця з `unique (client_id, kind)`, RLS (revoke all, grant select, політики staff і свого терапевта); `private.prepare_consent_documents_impl` + `public.prepare_consent_documents`; `private.sign_consent_document_impl` + `public.sign_consent_document`; `create or replace private.confirm_hold_impl` з `security definer set search_path = ''`, ті самі перевірки зрізу 1 у тому самому порядку, потім `CONSENT_NOT_SIGNED`; права всіх функцій явно; типи БД з `db-check`
-- [ ] 1.2 `src/lib/holds/messages.ts`: «Sign all consent documents before confirming.»; `confirmHold` без інших змін
-- [ ] 1.3 Тести (окрема сесія): PGlite — формування для дорослого й дитини, повторне й паралельне без другого набору; підпис staff, терапевт не підписує, повторна позначка не змінює час; анонім — відмова; підтвердження: непідписаний документ → відмова, «Held» і той самий `expires_at`; усі підписані → «Confirmed»; без документів — як у зрізі 1; прострочене з непідписаним → `HOLD_EXPIRED` (порядок перевірок); регресія AC-HOLD-12, -13, -22, -36 і `security-definer.test.ts`; дія підтвердження — текст PM
-- [ ] 1.4 Рядки `docs/conformance.md` AC-DOC-07, -08
+- [x] 1.1 Міграція `consent_documents` (D1–D4): таблиця з `unique (client_id, kind)`, RLS (revoke all, grant select, політики staff і свого терапевта); `private.prepare_consent_documents_impl` + `public.prepare_consent_documents`; `private.sign_consent_document_impl` + `public.sign_consent_document`; `create or replace private.confirm_hold_impl` з `security definer set search_path = ''`, ті самі перевірки зрізу 1 у тому самому порядку, потім `CONSENT_NOT_SIGNED`; права всіх функцій явно; типи БД з `db-check`
+- [x] 1.2 `src/lib/holds/messages.ts`: «Sign all consent documents before confirming.»; `confirmHold` без інших змін
+- [x] 1.3 Тести (окрема сесія): PGlite — формування для дорослого й дитини, повторне й паралельне без другого набору; підпис staff, терапевт не підписує, повторна позначка не змінює час; анонім — відмова; підтвердження: непідписаний документ → відмова, «Held» і той самий `expires_at`; усі підписані → «Confirmed»; без документів — як у зрізі 1; прострочене з непідписаним → `HOLD_EXPIRED` (порядок перевірок); регресія AC-HOLD-12, -13, -22, -36 і `security-definer.test.ts`; дія підтвердження — текст PM
+- [x] 1.4 Рядки `docs/conformance.md` AC-DOC-07, -08
 
 Done when: AC-DOC-07, AC-DOC-08
 

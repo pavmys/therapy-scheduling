@@ -115,6 +115,15 @@ describe("confirmHold", () => {
     expect(results.find((r) => !r?.ok)?.message).toBe("This hold is already confirmed.");
   });
 
+  it("AC-DOC-07: не всі документи згоди підписано — текст PM, утримання не підтверджено", async () => {
+    fake.rpcResults = [failed("CONSENT_NOT_SIGNED")];
+    expect(await confirmHold(null, confirmForm(HOLD))).toEqual({
+      ok: false,
+      message: "Sign all consent documents before confirming.",
+    });
+    expect(fake.rpcCalls).toEqual([{ fn: "confirm_hold", args: { p_hold_id: HOLD } }]);
+  });
+
   it("некоректний id або видалене утримання", async () => {
     expect(await confirmHold(null, confirmForm("not-a-uuid"))).toEqual({ ok: false, message: "This hold no longer exists." });
     expect(fake.rpcCalls).toEqual([]);
