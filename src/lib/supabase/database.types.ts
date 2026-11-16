@@ -1,6 +1,8 @@
 // Типи схеми бази. Оновлюйте разом із міграцією: готовий файл — у Summary прогону job db-check у CI
 // (supabase gen types typescript --local на одноразовій базі); або npm run db:types після npx supabase link на ваш проєкт. Ця стартова версія написана вручну
-// й описує таблиці й функції з міграцій 20261012000000, 20261022040716, 20261022042804 і 20261022063605.
+// й описує таблиці й функції з міграцій 20261012000000, 20261022040716, 20261022042804 і 20261022063605; далі доповнюється
+// з кожною міграцією (останнє — 20261116192352_consent_documents: таблиця consent_documents, prepare_consent_documents,
+// sign_consent_document).
 
 export type Json =
   | string
@@ -139,6 +141,44 @@ export type Database = {
           },
         ];
       };
+      consent_documents: {
+        Row: {
+          id: string;
+          client_id: string;
+          kind: string;
+          prepared_on: string;
+          signed_at: string | null;
+          signed_by: string | null;
+          created_by: string;
+        };
+        Insert: {
+          id?: string;
+          client_id: string;
+          kind: string;
+          prepared_on: string;
+          signed_at?: string | null;
+          signed_by?: string | null;
+          created_by: string;
+        };
+        Update: {
+          id?: string;
+          client_id?: string;
+          kind?: string;
+          prepared_on?: string;
+          signed_at?: string | null;
+          signed_by?: string | null;
+          created_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "consent_documents_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -164,6 +204,30 @@ export type Database = {
           created_at: string;
           expires_at: string;
           confirmed_at: string | null;
+        };
+      };
+      prepare_consent_documents: {
+        Args: { p_client_id: string };
+        Returns: {
+          id: string;
+          client_id: string;
+          kind: string;
+          prepared_on: string;
+          signed_at: string | null;
+          signed_by: string | null;
+          created_by: string;
+        }[];
+      };
+      sign_consent_document: {
+        Args: { p_document_id: string };
+        Returns: {
+          id: string;
+          client_id: string;
+          kind: string;
+          prepared_on: string;
+          signed_at: string | null;
+          signed_by: string | null;
+          created_by: string;
         };
       };
     };
