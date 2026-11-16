@@ -37,11 +37,47 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   ) : null;
 }
 
-// Форма картки клієнта з анкети (AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-12, AC-CARD-13): тип першим — він визначає,
-// які поля контакту потрібні. Після помилки дія повертає введені значення й помилки полів: усі одразу, кожна біля свого
-// поля; key — нова форма на кожну відповідь, щоб defaultValue показали введене.
-// Чернетка (AC-INTAKE-01…08) лише заповнює поля: картку створює людина кнопкою «Create client card» (AC-INTAKE-03).
-export function ClientForm() {
+// Поле тексту звернення й кнопка чернетки (design.md impl-client-intake-draft, «UI»). Текст живе в стані ClientForm,
+// а не у формі з key: так він лишається після кожної відповіді дії.
+function DraftRequest({
+  text,
+  onTextChange,
+  onDraft,
+  pending,
+  result,
+}: {
+  text: string;
+  onTextChange: (text: string) => void;
+  onDraft: (event: MouseEvent<HTMLButtonElement>) => void;
+  pending: boolean;
+  result: IntakeDraftState | null;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="card-request">Client&apos;s request</Label>
+      <Textarea
+        id="card-request"
+        name="request_text"
+        maxLength={MAX_REQUEST_LENGTH}
+        value={text}
+        onChange={(e) => onTextChange(e.target.value)}
+        aria-describedby="card-request-hint"
+      />
+      <p id="card-request-hint" className="text-xs text-muted-foreground">
+        Don&apos;t paste diagnoses or other health details: name, date of birth, language and contacts are enough.
+      </p>
+      {/* type="button": Enter у полі картки й далі відправляє «Create client card», а не чернетку. */}
+      <Button type="button" variant="secondary" disabled={pending} onClick={onDraft} className="self-start">
+        Draft from request
+      </Button>
+      {result ? <DraftMessage result={result} /> : null}
+    </div>
+  );
+}
+
+// Дві дії однієї форми: «Draft from request» (intent=draft) лише повертає значення полів, «Create client card» —
+// створює картку. Чернетка задає тип клієнта (від нього залежать поля контакту); після створення форма очищається.
+function useClientFormActions() {
   const [requestText, setRequestText] = useState("");
   const [clientType, setClientType] = useState("adult");
   const [state, formAction, pending] = useActionState<FormState, FormData>(async (_prev, formData) => {
@@ -57,40 +93,44 @@ export function ClientForm() {
     }
     return { kind: "create", result };
   }, null);
-  const created = state?.kind === "create" ? state.result : null;
-  const draft = state?.kind === "draft" ? state.result : null;
-  const values = draft ? draft.values : created?.values;
-  const errors = created?.errors ?? {};
-  const describe = (field: CardErrorField) => (errors[field] ? `card-error-${field}` : undefined);
-  const invalid = (field: CardErrorField) => (errors[field] ? true : undefined);
 
-  // type="button": Enter у полі картки й далі відправляє «Create client card», а не чернетку.
   const askDraft = (event: MouseEvent<HTMLButtonElement>) => {
     const formData = new FormData(event.currentTarget.form ?? undefined);
     formData.set("intent", "draft");
     startTransition(() => formAction(formData));
   };
 
+  const created = state?.kind === "create" ? state.result : null;
+  const draft = state?.kind === "draft" ? state.result : null;
+  return {
+    state,
+    formAction,
+    pending,
+    askDraft,
+    requestText,
+    setRequestText,
+    clientType,
+    setClientType,
+    created,
+    draft,
+    values: draft ? draft.values : created?.values,
+  };
+}
+
+// Форма картки клієнта з анкети (AC-CARD-01, AC-CARD-02, AC-CARD-03, AC-CARD-12, AC-CARD-13): тип першим — він визначає,
+// які поля контакту потрібні. Після помилки дія повертає введені значення й помилки полів: усі одразу, кожна біля свого
+// поля; key — нова форма на кожну відповідь, щоб defaultValue показали введене.
+// Чернетка (AC-INTAKE-01…08) лише заповнює поля: картку створює людина кнопкою «Create client card» (AC-INTAKE-03).
+export function ClientForm() {
+  const { state, formAction, pending, askDraft, requestText, setRequestText, clientType, setClientType, created, draft, values } =
+    useClientFormActions();
+  const errors = created?.errors ?? {};
+  const describe = (field: CardErrorField) => (errors[field] ? `card-error-${field}` : undefined);
+  const invalid = (field: CardErrorField) => (errors[field] ? true : undefined);
+
   return (
     <form key={JSON.stringify(state)} action={formAction} className="flex flex-col gap-4" noValidate>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="card-request">Client&apos;s request</Label>
-        <Textarea
-          id="card-request"
-          name="request_text"
-          maxLength={MAX_REQUEST_LENGTH}
-          value={requestText}
-          onChange={(e) => setRequestText(e.target.value)}
-          aria-describedby="card-request-hint"
-        />
-        <p id="card-request-hint" className="text-xs text-muted-foreground">
-          Don&apos;t paste diagnoses or other health details: name, date of birth, language and contacts are enough.
-        </p>
-        <Button type="button" variant="secondary" disabled={pending} onClick={askDraft} className="self-start">
-          Draft from request
-        </Button>
-        {draft ? <DraftMessage result={draft} /> : null}
-      </div>
+      <DraftRequest text={requestText} onTextChange={setRequestText} onDraft={askDraft} pending={pending} result={draft} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="card-type">Client type</Label>
         <NativeSelect
