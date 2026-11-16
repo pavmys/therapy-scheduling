@@ -57,5 +57,6 @@ export async function signConsentDocument(
   if (error) return failure(error);
 
   revalidatePath("/clients/[id]", "page");
+  revalidatePath("/clients/[id]/consent/[kind]", "page");
   return { ok: true, message: "" };
 }

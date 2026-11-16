@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   ALL_CONSENT_DOCUMENTS_SIGNED_MESSAGE,
+  CONSENT_DOCUMENTS,
+  consentDocumentPath,
+  consentKindFromSlug,
   consentStateLabel,
   consentSummary,
   consentTitle,
@@ -78,5 +81,27 @@ describe("consentStateLabel", () => {
 
   it("AC-DOC-06: непідписаний документ — «Not signed»", () => {
     expect(consentStateLabel(null)).toBe("Not signed");
+  });
+});
+
+describe("consentDocumentPath / consentKindFromSlug", () => {
+  const CLIENT7 = "c0000000-0000-4000-8000-000000000007";
+
+  it("AC-DOC-04: адреса документа — /clients/<id>/consent/<slug>, і slug з адреси повертає той самий тип для всіх трьох", () => {
+    expect(consentDocumentPath(CLIENT7, "consent_to_treatment")).toBe(`/clients/${CLIENT7}/consent/consent-to-treatment`);
+    expect(consentDocumentPath(CLIENT7, "cancellation_policy")).toBe(`/clients/${CLIENT7}/consent/cancellation-policy`);
+    expect(consentDocumentPath(CLIENT7, "release_of_information")).toBe(
+      `/clients/${CLIENT7}/consent/release-of-information`,
+    );
+    for (const { kind } of CONSENT_DOCUMENTS) {
+      const slug = consentDocumentPath(CLIENT7, kind).split("/").pop() ?? "";
+      expect(consentKindFromSlug(slug)).toBe(kind);
+    }
+  });
+
+  it("AC-DOC-04: невідомий slug або значення kind замість slug — null", () => {
+    expect(consentKindFromSlug("unknown-document")).toBeNull();
+    expect(consentKindFromSlug("release_of_information")).toBeNull();
+    expect(consentKindFromSlug("")).toBeNull();
   });
 });

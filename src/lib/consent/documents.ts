@@ -2,8 +2,8 @@ import { formatPracticeDateTime } from "@/lib/time";
 
 // Документи згоди клієнта (openspec/specs/consent-documents; design.md impl-consent-documents, D1).
 // Значення в базі — public.consent_documents.kind (check consent_documents_kind_check); назви, порядок, slug сторінки
-// документа (і сталий текст — задача 3) — тут, а не в базі: тип і ім'я клієнта не змінюються, тож документ завжди
-// відтворюється однаково.
+// документа й сталий текст — тут, а не в базі: тип і ім'я клієнта не змінюються, тож документ завжди відтворюється
+// однаково.
 // Назви, стани й рядки — дослівно з AC PM («Припущення» HryhoriiHaponiukQuitCode/therapy-scheduling-spec#34).
 export type ConsentKind = "consent_to_treatment" | "cancellation_policy" | "release_of_information";
 
@@ -34,6 +34,16 @@ export function consentTitle(kind: string): string {
   return BY_KIND.get(kind as ConsentKind)?.title ?? kind;
 }
 
+/** Адреса сторінки документа: /clients/<id>/consent/<slug> (AC-DOC-04, AC-DOC-09…11). */
+export function consentDocumentPath(clientId: string, kind: string): string {
+  return `/clients/${clientId}/consent/${BY_KIND.get(kind as ConsentKind)?.slug ?? kind}`;
+}
+
+/** slug з адреси → тип документа; невідомий slug — null. */
+export function consentKindFromSlug(slug: string): ConsentKind | null {
+  return CONSENT_DOCUMENTS.find((d) => d.slug === slug)?.kind ?? null;
+}
+
 /** Документи в порядку набору (база порядку не гарантує). */
 export function sortConsentDocuments<T extends { kind: string }>(docs: readonly T[]): T[] {
   const order = (kind: string) => BY_KIND.get(kind as ConsentKind)?.order ?? CONSENT_DOCUMENTS.length;
@@ -56,3 +66,20 @@ export function consentSummary(docs: readonly { kind: string; signed_at: string 
     ? ALL_CONSENT_DOCUMENTS_SIGNED_MESSAGE
     : `Missing signatures: ${missing.map((d) => consentTitle(d.kind)).join(", ")}`;
 }
+
+// Сталий текст згоди — синтетичний, без справжніх назв і правил практики («Припущення» PM: на вибір розробника).
+// Сторінка документа показує його під рядками «Client: …», «Guardian: …», «Prepared: …» (AC-DOC-04).
+export const CONSENT_BODY: Record<ConsentKind, readonly string[]> = {
+  consent_to_treatment: [
+    "I agree to take part in psychotherapy sessions with a therapist of the practice.",
+    "I understand that I can ask questions about the therapy at any time and can stop the therapy whenever I choose.",
+  ],
+  cancellation_policy: [
+    "I have read the practice's rules for cancelling and rescheduling sessions.",
+    "I understand that sessions should be cancelled in advance so the time can be offered to another client.",
+  ],
+  release_of_information: [
+    "As the guardian of the client, I allow the practice to share information about the therapy with me.",
+    "I understand that I can withdraw this permission in writing at any time.",
+  ],
+};
