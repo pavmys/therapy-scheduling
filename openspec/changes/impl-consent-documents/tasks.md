@@ -22,17 +22,17 @@ Done when: AC-DOC-07, AC-DOC-08
 
 ## 2. Документи в картці: формування й позначка «підписано» (`task/consent-card`)
 
-- [ ] 2.1 `src/lib/consent/documents.ts`: набір за типом клієнта, назви, slug, порядок, сталий синтетичний текст; рядок підсумку («Missing signatures: …» / «All consent documents signed.» / «No consent documents yet.»); формат «Signed РРРР-ММ-ДД ГГ:ХХ» (America/Los_Angeles)
-- [ ] 2.2 Server Actions `prepareConsentDocuments` і `signConsentDocument` (D5)
-- [ ] 2.3 Блок «Consent documents» у картці: порожній стан, кнопка формування для staff, таблиця зі станами (назви документів — простий текст без посилань: сторінки документа ще немає), «Mark as signed» для staff, рядок `consent-summary`
-- [ ] 2.4 Тести (окрема сесія): unit — рядок підсумку й формат стану; дії — staff формує й підписує, терапевт отримує відмову без запиту; сторінка картки — порожній стан, список, підсумок, для терапевта кнопок немає
-- [ ] 2.5 Рядки `docs/conformance.md` AC-DOC-01, -02, -03, -05, -06
+- [x] 2.1 `src/lib/consent/documents.ts`: набір за типом клієнта, назви, slug, порядок (сталий синтетичний текст — у задачі 3, разом зі сторінкою, що його показує); рядок підсумку («Missing signatures: …» / «All consent documents signed.» / «No consent documents yet.»); формат «Signed РРРР-ММ-ДД ГГ:ХХ» (America/Los_Angeles)
+- [x] 2.2 Server Actions `prepareConsentDocuments` і `signConsentDocument` (D5)
+- [x] 2.3 Блок «Consent documents» у картці: порожній стан, кнопка формування для staff, таблиця зі станами (назви документів — простий текст без посилань: сторінки документа ще немає), «Mark as signed» для staff, рядок `consent-summary`
+- [x] 2.4 Тести (окрема сесія): unit — рядок підсумку й формат стану; дії — staff формує й підписує, терапевт отримує відмову без запиту; сторінка картки — порожній стан, список, підсумок, для терапевта кнопок немає
+- [x] 2.5 Рядки `docs/conformance.md` AC-DOC-01, -02, -03, -05, -06
 
 Done when: AC-DOC-01, AC-DOC-02, AC-DOC-03, AC-DOC-05, AC-DOC-06
 
 ## 3. Сторінка документа (`task/consent-page`)
 
-- [ ] 3.1 Сторінка `/clients/[id]/consent/[kind]`: текст документа, стан, «Mark as signed» для staff; терапевт свого клієнта — текст PM замість кнопки; чужий — «You don't have access to this client.»; гість — `/login`; документа немає — `notFound()` для staff
+- [ ] 3.1 Сторінка `/clients/[id]/consent/[kind]`: сталий синтетичний текст згоди в `src/lib/consent/documents.ts`, текст документа, стан, «Mark as signed» для staff; терапевт свого клієнта — текст PM замість кнопки; чужий — «You don't have access to this client.»; гість — `/login`; документа немає — `notFound()` для staff
 - [ ] 3.2 Назви документів у таблиці картки — посилання на сторінку документа (разом зі сторінкою, щоб не було посилань на 404)
 - [ ] 3.3 Тести (окрема сесія): unit — рендер документа дитини; сторінка — staff, терапевт свого й чужого клієнта, гість; PGlite — therapist1 не бачить документів client9
 - [ ] 3.4 Рядки `docs/conformance.md` AC-DOC-04, -09, -10, -11
