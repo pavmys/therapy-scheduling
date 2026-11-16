@@ -98,8 +98,13 @@ export async function createUatCard(email: string, fullName: string, insuranceSt
   return data.id as string;
 }
 
-/** Робить картку «своїм клієнтом» терапевта: слот терапевта в UAT_SLOTS і утримання «Held» (24 год) за карткою. */
-export async function makeOwnClient(clientId: string, therapistEmail: string): Promise<void> {
+export type OwnHold = { holdId: string; therapistId: string; slotStartsAt: string; expiresAt: string };
+
+/**
+ * Робить картку «своїм клієнтом» терапевта: слот терапевта в UAT_SLOTS і утримання «Held» (24 год) за карткою.
+ * Повертає утримання й слот — для підтвердження й перевірки статусу слоту (AC-DOC-07, AC-DOC-08).
+ */
+export async function makeOwnClient(clientId: string, therapistEmail: string): Promise<OwnHold> {
   const supabase = adminClient();
   const { data: therapist, error: profileError } = await supabase
     .from("profiles")
@@ -121,13 +126,97 @@ export async function makeOwnClient(clientId: string, therapistEmail: string): P
     .single();
   if (slotError) throw slotError;
   const createdAt = Math.floor(Date.now() / 60_000) * 60_000;
-  const { error: holdError } = await supabase.from("holds").insert({
-    slot_id: slot.id,
-    client_id: clientId,
-    created_at: new Date(createdAt).toISOString(),
-    expires_at: new Date(createdAt + 24 * HOUR_MS).toISOString(),
-  });
+  const expiresAt = new Date(createdAt + 24 * HOUR_MS).toISOString();
+  const { data: hold, error: holdError } = await supabase
+    .from("holds")
+    .insert({
+      slot_id: slot.id,
+      client_id: clientId,
+      created_at: new Date(createdAt).toISOString(),
+      expires_at: expiresAt,
+    })
+    .select("id")
+    .single();
   if (holdError) throw holdError;
+  return { holdId: hold.id as string, therapistId: therapist.id as string, slotStartsAt: new Date(startsAt).toISOString(), expiresAt };
+}
+
+// ── Документи згоди (зріз 5, AC-DOC) ─────────────────────────────────────────────────────────────────────────
+// «Дано» з документами задаємо секретним ключем: функція prepare_consent_documents вимагає роль працівника, а
+// service_role її не має. Набір і порядок — як у функції бази (D1, D2 design.md impl-consent-documents).
+export type ConsentKind = "consent_to_treatment" | "cancellation_policy" | "release_of_information";
+
+/** Картка дитини з синтетичним email опікуна. Повертає id. */
+export async function createUatChildCard(guardianEmail: string, fullName: string, guardianName: string): Promise<string> {
+  if (!UAT_EMAIL.test(guardianEmail)) throw new Error(`Синтетична картка має email uat-…@example.test, а не ${guardianEmail}`);
+  const { data, error } = await adminClient()
+    .from("clients")
+    .insert({
+      full_name: fullName,
+      client_type: "child",
+      date_of_birth: "2016-09-03",
+      session_language: "Spanish",
+      guardian_name: guardianName,
+      guardian_email: guardianEmail,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+/** Документи згоди картки (як сформував би scheduler1): набір за типом клієнта, prepared_on — задана дата. */
+export async function prepareConsentDirectly(clientId: string, preparedOn: string): Promise<void> {
+  const supabase = adminClient();
+  const [{ data: client, error: clientError }, { data: scheduler, error: profileError }] = await Promise.all([
+    supabase.from("clients").select("client_type").eq("id", clientId).single(),
+    supabase.from("profiles").select("id").eq("email", "scheduler1@example.test").single(),
+  ]);
+  if (clientError) throw clientError;
+  if (profileError) throw profileError;
+  const kinds: ConsentKind[] = ["consent_to_treatment", "cancellation_policy"];
+  if (client.client_type === "child") kinds.push("release_of_information");
+  const { error } = await supabase
+    .from("consent_documents")
+    .insert(kinds.map((kind) => ({ client_id: clientId, kind, prepared_on: preparedOn, created_by: scheduler.id })));
+  if (error) throw error;
+}
+
+/** Позначити документ підписаним напряму (scheduler1, заданий час) — для «Дано» з уже підписаними документами. */
+export async function signConsentDirectly(clientId: string, kind: ConsentKind, signedAt: string): Promise<void> {
+  const supabase = adminClient();
+  const { data: scheduler, error: profileError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", "scheduler1@example.test")
+    .single();
+  if (profileError) throw profileError;
+  const { data, error } = await supabase
+    .from("consent_documents")
+    .update({ signed_at: signedAt, signed_by: scheduler.id })
+    .eq("client_id", clientId)
+    .eq("kind", kind)
+    .select("id");
+  if (error) throw error;
+  if (data?.length !== 1) throw new Error(`signConsentDirectly: документа ${kind} картки ${clientId} немає`);
+}
+
+/** Документи згоди картки в базі (секретним ключем, повз RLS) — невидима частина «Тоді». */
+export async function consentDocumentsOf(clientId: string): Promise<{ kind: string; signed_at: string | null }[]> {
+  const { data, error } = await adminClient()
+    .from("consent_documents")
+    .select("kind, signed_at")
+    .eq("client_id", clientId)
+    .order("kind");
+  if (error) throw error;
+  return data as { kind: string; signed_at: string | null }[];
+}
+
+/** Стан утримання в базі: confirmed_at і expires_at (AC-DOC-07, AC-DOC-08). */
+export async function holdStateOf(holdId: string): Promise<{ confirmed_at: string | null; expires_at: string }> {
+  const { data, error } = await adminClient().from("holds").select("confirmed_at, expires_at").eq("id", holdId).single();
+  if (error) throw error;
+  return data as { confirmed_at: string | null; expires_at: string };
 }
 
 /** Статус страхування картки в базі (секретним ключем, повз RLS) — невидима частина «Тоді». */
@@ -167,19 +256,27 @@ export async function setInsuranceStatusDirectly(clientId: string, status: Insur
 }
 
 /**
- * Прибирає синтетичні картки (усі uat-…@example.test або лише onlyEmail), їхні утримання й слоти UAT_SLOTS, а потім
+ * Прибирає синтетичні картки (усі uat-…@example.test або лише onlyEmail — email дорослого чи опікуна дитини), їхні
+ * утримання, документи згоди (каскад) і слоти UAT_SLOTS, а потім
  * рахує, скільки таких рядків лишилось. Без onlyEmail — і всі слоти UAT_SLOTS (залишки обірваних прогонів).
  */
 async function deleteUatCards(
   supabase: SupabaseClient,
   onlyEmail?: string,
 ): Promise<{ deleted: string[]; remaining: string[]; leftover: number }> {
+  // Синтетична адреса картки: email дорослого або, для дитини (зріз 2), email опікуна — інакше картки дітей з UAT
+  // документів згоди (AC-DOC-03, AC-DOC-04) лишались би на проді.
   const listCards = async () => {
-    const { data, error } = await supabase.from("clients").select("id, email").like("email", "uat-%@example.test");
+    // Запит окремою змінною: правило playwright/no-useless-await приймає .or() Supabase за Locator.or().
+    const query = supabase
+      .from("clients")
+      .select("id, email, guardian_email")
+      .or("email.like.uat-%@example.test,guardian_email.like.uat-%@example.test");
+    const { data, error } = await query;
     if (error) throw error;
-    return (data as { id: string; email: string }[]).filter(
-      (c) => UAT_EMAIL.test(c.email) && (!onlyEmail || c.email === onlyEmail),
-    );
+    return (data as { id: string; email: string | null; guardian_email: string | null }[])
+      .map((c) => ({ id: c.id, email: (c.email ?? c.guardian_email) as string }))
+      .filter((c) => UAT_EMAIL.test(c.email) && (!onlyEmail || c.email === onlyEmail));
   };
   const cards = await listCards();
   const ids = cards.map((c) => c.id);

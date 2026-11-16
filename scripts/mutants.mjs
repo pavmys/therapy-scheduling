@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 // Мутанти для scripts/mutation-check.mjs (npm run mutation:sql). Мутант = одне правило з AC, навмисно зламане.
 // Джерело формату — матеріали курсу WS8, materials/testing/scripts/mutants.mjs (там же приклади з демо).
 // Поля:
@@ -18,6 +20,24 @@ const CLIENT_CARDS_DB = "tests/db/client-cards.test.ts";
 const APP_ACCESS_DB = "tests/db/app-access.test.ts";
 const INSURANCE_STATUS = "supabase/migrations/20261109112112_insurance_status.sql";
 const INSURANCE_STATUS_DB = "tests/db/insurance-status.test.ts";
+const CONSENT = "supabase/migrations/20261116192352_consent_documents.sql";
+const CONSENT_DB = "tests/db/consent-documents.test.ts";
+const CONSENT_PAGE = "src/app/clients/[id]/consent/[kind]/page.tsx";
+const CONSENT_PAGE_TEST = "src/app/clients/[id]/consent/[kind]/page.test.ts";
+
+// «Один набір на картку» (AC-DOC-02) тримають ДВА бар'єри: перевірка «документи вже є» у
+// prepare_consent_documents_impl і unique (client_id, kind) з on conflict do nothing. Мутант лише одного з них
+// еквівалентний, тож D3 знімає обидва однією заміною: find — увесь фрагмент міграції від constraint до on conflict
+// (читаємо з файлу, щоб не копіювати 60 рядків руками), replace — той самий фрагмент без обох бар'єрів.
+const ONE_SET_FROM = "  constraint consent_documents_client_kind_key unique (client_id, kind),\n";
+const ONE_SET_TO = "\n    on conflict (client_id, kind) do nothing;";
+const ONE_SET_GUARD =
+  "if not exists (select 1 from public.consent_documents as d where d.client_id = p_client_id) then";
+const consentSql = readFileSync(CONSENT, "utf8").replace(/\r\n/g, "\n");
+const oneSetBlock = consentSql.slice(
+  consentSql.indexOf(ONE_SET_FROM),
+  consentSql.indexOf(ONE_SET_TO) + ONE_SET_TO.length,
+);
 
 export const mutants = [
   // ── AC-CARD-06: терапевт не створює картку клієнта ────────────────────────────────────────────────────────────
@@ -128,5 +148,36 @@ export const mutants = [
     what: "форма статусу страхування рендериться й терапевту",
     find: 'role === "staff" ? <InsuranceForm',
     replace: "true ? <InsuranceForm",
+  },
+  // ── Зріз 5, документи згоди (design.md impl-consent-documents, «Тести») ────────────────────────────────────────
+  {
+    id: "D1", kind: "sql", ac: "AC-DOC-07", file: CONSENT, tests: [CONSENT_DB],
+    what: "confirm_hold_impl без перевірки CONSENT_NOT_SIGNED: утримання підтверджується з непідписаним документом",
+    find: "  ) then\n    raise exception 'CONSENT_NOT_SIGNED';",
+    replace: "  ) and false then\n    raise exception 'CONSENT_NOT_SIGNED';",
+  },
+  {
+    id: "D2", kind: "sql", ac: "AC-DOC-09", file: CONSENT, tests: [CONSENT_DB],
+    what: "sign_consent_document_impl без перевірки ролі: документ позначає підписаним будь-хто з входом, зокрема терапевт",
+    find: "  if (select auth.uid()) is null or not private.is_staff() then\n    raise exception 'SIGN_FORBIDDEN';",
+    replace: "  if (select auth.uid()) is null then\n    raise exception 'SIGN_FORBIDDEN';",
+  },
+  {
+    id: "D3", kind: "sql", ac: "AC-DOC-02", file: CONSENT, tests: [CONSENT_DB],
+    what: "без обох бар'єрів «один набір на картку» (unique і перевірка «документи вже є»): повторне формування дає другий набір",
+    find: oneSetBlock,
+    replace: oneSetBlock.replace(ONE_SET_FROM, "").replace(ONE_SET_GUARD, "if true then").replace(ONE_SET_TO, ";"),
+  },
+  {
+    id: "D4", kind: "ts", ac: "AC-DOC-11", file: CONSENT_PAGE, tests: [CONSENT_PAGE_TEST],
+    what: "сторінка документа без redirect(\"/login\"): гість бачить документ замість сторінки входу",
+    find: 'if (access === "login") redirect("/login");',
+    replace: 'if (access === "login") void 0;',
+  },
+  {
+    id: "D5", kind: "ts", ac: "AC-DOC-09", file: CONSENT_PAGE, tests: [CONSENT_PAGE_TEST],
+    what: "сторінка документа пропонує «Mark as signed» і терапевту",
+    find: 'doc.signed_at ? null : role === "staff" ? (',
+    replace: "doc.signed_at ? null : true ? (",
   },
 ];

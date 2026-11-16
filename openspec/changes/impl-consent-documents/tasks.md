@@ -41,7 +41,7 @@ Done when: AC-DOC-04, AC-DOC-09, AC-DOC-10, AC-DOC-11
 
 ## 4. Мутанти, UAT, прод (`task/consent-uat`)
 
-- [ ] 4.1 Мутанти (`scripts/mutants.mjs`): без `CONSENT_NOT_SIGNED`, без `is_staff()` у підписі, без унікальності набору, без `redirect("/login")` на сторінці документа — кожен `KILLED`
+- [x] 4.1 Мутанти (`scripts/mutants.mjs`): без `CONSENT_NOT_SIGNED`, без `is_staff()` у підписі, без унікальності набору, без `redirect("/login")` на сторінці документа — кожен `KILLED`
 - [ ] 4.2 UAT `tests/e2e/consent-documents.spec.ts` — AC-DOC-01…11 з тегом `@uat` (формування й підпис — `@writes` на синтетичних картках); прогін — людина, `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; звіт у `docs/qa/uat/<дата>/`
 - [ ] 4.3 `/api/health` з SHA `main`; `docs/conformance.md` — шляхи коду, тестів і UAT для кожного AC-DOC; `npx openspec archive impl-consent-documents -y`
 
