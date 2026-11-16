@@ -15,8 +15,9 @@
 - Картка `src/app/clients/[id]/page.tsx` під RLS, `getCurrentUser()` (`getClaims()` + роль з `profiles`), `accessFor`.
 - Тести бази на PGlite (`tests/db/supabase-pglite.ts`, ADR 0004); мутанти SQL — `npm run mutation:sql`.
 
-Нових ролей і залежностей немає. Нова таблиця й три міграції (по одній на задачу) — перед кожною питаємо людину
-(AGENTS.md: «нові міграції — спитай спершу»).
+Нових ролей і залежностей немає. Нова таблиця, функції й зміна `confirm_hold_impl` — однією міграцією в задачі 1, до
+будь-якого UI: так перевірка підписів (AC-DOC-07) розгорнута на проді раніше, ніж у картці можна сформувати перший
+документ (порядок задач — `tasks.md`). Перед міграцією питаємо людину (AGENTS.md: «нові міграції — спитай спершу»).
 
 ## Goals / Non-Goals
 
@@ -34,7 +35,8 @@ HryhoriiHaponiukQuitCode/therapy-scheduling-spec#38) — після відпов
   - Документів немає → `text-sm text-muted-foreground` «No consent documents yet.» (стан порожнього списку DESIGN.md);
     staff бачить `Button` `secondary` «Prepare consent documents» (підпис — наш: PM дає лише дію «формує»). Основна
     дія картки — та сама, що й була; кнопка формування — другорядна.
-  - Документи є → `Table` (компактні рядки): назва — посилання на сторінку документа; стан — текст «Not signed» або
+  - Документи є → `Table` (компактні рядки): назва — посилання на сторінку документа (з задачі 3, разом зі сторінкою;
+    до того — простий текст); стан — текст «Not signed» або
     «Signed РРРР-ММ-ДД ГГ:ХХ» (`tabular-nums`); для staff у рядку непідписаного документа — `Button` `outline` `sm`
     «Mark as signed». `StatusBadge` не використовуємо: стани документа не в таблиці статусів DESIGN.md, нового токена
     не вигадуємо (як «Insurance: …» у зрізі 3).
@@ -62,7 +64,7 @@ HryhoriiHaponiukQuitCode/therapy-scheduling-spec#38) — після відпов
 
 ### D1. Таблиця `public.consent_documents` (AC-DOC-01…03, «Припущення» PM)
 
-Міграція `consent_documents` (задача 1):
+Міграція `consent_documents` (задача 1; та сама міграція містить D2–D4):
 
 - `id uuid primary key default gen_random_uuid()`, `client_id uuid not null references public.clients(id) on delete
   cascade`, `kind text not null check (kind in ('consent_to_treatment', 'cancellation_policy',
@@ -96,7 +98,7 @@ invoker`, як `confirm_hold`:
 
 ### D3. Позначка «підписано» — `public.sign_consent_document(p_document_id)` (AC-DOC-05, AC-DOC-06, AC-DOC-09)
 
-`private.sign_consent_document_impl` (задача 2), той самий шаблон:
+`private.sign_consent_document_impl` (міграція задачі 1), той самий шаблон:
 
 1. Не staff → `SIGN_FORBIDDEN` (терапевт; AC-DOC-09 — стан не змінюється).
 2. `select … for update` документа; немає → `DOCUMENT_NOT_FOUND`.
@@ -108,7 +110,7 @@ invoker`, як `confirm_hold`:
 
 ### D4. Підтвердження з документами (AC-DOC-07, AC-DOC-08; `slot-holds` після `align-consent-documents`)
 
-Міграція `confirm_hold_consent` (задача 3): `create or replace function private.confirm_hold_impl` — та сама функція
+У міграції задачі 1: `create or replace function private.confirm_hold_impl` — та сама функція
 з `security definer set search_path = ''` (SET не успадковується — пишемо знову) і тими самими перевірками в тому
 самому порядку, **після** `SLOT_STARTED_CONFIRM` (правила зрізу 1 — раніше за документи, «Припущення» PM):
 
