@@ -57,6 +57,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 const { default: ClientCardPage } = await import("./page");
 const { PrepareConsentForm, SignConsentForm } = await import("./consent-forms");
+const { default: Link } = await import("next/link");
 
 type El = { type: unknown; props: Record<string, unknown> };
 
@@ -118,6 +119,7 @@ async function renderCard() {
     list,
     summary: texts(byTestId("consent-summary")).join(""),
     listTexts: list ? texts(list) : [],
+    links: list ? elements(list).filter((el) => el.type === Link) : [],
     prepareForms: all.filter((el) => el.type === PrepareConsentForm),
     signForms: all.filter((el) => el.type === SignConsentForm),
   };
@@ -178,6 +180,18 @@ describe("ClientCardPage — Consent documents", () => {
       "Cancellation policy acknowledgement",
     ]);
     expect(card.prepareForms).toHaveLength(0);
+  });
+
+  it("AC-DOC-02: назва кожного документа в таблиці картки — посилання на сторінку документа /clients/<id>/consent/<slug>", async () => {
+    fake.docs = [
+      { id: DOC_CANCEL, kind: "cancellation_policy", signed_at: null },
+      { id: DOC_TREATMENT, kind: "consent_to_treatment", signed_at: "2026-11-04T18:15:00Z" },
+    ];
+    const card = await renderCard();
+    expect(card.links.map((l) => [texts(l.props.children).join(""), l.props.href])).toEqual([
+      ["Consent to treatment", `/clients/${CLIENT6}/consent/consent-to-treatment`],
+      ["Cancellation policy acknowledgement", `/clients/${CLIENT6}/consent/cancellation-policy`],
+    ]);
   });
 
   it("AC-DOC-05: «Consent to treatment» підписано 2026-11-04 10:15 — «Signed 2026-11-04 10:15», «Mark as signed» лише для другого", async () => {

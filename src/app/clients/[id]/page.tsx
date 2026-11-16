@@ -1,4 +1,5 @@
 import { Lock } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { StaffNav } from "@/app/staff-nav";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,6 +11,7 @@ import { insuranceLine } from "@/lib/clients/insurance";
 import { ActionMessage } from "@/components/ui/action-message";
 import {
   CONSENT_LOAD_ERROR_MESSAGE,
+  consentDocumentPath,
   consentStateLabel,
   consentSummary,
   consentTitle,
@@ -24,7 +26,7 @@ type ConsentRow = { id: string; kind: string; signed_at: string | null };
 
 // Документи згоди в картці (AC-DOC-01…03, -05, -06; design.md impl-consent-documents, «UI»). Що повернула база під RLS
 // (consent_documents_select: staff — усі, терапевт — свої клієнти) — те й показуємо; кнопки — лише staff.
-// Назви документів — простим текстом: сторінка документа й посилання на неї — задача 3.
+// Назва документа — посилання на його сторінку (/clients/[id]/consent/[kind]).
 function ConsentDocuments({ clientId, docs, staff }: { clientId: string; docs: ConsentRow[] | null; staff: boolean }) {
   return (
     <Card data-testid="consent-documents">
@@ -59,7 +61,14 @@ function ConsentDocumentList({ clientId, docs, staff }: { clientId: string; docs
           <TableBody>
             {sorted.map((doc) => (
               <TableRow key={doc.id}>
-                <TableCell className="font-medium">{consentTitle(doc.kind)}</TableCell>
+                <TableCell className="font-medium">
+                  <Link
+                    href={consentDocumentPath(clientId, doc.kind)}
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    {consentTitle(doc.kind)}
+                  </Link>
+                </TableCell>
                 <TableCell className={doc.signed_at ? "tabular-nums" : "text-muted-foreground"}>
                   {consentStateLabel(doc.signed_at)}
                 </TableCell>

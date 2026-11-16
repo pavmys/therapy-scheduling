@@ -21,12 +21,28 @@ export function PrepareConsentForm({ clientId }: { clientId: string }) {
   );
 }
 
-export function SignConsentForm({ documentId, title }: { documentId: string; title: string }) {
+// primary — на сторінці документа «Mark as signed» — основна дія області (DESIGN.md: одна `default` на область);
+// у таблиці картки — `outline` `sm` у кожному рядку.
+export function SignConsentForm({
+  documentId,
+  title,
+  primary = false,
+}: {
+  documentId: string;
+  title: string;
+  primary?: boolean;
+}) {
   const [state, formAction, pending] = useActionState<ConsentActionState, FormData>(signConsentDocument, null);
   return (
-    <form action={formAction} className="flex flex-col items-end gap-2">
+    <form action={formAction} className={primary ? "flex flex-col items-start gap-2" : "flex flex-col items-end gap-2"}>
       <input type="hidden" name="document_id" value={documentId} />
-      <Button type="submit" variant="outline" size="sm" disabled={pending} aria-label={`Mark ${title} as signed`}>
+      <Button
+        type="submit"
+        variant={primary ? "default" : "outline"}
+        size={primary ? "default" : "sm"}
+        disabled={pending}
+        aria-label={`Mark ${title} as signed`}
+      >
         Mark as signed
       </Button>
       {state && !state.ok ? <ActionMessage ok={false} message={state.message} /> : null}
