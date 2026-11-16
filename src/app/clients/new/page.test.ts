@@ -22,6 +22,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// Форма імпортує Server Action чернетки, а та — обгортку моделі з "server-only" (поза Server Component кидає виняток).
+// Пакет постачальника — шпигун: сторінка терапевта помічника не створює й не викликає (AC-INTAKE-09).
+vi.mock("server-only", () => ({}));
+const createOpenRouter = vi.hoisted(() => vi.fn());
+vi.mock("@openrouter/ai-sdk-provider", () => ({ createOpenRouter }));
+
 const { default: NewClientCardPage } = await import("./page");
 
 type Element = { type: unknown; props: Record<string, unknown> };
@@ -50,5 +56,20 @@ describe("NewClientCardPage — терапевт", () => {
     expect(names).not.toContain("ActionMessage");
     expect(nodes.find((n) => nameOf(n.type) === "StaffNav")?.props).toMatchObject({ role: "therapist" });
     expect(names).not.toContain("ClientForm");
+  });
+
+  it("AC-INTAKE-09: терапевт за прямим посиланням не бачить ні форми, ні можливості скласти чернетку", async () => {
+    const nodes = elements(await NewClientCardPage());
+    const names = nodes.map((n) => nameOf(n.type));
+
+    expect(nodes.find((n) => nameOf(n.type) === "AlertDescription")?.props.children).toBe(
+      "Only schedulers and admins can create client cards.",
+    );
+    // ні форми картки, ні поля тексту звернення, ні кнопки «Draft from request»
+    expect(names).not.toContain("ClientForm");
+    expect(names).not.toContain("Textarea");
+    expect(JSON.stringify(nodes.map((n) => n.props.children ?? null))).not.toContain("Draft from request");
+    // помічника не викликано
+    expect(createOpenRouter).not.toHaveBeenCalled();
   });
 });

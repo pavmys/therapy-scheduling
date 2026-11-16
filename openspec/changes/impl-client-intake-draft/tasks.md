@@ -18,11 +18,11 @@ Done when: AC-INTAKE-04, AC-INTAKE-05, AC-INTAKE-06, AC-INTAKE-07, AC-INTAKE-08 
 
 ## 2. Чернетка у формі нової картки (`task/intake-draft-form`)
 
-- [ ] 2.1 Server Action `requestIntakeDraft` (`src/app/clients/new/draft-actions.ts`): `getCurrentUser()` і роль до моделі (Auth), межа 2000 символів, нічого не пише (D7), повертає значення полів і стан
-- [ ] 2.2 `Textarea` (`npx shadcn@latest add textarea`), блок чернетки в `ClientForm`: підказка PM, `Button` `secondary` «Draft from request», `Alert` станів з дослівними текстами; без чернетки форма не змінюється
-- [ ] 2.3 Тести (окрема сесія, K06): дія — AC-INTAKE-01, -02 (форма заповнена, «Draft ready…»), AC-INTAKE-03 (запису немає, `createClientCard` не викликано), AC-INTAKE-06 (поля повернуто без змін), AC-INTAKE-08 (без ключа — стан, а не помилка сторінки), AC-INTAKE-09 (терапевт → відмова без виклику моделі); сторінка — терапевт не бачить блоку чернетки
-- [ ] 2.4 Ручна перевірка: `OPENROUTER_API_KEY=" " npm run dev` → «The assistant is unavailable right now. Fill in the form manually.», картка створюється вручну; з ключем — один кейс, що проходить, і одна відмова
-- [ ] 2.5 Рядки `docs/conformance.md` AC-INTAKE-01…09 → «реалізовано» для доведених тестами
+- [x] 2.1 Server Action `requestIntakeDraft` (`src/app/clients/new/draft-actions.ts`): `getCurrentUser()` і роль до моделі (Auth), межа 2000 символів, нічого не пише (D7), повертає значення полів і стан
+- [x] 2.2 `Textarea` (`npx shadcn@latest add textarea`), блок чернетки в `ClientForm`: підказка PM, `Button` `secondary` «Draft from request», `Alert` станів з дослівними текстами; без чернетки форма не змінюється
+- [x] 2.3 Тести (окрема сесія, K06): дія — AC-INTAKE-01, -02 (форма заповнена, «Draft ready…»), AC-INTAKE-03 (запису немає, `createClientCard` не викликано), AC-INTAKE-06 (поля повернуто без змін), AC-INTAKE-08 (без ключа — стан, а не помилка сторінки), AC-INTAKE-09 (терапевт → відмова без виклику моделі); сторінка — терапевт не бачить блоку чернетки
+- [x] 2.4 Ручна перевірка: `OPENROUTER_API_KEY=" " npm run dev` → «The assistant is unavailable right now. Fill in the form manually.», картка створюється вручну; з ключем — один кейс, що проходить, і одна відмова
+- [x] 2.5 Рядки `docs/conformance.md` AC-INTAKE-01…09 → «реалізовано» для доведених тестами
 
 Done when: AC-INTAKE-01, AC-INTAKE-02, AC-INTAKE-03, AC-INTAKE-09 на екрані форми; усі AC-INTAKE мають тест
 

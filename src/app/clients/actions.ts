@@ -8,6 +8,7 @@ import {
   FORBIDDEN_MESSAGE,
   UNEXPECTED_MESSAGE,
 } from "@/lib/clients/messages";
+import { cardFieldsFromForm } from "@/lib/clients/form-fields";
 import { type CardErrors, type CardFields, firstCardError, validateCard } from "@/lib/clients/validate";
 import { practiceToday } from "@/lib/time";
 
@@ -18,8 +19,6 @@ export type CreateClientState = {
   /** Помилки біля полів форми (AC-CARD-12); `message` — перша з них або помилка всієї картки. */
   errors?: CardErrors;
 } | null;
-
-const field = (formData: FormData, name: string) => String(formData.get(name) ?? "");
 
 // Порушення унікальності: email дорослого (unique (email)) чи дублікат картки дитини (clients_child_identity_key).
 const isChildDuplicate = (error: { message?: string; details?: string }) =>
@@ -38,15 +37,7 @@ export async function createClientCard(
     return { ok: false, message: FORBIDDEN_MESSAGE };
   }
 
-  const values: CardFields = {
-    clientType: field(formData, "client_type"),
-    fullName: field(formData, "full_name"),
-    dateOfBirth: field(formData, "date_of_birth"),
-    sessionLanguage: field(formData, "session_language"),
-    email: field(formData, "email"),
-    guardianName: field(formData, "guardian_name"),
-    guardianEmail: field(formData, "guardian_email"),
-  };
+  const values = cardFieldsFromForm(formData);
 
   // Усі помилки одразу, кожна біля свого поля; введене лишається у формі (AC-CARD-03, AC-CARD-12).
   const result = validateCard(values, practiceToday(new Date()));
