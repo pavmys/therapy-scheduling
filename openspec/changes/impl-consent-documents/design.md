@@ -79,9 +79,9 @@ HryhoriiHaponiukQuitCode/therapy-scheduling-spec#38) — після відпов
   однаково.
 - `enable row level security`; `revoke all … from anon, authenticated`; `grant select … to authenticated`; жодного
   `insert` / `update` / `delete` для `authenticated` — запис лише функціями D2, D3.
-- Політики select: `consent_documents_select_staff` (`(select private.is_staff())`) і
-  `consent_documents_select_own_therapist` (`private.current_app_role() = 'therapist' and
-  private.is_own_client(client_id)`) — та сама межа, що й для картки (AC-DOC-09, AC-DOC-10; ADR 0005).
+- Одна політика select `consent_documents_select` з `(select auth.uid()) is not null` і умовою `(select
+  private.is_staff())` або `private.current_app_role() = 'therapist' and private.is_own_client(client_id)` — та сама
+  межа, що й для картки (AC-DOC-09, AC-DOC-10; ADR 0005).
 
 ### D2. Формування — `public.prepare_consent_documents(p_client_id)` (AC-DOC-02, AC-DOC-03)
 

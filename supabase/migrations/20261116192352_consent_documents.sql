@@ -29,20 +29,21 @@ grant select on table public.consent_documents to authenticated;
 -- Серверні скрипти й прибирання UAT працюють із секретним ключем як service_role — як для інших таблиць.
 grant select, insert, update, delete on table public.consent_documents to service_role;
 
--- Staff бачить документи всіх карток; терапевт — лише своїх клієнтів (та сама межа, що й для картки; ADR 0005).
-create policy consent_documents_select_staff
-  on public.consent_documents
-  for select
-  to authenticated
-  using ((select private.is_staff()));
-
-create policy consent_documents_select_own_therapist
+-- Одна політика select: staff бачить документи всіх карток; терапевт — лише своїх клієнтів (та сама межа,
+-- що й для картки; ADR 0005). Явний (select auth.uid()) — анонім і сесія без користувача не бачать нічого.
+create policy consent_documents_select
   on public.consent_documents
   for select
   to authenticated
   using (
-    (select private.current_app_role()) = 'therapist'
-    and (select private.is_own_client(consent_documents.client_id))
+    (select auth.uid()) is not null
+    and (
+      (select private.is_staff())
+      or (
+        (select private.current_app_role()) = 'therapist'
+        and (select private.is_own_client(consent_documents.client_id))
+      )
+    )
   );
 
 -- ── D2. Формування документів (AC-DOC-02, AC-DOC-03) ───────────────────────

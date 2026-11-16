@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createTestDb, type TestDb } from "./supabase-pglite";
 
 // Документи згоди на рівні бази (openspec/specs/consent-documents; design.md impl-consent-documents, D1–D4):
@@ -185,10 +185,13 @@ describe("формування документів згоди", () => {
 describe("позначка «підписано»", () => {
   let clientId: string;
   let ownHold: string;
+  let n = 300;
 
-  beforeAll(async () => {
+  // Кожен тест — власна картка й набір документів: тест можна запустити окремо (фільтр Vitest), порядок не важить.
+  beforeEach(async () => {
     // Свій клієнт therapist1: утримання «Held» у його майбутньому слоті.
-    clientId = await client("adult", 31);
+    n += 1;
+    clientId = await client("adult", n);
     ownHold = await hold(await futureSlot(therapist1), clientId);
     await t.asUser(scheduler1, PREPARE, [clientId]);
   });
@@ -238,6 +241,8 @@ describe("позначка «підписано»", () => {
   });
 
   it("AC-DOC-06: scheduler2 підписує другий документ — підписано обидва", async () => {
+    // «Дано»: «Consent to treatment» уже підписав scheduler1.
+    await t.asUser(scheduler1, SIGN, [(await docOf(clientId, "consent_to_treatment")).id]);
     const policy = await docOf(clientId, "cancellation_policy");
     const [signed] = await t.asUser<Doc>(scheduler2, SIGN, [policy.id]);
     expect(signed.signed_by).toBe(scheduler2);
@@ -248,6 +253,8 @@ describe("позначка «підписано»", () => {
 
   it("AC-DOC-06: повторна позначка не перезаписує час і автора першого підпису", async () => {
     const consent = await docOf(clientId, "consent_to_treatment");
+    // «Дано»: перший підпис — scheduler1.
+    await t.asUser(scheduler1, SIGN, [consent.id]);
     // Зсуваємо перший підпис у минуле, щоб перезапис часу був помітний навіть у ту саму хвилину.
     await raw("update public.consent_documents set signed_at = '2026-11-04 18:15+00' where id = $1", [consent.id]);
     const before = await docOf(clientId, "consent_to_treatment");
