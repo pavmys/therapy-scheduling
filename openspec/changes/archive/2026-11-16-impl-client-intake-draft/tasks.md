@@ -28,9 +28,9 @@ Done when: AC-INTAKE-01, AC-INTAKE-02, AC-INTAKE-03, AC-INTAKE-09 на екра�
 
 ## 3. Живий eval, записи, UAT і прод (`task/intake-eval-uat`)
 
-- [ ] 3.1 `OPENROUTER_API_KEY` у Vercel (Production + Preview) — людина; `/api/health` з SHA `main`
-- [ ] 3.2 Живий прогін — людина: `npm run ai:quota`, потім `RECORD=1 npm run eval`; звіт `evals/reports/<дата>.md` і `recorded.json` без заглушок; розбір кожного FAIL (K07); поріг PM ≥ 8/10 з GC-09 і GC-10
-- [ ] 3.3 UAT (K08): `tests/e2e/client-intake-draft.spec.ts` — AC-INTAKE-03 і AC-INTAKE-06 з тегом `@uat`; прогін — людина, `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; звіт у `docs/qa/uat/<дата>/`
-- [ ] 3.4 `docs/conformance.md` — шляхи коду, тестів, звіту eval і UAT для кожного AC-INTAKE; самоперевірка K09; `npx openspec archive impl-client-intake-draft -y`
+- [x] 3.1 `OPENROUTER_API_KEY` у Vercel (Production + Preview) — людина; `/api/health` з SHA `main`
+- [x] 3.2 Живий прогін — людина: `npm run ai:quota`, потім `RECORD=1 npm run eval`; звіт `evals/reports/<дата>.md` і `recorded.json` без заглушок; розбір кожного FAIL (K07); поріг PM ≥ 8/10 з GC-09 і GC-10
+- [x] 3.3 UAT (K08): `tests/e2e/client-intake-draft.spec.ts` — AC-INTAKE-03 і AC-INTAKE-06 з тегом `@uat`; прогін — людина, `npm run uat -- --url https://therapy-scheduling-three.vercel.app`; звіт у `docs/qa/uat/<дата>/`
+- [x] 3.4 `docs/conformance.md` — шляхи коду, тестів, звіту eval і UAT для кожного AC-INTAKE; самоперевірка K09; `npx openspec archive impl-client-intake-draft -y`
 
 Done when: AC-INTAKE-01, AC-INTAKE-02, AC-INTAKE-03, AC-INTAKE-04, AC-INTAKE-05, AC-INTAKE-06, AC-INTAKE-07, AC-INTAKE-08, AC-INTAKE-09

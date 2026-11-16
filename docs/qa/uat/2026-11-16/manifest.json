@@ -1,0 +1,601 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-16T15:17:10.541Z",
+  "baseURL": "https://therapy-scheduling-three.vercel.app",
+  "deployedSha": "baa487ef29b50edeb7a55b552dbe4a86e03d4301",
+  "testsCommit": "366809eda8c95a085828f3cfc4ae1205e9d801b1",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-CARD-06",
+      "proof": "AC-CARD-06",
+      "title": "AC-CARD-06: терапевт за прямим посиланням на нову картку бачить лише відмову, кількість карток не змінилась",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-CARD-06-then-1.png",
+      "video": "test-results/artifacts/client-cards-терапевт-AC-C-7cc32-лькість-карток-не-змінилась-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-терапевт-AC-C-7cc32-лькість-карток-не-змінилась-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «New client card» видно точний текст «Only schedulers and admins can create client cards.» з іконкою замка, а полів форми та кнопки створення немає — лише заголовок і це повідомлення. Сесія видно як therapist1@example.test, що відповідає «Дано». Частини про відсутність надсилання і незмінну кількість карток не видно на кадрі, тож їх не оцінював."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
+        },
+        {
+          "quote": "New client card",
+          "onPage": true
+        },
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6372,
+      "reviewCostUsd": 0.00203,
+      "reviewWallMs": 7943
+    },
+    {
+      "id": "AC-CARD-07",
+      "proof": "AC-CARD-07",
+      "title": "AC-CARD-07: без входу за прямим посиланням на клієнтів, картку client6 чи утримання — лише сторінка входу",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-CARD-07-then-1.png",
+      "video": "test-results/artifacts/client-cards-без-входу-AC--66889-мання-—-лише-сторінка-входу-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-без-входу-AC--66889-мання-—-лише-сторінка-входу-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На всіх трьох кадрах (frame-then-1, -2, -3) видно лише сторінку входу з заголовком «Вхід», полями Email і Пароль та кнопкою «Увійти»; ніяких даних клієнтів чи утримань на кадрах немає. Частина «жодна картка не змінилася» і адреса /login не оцінювалися, бо за ac.md вони перевіряються не з кадрів."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 9173,
+      "reviewCostUsd": 0.00304,
+      "reviewWallMs": 10368
+    },
+    {
+      "id": "AC-CARD-16",
+      "proof": "AC-CARD-16",
+      "title": "AC-CARD-16: посилання на картку, якої немає — scheduler1 бачить «This client card doesn't exist.», therapist1 — «You don't have access to this client.»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-CARD-16-then-1.png",
+      "video": "test-results/artifacts/client-cards-планувальник--08582-ave-access-to-this-client-»-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-планувальник--08582-ave-access-to-this-client-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На frame-then-1 (scheduler1) під заголовком «Client card» видно лише блок із написом «This client card doesn't exist.», без жодних полів картки. На frame-then-2 (therapist1) так само видно лише «You don't have access to this client.» без даних клієнта. Частина про відсутність email не оцінювалася, бо за правилами вона не з кадрів. Для пунктів «жодних даних» цитата — єдиний текст у зоні контенту, оскільки на кадрах немає іншого вмісту."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "This client card doesn't exist.",
+          "onPage": true
+        },
+        {
+          "quote": "This client card doesn't exist.",
+          "onPage": true
+        },
+        {
+          "quote": "You don't have access to this client.",
+          "onPage": true
+        },
+        {
+          "quote": "You don't have access to this client.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3369,
+      "reviewCostUsd": 0.0026,
+      "reviewWallMs": 9739
+    },
+    {
+      "id": "AC-INS-01",
+      "proof": "AC-INS-01",
+      "title": "AC-INS-01: нова картка, статус страхування ще ніхто не позначав — scheduler1 бачить «Insurance: Not set»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-01-then-1.png",
+      "video": "test-results/artifacts/insurance-status-плануваль-20853--бачить-«Insurance-Not-set»-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-плануваль-20853--бачить-«Insurance-Not-set»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі в картці клієнта рядок «Insurance: Not set» читається дослівно, а в шапці видно «scheduler1@example.test». Обидві видимі частини «Тоді» підтверджено. Інших розбіжностей на кадрі не помічено."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Insurance: Not set",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3150,
+      "reviewCostUsd": 0.00176,
+      "reviewWallMs": 5372
+    },
+    {
+      "id": "AC-INS-02",
+      "proof": "AC-INS-02",
+      "title": "AC-INS-02: scheduler1 позначає «Verified» — бачить «Insurance status saved.», картка показує «Insurance: Verified» і після повторного відкриття",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-02-then-1.png",
+      "video": "test-results/artifacts/insurance-status-плануваль-3cc22--після-повторного-відкриття-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-плануваль-3cc22--після-повторного-відкриття-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі 1 видно повідомлення «Insurance status saved.», рядок «Insurance: Verified» і поле «Insurance status» зі значенням «Verified» у шапці під користувачем scheduler1@example.test. На кадрі 2 (після повторного відкриття картки) рядок «Insurance: Verified» і шапка scheduler1@example.test присутні; повідомлення про збереження на кадрі 2 немає, що відповідає вимозі. Кадри чіткі, без завантаження чи обрізання. Частини про базу та повторне відкриття як такі не з кадрів, тому не оцінювалися."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Insurance status saved.",
+          "onPage": true
+        },
+        {
+          "quote": "Insurance: Verified",
+          "onPage": true
+        },
+        {
+          "quote": "Insurance status",
+          "onPage": true
+        },
+        {
+          "quote": "Verified",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        },
+        {
+          "quote": "Insurance: Verified",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7818,
+      "reviewCostUsd": 0.00263,
+      "reviewWallMs": 8861
+    },
+    {
+      "id": "AC-INS-03",
+      "proof": "AC-INS-03",
+      "title": "AC-INS-03: admin1 змінює статус на «Private pay» — і admin1, і scheduler2 бачать «Insurance: Private pay»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-03-then-1.png",
+      "video": "test-results/artifacts/insurance-status-адміністр-a8df7-ать-«Insurance-Private-pay»-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-адміністр-a8df7-ать-«Insurance-Private-pay»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На обох кадрах у картці клієнта «UAT client7 (ins03)» видно рядок «Insurance: Private pay». У шапці кадру 1 — admin1@example.test, у шапці кадру 2 — scheduler2@example.test, тобто обидва користувачі бачать однаковий статус. Частини з розділу «Не з кадрів» не оцінювалися."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Insurance: Private pay",
+          "onPage": true
+        },
+        {
+          "quote": "admin1@example.test",
+          "onPage": true
+        },
+        {
+          "quote": "Insurance: Private pay",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler2@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 8165,
+      "reviewCostUsd": 0.00265,
+      "reviewWallMs": 8725
+    },
+    {
+      "id": "AC-INS-04",
+      "proof": "AC-INS-04",
+      "title": "AC-INS-04: therapist1 відкриває картку свого клієнта — бачить «Insurance: Not accepted», змінити статус не запропоновано",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-04-then-1.png",
+      "video": "test-results/artifacts/insurance-status-терапевт--8b885-ити-статус-не-запропоновано-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-терапевт--8b885-ити-статус-не-запропоновано-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі картка «UAT client6 (ins04)» містить рядок «Insurance: Not accepted», а також поля Client type, Date of birth, Session language, Email. Списку «Insurance status» і кнопки «Save insurance status» немає. У шапці видно therapist1@example.test."
+      },
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "NEEDS-HUMAN",
+        "claude-sonnet-5-5": "PASS"
+      },
+      "escalated": true,
+      "quotesVerified": [
+        {
+          "quote": "Insurance: Not accepted",
+          "onPage": true
+        },
+        {
+          "quote": "Client type",
+          "onPage": true
+        },
+        {
+          "quote": "Date of birth",
+          "onPage": true
+        },
+        {
+          "quote": "Session language",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "therapist1@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3313,
+      "reviewCostUsd": 0.0344,
+      "reviewWallMs": 18913
+    },
+    {
+      "id": "AC-INS-05",
+      "proof": "AC-INS-05",
+      "title": "AC-INS-05: therapist1 напряму (Supabase REST) пробує змінити статус на «Verified» — статус не змінився, scheduler1 бачить «Insurance: Not accepted»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-05-then-1.png",
+      "video": "test-results/artifacts/insurance-status-терапевт--db25d-ть-«Insurance-Not-accepted»-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-терапевт--db25d-ть-«Insurance-Not-accepted»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі frame-then-1.png сторінка картки клієнта «UAT client6 (ins05)» з рядком «Insurance: Not accepted» і шапкою з «scheduler1@example.test». Обидві видимі частини «Тоді» збігаються з критерієм посимвольно. Частини «Не з кадрів» (PATCH-відповідь, стан бази) не оцінювалися."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Insurance: Not accepted",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 4747,
+      "reviewCostUsd": 0.00197,
+      "reviewWallMs": 6247
+    },
+    {
+      "id": "AC-INS-06",
+      "proof": "AC-INS-06",
+      "title": "AC-INS-06: без входу за прямим посиланням на картку — лише сторінка входу, scheduler1 після цього бачить «Insurance: Verified»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INS-06-then-1.png",
+      "video": "test-results/artifacts/insurance-status-без-входу-dcea2-бачить-«Insurance-Verified»-chromium/video.webm",
+      "trace": "test-results/artifacts/insurance-status-без-входу-dcea2-бачить-«Insurance-Verified»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "Кадр 1 — лише форма входу (Вхід, Email, Пароль, кнопка Увійти), без рядка Insurance і даних клієнта. Кадр 2 — картка UAT client6 із «Insurance: Verified» і scheduler1@example.test у шапці."
+      },
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "NEEDS-HUMAN",
+        "claude-sonnet-5-5": "PASS"
+      },
+      "escalated": true,
+      "quotesVerified": [
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        },
+        {
+          "quote": "Insurance: Verified",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3771,
+      "reviewCostUsd": 0.04473,
+      "reviewWallMs": 19602
+    },
+    {
+      "id": "AC-INTAKE-03",
+      "proof": "AC-INTAKE-03",
+      "title": "AC-INTAKE-03: чернетку Client Ten заповнено у формі, scheduler1 не створює картку — у списку клієнтів її немає",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INTAKE-03-then-1.png",
+      "video": "test-results/artifacts/client-intake-draft-планув-b4dc7--у-списку-клієнтів-її-немає-chromium/video.webm",
+      "trace": "test-results/artifacts/client-intake-draft-планув-b4dc7--у-списку-клієнтів-її-немає-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінка Clients під обліковим записом scheduler1@example.test, у полі пошуку введено «Client Ten», і система повертає «No clients found.». Отже рядка «Client Ten» у списку немає. Email цього прогону на кадрі не видно, а пошук іде за іменем, тож перевірку за email виконує автоматична перевірка, яку я не оцінюю."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Clients",
+          "onPage": true
+        },
+        {
+          "quote": "scheduler1@example.test",
+          "onPage": true
+        },
+        {
+          "quote": "No clients found.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 13914,
+      "reviewCostUsd": 0.00205,
+      "reviewWallMs": 7601
+    },
+    {
+      "id": "AC-INTAKE-06",
+      "proof": "AC-INTAKE-06",
+      "title": "AC-INTAKE-06: текст не є зверненням нового клієнта — поля форми не змінено (Name лишається «Client Fifteen»)",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-INTAKE-06-then-1.png",
+      "video": "test-results/artifacts/client-intake-draft-планув-3462f-лишається-«Client-Fifteen»--chromium/video.webm",
+      "trace": "test-results/artifacts/client-intake-draft-планув-3462f-лишається-«Client-Fifteen»--chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі /clients/new під кнопкою «Draft from request» видно точне повідомлення з критерію. Name лишається «Client Fifteen», Client type — Adult, дата народження, мова та Email порожні/з плейсхолдерами."
+      },
+      "agentModel": "claude-sonnet-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "NEEDS-HUMAN",
+        "claude-sonnet-5-5": "PASS"
+      },
+      "escalated": true,
+      "quotesVerified": [
+        {
+          "quote": "This text can't be used to draft a client card. Paste the client's request or fill in the form manually.",
+          "onPage": true
+        },
+        {
+          "quote": "Client Fifteen",
+          "onPage": true
+        },
+        {
+          "quote": "Adult",
+          "onPage": true
+        },
+        {
+          "quote": "mm/dd/yyyy",
+          "onPage": false
+        },
+        {
+          "quote": "Select a language...",
+          "onPage": false
+        }
+      ],
+      "verdict": "NEEDS-HUMAN",
+      "factoryGate": "NOT-EARNED",
+      "rule": "R4: цитати агента немає на сторінці (aria) — не підтверджено",
+      "playwrightMs": 6448,
+      "reviewCostUsd": 0.03402,
+      "reviewWallMs": 17890
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-16T15:16:18.700Z",
+    "deleted": [
+      "uat-261116151454-ins01@example.test",
+      "uat-261116151454-ins02@example.test",
+      "uat-261116151454-ins03@example.test",
+      "uat-261116151454-ins04@example.test",
+      "uat-261116151454-ins05@example.test",
+      "uat-261116151454-ins06@example.test"
+    ],
+    "remaining": [],
+    "leftoverRequests": 0
+  },
+  "runIssues": []
+}
