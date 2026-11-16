@@ -99,3 +99,12 @@
 | AC-INS-04 | Терапевт бачить статус свого клієнта, змінити не запропоновано | `supabase/migrations/20261109112112_insurance_status.sql` (лише clients_update_insurance_staff; select — наявна clients_select_own_therapist), `src/app/clients/[id]/page.tsx` (форма лише для staff) | `tests/db/insurance-status.test.ts`, `src/app/clients/[id]/page.test.ts`, `tests/e2e/insurance-status.spec.ts` (UAT); мутант I4 | реалізовано |
 | AC-INS-05 | Терапевт напряму не змінює статус — лишається «Insurance: Not accepted» | `supabase/migrations/20261109112112_insurance_status.sql` (clients_update_insurance_staff), `src/app/clients/[id]/actions.ts` (перевірка ролі до запиту) | `tests/db/insurance-status.test.ts`, `src/app/clients/[id]/actions.test.ts`, `tests/e2e/insurance-status.spec.ts` (UAT); мутанти I1, I2 | реалізовано |
 | AC-INS-06 | Без входу — лише сторінка входу, статус не видно й не змінено | `supabase/migrations/20261109112112_insurance_status.sql` (grant update лише authenticated), `src/app/clients/[id]/page.tsx` (redirect на /login) | `tests/db/insurance-status.test.ts`, `src/app/clients/[id]/page.test.ts`, `tests/e2e/insurance-status.spec.ts` (UAT); мутант I3 | реалізовано |
+| AC-INTAKE-01 | Чернетка для дорослого клієнта — поля й «Draft ready. Check the fields and create the card.» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-02 | Чернетка для дитини з опікуном — поля опікуна й «Draft ready. …» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-03 | Чернетка без збереження не створює картку | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-04 | Бракує дати народження й мови — «Draft is incomplete. Missing: Date of birth, Session language. …» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-05 | Дата народження в майбутньому — поле порожнє, «Missing: Date of birth» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-06 | Текст не є зверненням нового клієнта — форма не змінена, «This text can't be used to draft a client card. …» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-07 | Ін'єкція в тексті — форма порожня, вказівок не виконано, кількість карток N | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-08 | Помічник недоступний — «The assistant is unavailable right now. Fill in the form manually.», форма працює вручну | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-09 | Терапевт за прямим посиланням — без форми й чернетки, «Only schedulers and admins can create client cards.» | — | — | відкладено (чекає реалізації) |
