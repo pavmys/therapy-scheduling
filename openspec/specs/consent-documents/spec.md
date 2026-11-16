@@ -14,7 +14,7 @@ WHILE для клієнта ще не формували документів з
 - **THEN** в картці показано повідомлення «No consent documents yet.» і жодного документа
 
 ### Requirement: Формування документів згоди за типом клієнта
-WHEN планувальник або адміністратор формує документи згоди для клієнта, the system SHALL показати в картці клієнта для типу «Adult» рівно два документи — «Consent to treatment» і «Cancellation policy acknowledgement», а для типу «Child» рівно три — «Consent to treatment», «Cancellation policy acknowledgement» і «Release of information», у цьому порядку й кожен зі станом «Not signed».
+WHEN планувальник або адміністратор формує документи згоди для клієнта, the system SHALL показати в картці один набір документів зі станом «Not signed» у такому порядку: для «Adult» — «Consent to treatment» і «Cancellation policy acknowledgement», для «Child» — ці два і «Release of information»; повторна спроба (зокрема двома планувальниками одночасно) не створює другого набору.
 
 #### Scenario: AC-DOC-02 Документи згоди для дорослого клієнта
 - **GIVEN** для client6 (тип «Adult») документів згоди ще немає
