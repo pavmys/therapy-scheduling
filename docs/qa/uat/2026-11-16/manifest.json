@@ -1,9 +1,9 @@
 {
   "kind": "uat",
-  "generatedAt": "2026-11-16T15:30:24.088Z",
+  "generatedAt": "2026-11-16T21:48:29.672Z",
   "baseURL": "https://therapy-scheduling-three.vercel.app",
-  "deployedSha": "baa487ef29b50edeb7a55b552dbe4a86e03d4301",
-  "testsCommit": "95b67e9173e9e6d3ab5a9b31c9b30628f6a49255",
+  "deployedSha": "f96d3e728806d84b71dc03b7f93ea96b8481be67",
+  "testsCommit": "c173b9510bf62b8e0d22ffd91fa087a439d752ff",
   "reviewer": {
     "model": "claude-haiku-5-5",
     "disputes": "claude-sonnet-5-5"
@@ -21,7 +21,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі frame-then-1.png сторінка «New client card» показує лише повідомлення «Only schedulers and admins can create client cards.» з іконкою замка; текст збігається з критерієм посимвольно. Полів анкети й кнопки створення на кадрі немає. Частина про відсутність форми встановлена візуально, бо в кадрі немає тексту, який можна було б процитувати; дві «не з кадрів» частини не оцінювались."
+        "notes": "На кадрі видно заголовок «New client card», сірий блок із замком і текстом «Only schedulers and admins can create client cards.», а під ним порожня сторінка без полів анкети й кнопки створення. Текст повідомлення збігається з критерієм посимвольно. Частини «не з кадрів» (миттєвість відмови, незмінна кількість карток) не оцінював."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -33,14 +33,22 @@
         {
           "quote": "Only schedulers and admins can create client cards.",
           "onPage": true
+        },
+        {
+          "quote": "New client card",
+          "onPage": true
+        },
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
         }
       ],
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 5622,
-      "reviewCostUsd": 0.00233,
-      "reviewWallMs": 10207
+      "playwrightMs": 5660,
+      "reviewCostUsd": 0.00181,
+      "reviewWallMs": 6199
     },
     {
       "id": "AC-CARD-07",
@@ -53,7 +61,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "Усі три кадри (frame-then-1, -2, -3) показують однакову сторінку входу: заголовок «Вхід», поля Email і Пароль та кнопку «Увійти» і більше нічого. Відсутність даних клієнтів чи утримань зафіксовано тим, що на кадрах немає жодного іншого вмісту; «жодна картка не змінилася» кадри не показують і в видимі частини не входить."
+        "notes": "На всіх трьох кадрах (frame-then-1, -2, -3) видно лише сторінку входу з заголовком «Вхід», полями Email і Пароль та кнопкою «Увійти»; жодних даних клієнтів чи утримань на кадрах немає. Частина «жодна картка не змінилася» (client6, scheduler1) і адреса /login не видні на кадрах, тому оцінені як cannot-tell і не впливають на вердикт."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -75,10 +83,6 @@
           "onPage": true
         },
         {
-          "quote": "Увійти",
-          "onPage": true
-        },
-        {
           "quote": "Вхід",
           "onPage": true
         },
@@ -107,10 +111,6 @@
           "onPage": true
         },
         {
-          "quote": "Увійти",
-          "onPage": true
-        },
-        {
           "quote": "Вхід",
           "onPage": true
         },
@@ -136,10 +136,6 @@
         },
         {
           "quote": "Пароль",
-          "onPage": true
-        },
-        {
-          "quote": "Увійти",
           "onPage": true
         },
         {
@@ -162,9 +158,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 8370,
-      "reviewCostUsd": 0.00313,
-      "reviewWallMs": 10783
+      "playwrightMs": 9650,
+      "reviewCostUsd": 0.00347,
+      "reviewWallMs": 12314
     },
     {
       "id": "AC-CARD-16",
@@ -177,7 +173,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На frame-then-1 (scheduler1) видно «This client card doesn't exist.» у рамці з іконкою замка, а нижче немає жодних полів картки. На frame-then-2 (therapist1) видно «You don't have access to this client.» і так само немає жодних даних клієнта. Кадри чіткі, повні, без завантаження. Частина про email не з кадрів не оцінювалась."
+        "notes": "На frame-then-1.png (scheduler1) видно повідомлення «This client card doesn't exist.», на сторінці немає полів картки клієнта, лише заголовок «Client card» і навігація. На frame-then-2.png (therapist1) видно «You don't have access to this client.» і так само немає жодних даних клієнта. Частину про email (не з кадрів) не оцінював."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -195,26 +191,6 @@
           "onPage": true
         },
         {
-          "quote": "Slots",
-          "onPage": true
-        },
-        {
-          "quote": "Holds",
-          "onPage": true
-        },
-        {
-          "quote": "Clients",
-          "onPage": true
-        },
-        {
-          "quote": "scheduler1@example.test",
-          "onPage": true
-        },
-        {
-          "quote": "Sign out",
-          "onPage": true
-        },
-        {
           "quote": "This client card doesn't exist.",
           "onPage": true
         },
@@ -227,22 +203,6 @@
           "onPage": true
         },
         {
-          "quote": "My schedule",
-          "onPage": true
-        },
-        {
-          "quote": "My clients",
-          "onPage": true
-        },
-        {
-          "quote": "therapist1@example.test",
-          "onPage": true
-        },
-        {
-          "quote": "Sign out",
-          "onPage": true
-        },
-        {
           "quote": "You don't have access to this client.",
           "onPage": true
         }
@@ -250,9 +210,513 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 3148,
-      "reviewCostUsd": 0.00232,
-      "reviewWallMs": 6399
+      "playwrightMs": 3113,
+      "reviewCostUsd": 0.00256,
+      "reviewWallMs": 9236
+    },
+    {
+      "id": "AC-DOC-01",
+      "proof": "AC-DOC-01",
+      "title": "AC-DOC-01: картка client6 без документів згоди — «No consent documents yet.» і жодного документа",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-01-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-75989-s-yet-»-і-жодного-документа-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-75989-s-yet-»-і-жодного-документа-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно картку «UAT client6 (doc01)» з «Client type» — «Adult» і блок «Consent documents». У блоці є рядок «No consent documents yet.» та кнопка «Prepare consent documents», але жодного документа немає. Адресна строка на кадрі не видна, тому сам URL сторінки не перевірено; кадр читабельний і не обрізаний."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "No consent documents yet.",
+          "onPage": true
+        },
+        {
+          "quote": "No consent documents yet.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3861,
+      "reviewCostUsd": 0.0019,
+      "reviewWallMs": 7050
+    },
+    {
+      "id": "AC-DOC-02",
+      "proof": "AC-DOC-02",
+      "title": "AC-DOC-02: scheduler1 формує документи для дорослого client6 — рівно два «Not signed» і «Missing signatures: …»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-02-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-5beb6-d»-і-«Missing-signatures-…»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-5beb6-d»-і-«Missing-signatures-…»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі frame-then-1.png картка «UAT client6 (doc02)» з типом «Adult» показує саме два документи в таблиці «Consent documents»: «Consent to treatment» і «Cancellation policy acknowledgement», обидва зі станом «Not signed». Нижче видно рядок «Missing signatures: Consent to treatment, Cancellation policy acknowledgement», текст збігається з критерієм посимвольно. Кнопки «Mark as signed» не входять у критерій і не впливають на оцінку."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Consent to treatment",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Cancellation policy acknowledgement",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Missing signatures: Consent to treatment, Cancellation policy acknowledgement",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6692,
+      "reviewCostUsd": 0.00225,
+      "reviewWallMs": 8550
+    },
+    {
+      "id": "AC-DOC-03",
+      "proof": "AC-DOC-03",
+      "title": "AC-DOC-03: scheduler1 формує документи для дитини client7 з опікуном — рівно три «Not signed»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-03-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-385ca-ом-—-рівно-три-«Not-signed»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-385ca-ом-—-рівно-три-«Not-signed»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі в картці «UAT client7 (doc03)» у блоці «Consent documents» видно рівно три рядки: «Consent to treatment», «Cancellation policy acknowledgement» і «Release of information», кожен зі станом «Not signed». Кількість рядків (три) і написи збігаються з критерієм посимвольно; рядок «Missing signatures» під таблицею не суперечить умові. Перевірка «рівно три документи у базі» не з кадрів, тому не оцінювалась."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Consent to treatment",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Cancellation policy acknowledgement",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Release of information",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6070,
+      "reviewCostUsd": 0.00192,
+      "reviewWallMs": 6757
+    },
+    {
+      "id": "AC-DOC-04",
+      "proof": "AC-DOC-04",
+      "title": "AC-DOC-04: scheduler1 відкриває «Release of information» client7 — заголовок, Client, Guardian, Prepared",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-04-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-8119b-ок-Client-Guardian-Prepared-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-8119b-ок-Client-Guardian-Prepared-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно сторінку «Release of information» з рядками «Client: UAT Client Seven (doc04)», «Guardian: UAT Guardian Seven» і «Prepared: 2026-11-04», а також англійський текст згоди. Імена в рядках синтетичні, як зазначено в ac.md, тому їх не оцінюю; решта видимих частин збігаються з критерієм."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Release of information",
+          "onPage": true
+        },
+        {
+          "quote": "Client: UAT Client Seven (doc04)",
+          "onPage": true
+        },
+        {
+          "quote": "Guardian: UAT Guardian Seven",
+          "onPage": true
+        },
+        {
+          "quote": "Prepared: 2026-11-04",
+          "onPage": true
+        },
+        {
+          "quote": "As the guardian of the client, I allow the practice to share information about the therapy with me.",
+          "onPage": true
+        },
+        {
+          "quote": "I understand that I can withdraw this permission in writing at any time.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3476,
+      "reviewCostUsd": 0.00225,
+      "reviewWallMs": 8663
+    },
+    {
+      "id": "AC-DOC-05",
+      "proof": "AC-DOC-05",
+      "title": "AC-DOC-05: scheduler1 позначає «Consent to treatment» підписаним — «Signed …» і «Missing signatures: Cancellation policy acknowledgement»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-05-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-a7f01-ion-policy-acknowledgement»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-a7f01-ion-policy-acknowledgement»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно картку client6 з двома документами: «Consent to treatment» має стан «Signed 2026-11-16 13:45», «Cancellation policy acknowledgement» — «Not signed», а під таблицею написано «Missing signatures: Cancellation policy acknowledgement». Дата в кадрі (2026-11-16) відрізняється від прикладу в PM (2026-11-04 10:15), але в критерії в «Тоді» стоїть плейсхолдер «<дата й час позначки>», тож формат відповідає; відповідність саме моменту позначки з кадрів не перевіряється."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Signed 2026-11-16 13:45",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Missing signatures: Cancellation policy acknowledgement",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6337,
+      "reviewCostUsd": 0.00236,
+      "reviewWallMs": 10325
+    },
+    {
+      "id": "AC-DOC-06",
+      "proof": "AC-DOC-06",
+      "title": "AC-DOC-06: scheduler2 позначає другий документ підписаним — обидва «Signed …», «All consent documents signed.»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-06-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-bc984--consent-documents-signed-»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-bc984--consent-documents-signed-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі обидва документи в таблиці «Consent documents» мають стан «Signed» з датою й часом: «Consent to treatment» — 2026-11-16 12:46, «Cancellation policy acknowledgement» — 2026-11-16 13:46. Під таблицею написано «All consent documents signed.», а рядка «Missing signatures» на кадрі немає. Сторінка повністю завантажена, текст читається без обрізання."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Signed 2026-11-16 12:46",
+          "onPage": true
+        },
+        {
+          "quote": "Signed 2026-11-16 13:46",
+          "onPage": true
+        },
+        {
+          "quote": "All consent documents signed.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 6263,
+      "reviewCostUsd": 0.00199,
+      "reviewWallMs": 7051
+    },
+    {
+      "id": "AC-DOC-07",
+      "proof": "AC-DOC-07",
+      "title": "AC-DOC-07: scheduler1 пробує підтвердити утримання client6 з непідписаним документом — «Sign all consent documents before confirming.», лишається «Held»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-07-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-e9571-nfirming-»-лишається-«Held»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-e9571-nfirming-»-лишається-«Held»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки /holds видно червоне повідомлення «Sign all consent documents before confirming.» над таблицею. У рядку «UAT client6 (doc07)» (Therapist One) статус «Held», а під ним «Held until 2026-11-17 13:46», і кнопка «Confirm» ще доступна. Обидві видимі частини «Тоді» підтверджено дослівно."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Sign all consent documents before confirming.",
+          "onPage": true
+        },
+        {
+          "quote": "Held",
+          "onPage": true
+        },
+        {
+          "quote": "Held until 2026-11-17 13:46",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 7022,
+      "reviewCostUsd": 0.00193,
+      "reviewWallMs": 6553
+    },
+    {
+      "id": "AC-DOC-08",
+      "proof": "AC-DOC-08",
+      "title": "AC-DOC-08: усі документи client6 підписано — scheduler1 підтверджує утримання, слот «Confirmed» без «Held until»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-08-then-1.png",
+      "video": "test-results/artifacts/consent-documents-планувал-b25ac-Confirmed»-без-«Held-until»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-планувал-b25ac-Confirmed»-без-«Held-until»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно слот 17:00–18:00 у списку слотів therapist1 за 2099-03-01 зі значком «Confirmed» і написом «UAT client6 (doc08)». Жодного напису «Held until» у рядку слоту або поруч із ним немає. Частину про базу (confirmed_at) не оцінював, бо вона не з кадрів."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "17:00–18:00",
+          "onPage": true
+        },
+        {
+          "quote": "Confirmed",
+          "onPage": true
+        },
+        {
+          "quote": "UAT client6 (doc08)",
+          "onPage": true
+        },
+        {
+          "quote": "17:00–18:00",
+          "onPage": true
+        },
+        {
+          "quote": "Confirmed",
+          "onPage": true
+        },
+        {
+          "quote": "UAT client6 (doc08)",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 9763,
+      "reviewCostUsd": 0.00219,
+      "reviewWallMs": 8803
+    },
+    {
+      "id": "AC-DOC-09",
+      "proof": "AC-DOC-09",
+      "title": "AC-DOC-09: therapist1 відкриває «Consent to treatment» свого client6 — бачить «Not signed», позначити не може",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-09-then-1.png",
+      "video": "test-results/artifacts/consent-documents-терапевт-19759-t-signed»-позначити-не-може-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-терапевт-19759-t-signed»-позначити-не-може-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На frame-then-1 для therapist1 (therapist1@example.test) видно документ «Consent to treatment» для UAT client6 (doc09) зі станом «Not signed», повідомлення «Only schedulers and admins can mark documents as signed.» і жодної кнопки «Mark as signed». На frame-then-2 для scheduler1@example.test той самий документ і стан «Not signed», а кнопка «Mark as signed» відображається. Відсутність кнопки на frame-then-1 підтверджена самим кадром, тому для цієї частини цитата порожня: це перевірка відсутності елемента, а не наявного тексту."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Consent to treatment",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        },
+        {
+          "quote": "Only schedulers and admins can mark documents as signed.",
+          "onPage": true
+        },
+        {
+          "quote": "Consent to treatment",
+          "onPage": true
+        },
+        {
+          "quote": "Not signed",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 5563,
+      "reviewCostUsd": 0.0033,
+      "reviewWallMs": 15385
+    },
+    {
+      "id": "AC-DOC-10",
+      "proof": "AC-DOC-10",
+      "title": "AC-DOC-10: therapist1 відкриває документ client9 (свій лише для therapist2) — «You don't have access to this client.»",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-10-then-1.png",
+      "video": "test-results/artifacts/consent-documents-терапевт-ff608-ave-access-to-this-client-»-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-терапевт-ff608-ave-access-to-this-client-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно сторінку «Consent document» із навігацією (My schedule, My clients, therapist1@example.test, Sign out) і рядок із замком «You don't have access to this client.». Тексту згоди, назви клієнта чи його даних на кадрі немає. Цитата для другої частини — лише заголовок сторінки «Consent document», бо інших написів, крім навігації, немає. Стан документа в базі з кадру не видно, тож цю частину не оцінював."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "You don't have access to this client.",
+          "onPage": true
+        },
+        {
+          "quote": "Consent document",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 4123,
+      "reviewCostUsd": 0.00207,
+      "reviewWallMs": 10194
+    },
+    {
+      "id": "AC-DOC-11",
+      "proof": "AC-DOC-11",
+      "title": "AC-DOC-11: без входу за прямим посиланням на «Consent to treatment» client6 — лише сторінка входу",
+      "screenshot": "docs/qa/uat/2026-11-16/frames/AC-DOC-11-then-1.png",
+      "video": "test-results/artifacts/consent-documents-без-вход-08438-ient6-—-лише-сторінка-входу-chromium/video.webm",
+      "trace": "test-results/artifacts/consent-documents-без-вход-08438-ient6-—-лише-сторінка-входу-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно лише картку входу з заголовком «Вхід», полями «Email» і «Пароль» та кнопкою «Увійти» на порожньому фоні. Тексту документа «Consent to treatment» і даних client6 на екрані немає. Частину «стан документа не змінився» в ac.md віднесено до перевірок з бази, тому тут не оцінювалася."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        },
+        {
+          "quote": "Вхід",
+          "onPage": true
+        },
+        {
+          "quote": "Email",
+          "onPage": true
+        },
+        {
+          "quote": "Пароль",
+          "onPage": true
+        },
+        {
+          "quote": "Увійти",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 2368,
+      "reviewCostUsd": 0.00194,
+      "reviewWallMs": 11966
     },
     {
       "id": "AC-INS-01",
@@ -265,7 +729,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі frame-then-1.png у картці «UAT client6 (ins01)» видно рядок «Insurance: Not set», а в шапці праворуч від навігації — «scheduler1@example.test». Обидві видимі частини «Тоді» збігаються з критерієм посимвольно. Email картки на кадрі синтетичний (uat-…@example.test), що відповідає примітці з розділу «Не з кадрів», і я його не оцінював."
+        "notes": "На кадрі frame-then-1.png під заголовком картки «UAT client6 (ins01)» чітко видно рядок «Insurance: Not set». У правому верхньому куті шапки видно «scheduler1@example.test» поруч із кнопкою «Sign out». Обидві видимі частини «Тоді» збігаються з критерієм посимвольно; кадр повний і читабельний."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -286,9 +750,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 3789,
-      "reviewCostUsd": 0.00183,
-      "reviewWallMs": 5826
+      "playwrightMs": 3204,
+      "reviewCostUsd": 0.0018,
+      "reviewWallMs": 9399
     },
     {
       "id": "AC-INS-02",
@@ -301,7 +765,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі 1 видно повідомлення «Insurance status saved.», рядок «Insurance: Verified» і вибране «Verified» у полі «Insurance status». На кадрі 2 (сторінка картки, за описом journey відкрита знову) рядок «Insurance: Verified» також є. В обох кадрах у шапці scheduler1@example.test. Частини про базу та повторне відкриття без повідомлення не з кадрів, тому не оцінені."
+        "notes": "На кадрі 1 видно повідомлення «Insurance status saved.», рядок «Insurance: Verified» і поле статусу зі значенням «Verified», у шапці scheduler1@example.test. На кадрі 2 (повторне відкриття) видно «Insurance: Verified» і той самий користувач у шапці; повідомлення про збереження відсутнє, що узгоджується з критерієм. Усі видимі частини «Тоді» підтверджені цитатами, розбіжностей у тексті немає."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -316,10 +780,6 @@
         },
         {
           "quote": "Insurance: Verified",
-          "onPage": true
-        },
-        {
-          "quote": "Insurance status",
           "onPage": true
         },
         {
@@ -342,9 +802,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 7092,
-      "reviewCostUsd": 0.00263,
-      "reviewWallMs": 8655
+      "playwrightMs": 7953,
+      "reviewCostUsd": 0.00266,
+      "reviewWallMs": 10044
     },
     {
       "id": "AC-INS-03",
@@ -357,7 +817,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі frame-then-1.png картка показує «Insurance: Private pay», у шапці «admin1@example.test», і є напис «Insurance status saved.». На кадрі frame-then-2.png та сама картка показує «Insurance: Private pay», у шапці «scheduler2@example.test». Заголовок картки на кадрах «UAT client7 (ins03)» з синтетичним email — це згадано в ac.md як очікуване й не оцінюється."
+        "notes": "На обох кадрах у картці «UAT client7 (ins03)» видно рядок «Insurance: Private pay». У шапці на першому кадрі показано admin1@example.test, на другому — scheduler2@example.test, тобто обидва користувачі бачать однаковий статус. Твердження про статус у базі та про походження картки не оцінювалися, бо це не видно з кадрів."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -386,9 +846,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 8139,
-      "reviewCostUsd": 0.00251,
-      "reviewWallMs": 7889
+      "playwrightMs": 7496,
+      "reviewCostUsd": 0.00247,
+      "reviewWallMs": 8723
     },
     {
       "id": "AC-INS-04",
@@ -401,33 +861,17 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі картка «UAT client6 (ins04)» показує «Insurance: Not accepted», у шапці therapist1@example.test. Списку «Insurance status» і кнопки «Save insurance status» у картці немає, є лише поля Client type, Date of birth, Session language, Email."
+        "notes": "Кадр повний: картка клієнта і блок «Consent documents» видно цілком, сторінка не обрізана й не в стані завантаження. На кадрі є «Insurance: Not accepted» і шапка з therapist1@example.test, а блоку «Insurance status» і кнопки «Save insurance status» немає. Частину про відсутність форми на сторінці з кадрів не оцінював, у ac.md її віднесено до автоматичних перевірок."
       },
-      "agentModel": "claude-sonnet-5-5",
+      "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
-        "claude-haiku-5-5": "NEEDS-HUMAN",
-        "claude-sonnet-5-5": "PASS"
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
       },
-      "escalated": true,
+      "escalated": false,
       "quotesVerified": [
         {
           "quote": "Insurance: Not accepted",
-          "onPage": true
-        },
-        {
-          "quote": "Client type",
-          "onPage": true
-        },
-        {
-          "quote": "Date of birth",
-          "onPage": true
-        },
-        {
-          "quote": "Session language",
-          "onPage": true
-        },
-        {
-          "quote": "Email",
           "onPage": true
         },
         {
@@ -438,9 +882,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 3844,
-      "reviewCostUsd": 0.03328,
-      "reviewWallMs": 16635
+      "playwrightMs": 4165,
+      "reviewCostUsd": 0.0021,
+      "reviewWallMs": 9234
     },
     {
       "id": "AC-INS-05",
@@ -453,7 +897,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі frame-then-1.png сторінка «Client card» з картки «UAT client6 (ins05)» показує рядок «Insurance: Not accepted», а в шапці — «scheduler1@example.test». Обидві видимі частини «Тоді» збігаються з критерієм посимвольно. Частини про PATCH і базу даних не з кадрів, тож їх не оцінював."
+        "notes": "На кадрі картки client6 (UAT client6 (ins05)) у шапці видно «Insurance: Not accepted», а в правому верхньому куті — користувач scheduler1@example.test; селект статусу також показує «Not accepted». Обидві видимі частини «Тоді» підтверджені дослівно. Частини про PATCH-відповідь і запис у базі не з кадрів, тому не оцінювалися."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -474,9 +918,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 5259,
-      "reviewCostUsd": 0.00192,
-      "reviewWallMs": 6439
+      "playwrightMs": 5760,
+      "reviewCostUsd": 0.00195,
+      "reviewWallMs": 6909
     },
     {
       "id": "AC-INS-06",
@@ -489,14 +933,14 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "Кадр 1 — лише форма входу (Вхід, Email, Пароль, кнопка Увійти), без рядка Insurance і даних клієнта. Кадр 2 — картка UAT client6 з «Insurance: Verified» і scheduler1@example.test у шапці."
+        "notes": "Кадр frame-then-1.png показує лише сторінку «Вхід» з полями Email і Пароль і кнопкою «Увійти»; рядка Insurance і даних client6 на екрані немає. Частина «жодних даних клієнта не показано» підтверджується відсутністю, тому цитати немає. Кадр frame-then-2.png показує картку «UAT client6 (ins06)» з рядком «Insurance: Verified» і в шапці «scheduler1@example.test», тож після входу scheduler1 бачить статус. Адресу /login, відсутність email @example.test на сторінці та статус verified у базі не оцінював, бо вони не з кадрів."
       },
-      "agentModel": "claude-sonnet-5-5",
+      "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
-        "claude-haiku-5-5": "NEEDS-HUMAN",
-        "claude-sonnet-5-5": "PASS"
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
       },
-      "escalated": true,
+      "escalated": false,
       "quotesVerified": [
         {
           "quote": "Вхід",
@@ -508,22 +952,6 @@
         },
         {
           "quote": "Пароль",
-          "onPage": true
-        },
-        {
-          "quote": "Вхід",
-          "onPage": true
-        },
-        {
-          "quote": "Email",
-          "onPage": true
-        },
-        {
-          "quote": "Пароль",
-          "onPage": true
-        },
-        {
-          "quote": "Увійти",
           "onPage": true
         },
         {
@@ -538,9 +966,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 3727,
-      "reviewCostUsd": 0.04377,
-      "reviewWallMs": 23745
+      "playwrightMs": 4786,
+      "reviewCostUsd": 0.00351,
+      "reviewWallMs": 19443
     },
     {
       "id": "AC-INTAKE-03",
@@ -553,7 +981,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінка Clients під користувачем scheduler1@example.test. У полі пошуку введено «Client Ten», і під ним написано «No clients found.», тож картки з таким ім'ям у результатах немає. Email цього прогону на кадрі не видно, тому перевірка «з email цього прогону» спирається лише на порожній результат пошуку; пошук за email і підрахунок карток — поза межами кадрів."
+        "notes": "На кадрі сторінка Clients, увійшов scheduler1@example.test. У полі пошуку введено «Client Ten», а під ним написано «No clients found.», тобто рядків немає. Результат видно лише для пошуку, а не для повного списку; email цього прогону на кадрі не показано. Частини про кількість карток і пошук за email не з кадрів, тому я їх не оцінював."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -564,10 +992,6 @@
       "quotesVerified": [
         {
           "quote": "Clients",
-          "onPage": true
-        },
-        {
-          "quote": "Client cards",
           "onPage": true
         },
         {
@@ -582,9 +1006,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 14865,
-      "reviewCostUsd": 0.00186,
-      "reviewWallMs": 6162
+      "playwrightMs": 13581,
+      "reviewCostUsd": 0.00221,
+      "reviewWallMs": 9763
     },
     {
       "id": "AC-INTAKE-06",
@@ -597,7 +1021,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінки «New client card» під полем запиту видно інформаційне повідомлення з текстом критерію, а в полі Name стоїть «Client Fifteen». Апострофи в «can't» і «client's» на кадрі виглядають як прямі, але з такою роздільністю тип апострофа (прямий чи типографський) не можна визначити з упевненістю; посимвольну відповідність вважаю збіжною. Частини про порожні поля та нествореність картки з кадрів не оцінюю."
+        "notes": "На кадрі frame-then-1.png сторінка /clients/new з повідомленням під кнопкою «Draft from request» і полем Name зі значенням «Client Fifteen». Текст повідомлення збігається з критерієм посимвольно. Частини з розділу «Не з кадрів» (Client type, порожні поля, відсутність створеної картки) не оцінювалися."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -618,21 +1042,32 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 7024,
-      "reviewCostUsd": 0.00234,
-      "reviewWallMs": 10075
+      "playwrightMs": 7592,
+      "reviewCostUsd": 0.00188,
+      "reviewWallMs": 5951
     }
   ],
   "negativeControls": [],
   "cleanup": {
-    "at": "2026-11-16T15:29:39.661Z",
+    "at": "2026-11-16T21:47:12.583Z",
     "deleted": [
-      "uat-261116152816-ins01@example.test",
-      "uat-261116152816-ins02@example.test",
-      "uat-261116152816-ins03@example.test",
-      "uat-261116152816-ins04@example.test",
-      "uat-261116152816-ins05@example.test",
-      "uat-261116152816-ins06@example.test"
+      "uat-261116214445-doc01@example.test",
+      "uat-261116214445-doc02@example.test",
+      "uat-261116214445-doc03@example.test",
+      "uat-261116214445-doc04@example.test",
+      "uat-261116214445-doc05@example.test",
+      "uat-261116214445-doc06@example.test",
+      "uat-261116214445-doc07@example.test",
+      "uat-261116214445-doc08@example.test",
+      "uat-261116214445-doc09@example.test",
+      "uat-261116214445-doc10@example.test",
+      "uat-261116214445-doc11@example.test",
+      "uat-261116214445-ins01@example.test",
+      "uat-261116214445-ins02@example.test",
+      "uat-261116214445-ins03@example.test",
+      "uat-261116214445-ins04@example.test",
+      "uat-261116214445-ins05@example.test",
+      "uat-261116214445-ins06@example.test"
     ],
     "remaining": [],
     "leftoverRequests": 0
