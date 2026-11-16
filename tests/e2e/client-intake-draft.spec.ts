@@ -108,12 +108,13 @@ test.describe("планувальник", () => {
         {
           clause:
             "поля форми не змінено (Name лишається «Client Fifteen»), і scheduler1 бачить повідомлення «This text can't be used to draft a client card. Paste the client's request or fill in the form manually.»",
-          visible: [
-            `повідомлення «${REFUSED}»`,
-            "поле Name — «Client Fifteen»",
-            "Client type — Adult, Date of birth, Session language і Email — порожні, як до запиту",
+          // Порожні поля не в visible: на кадрі в них видно лише підказки браузера («mm/dd/yyyy»), яких немає в
+          // aria-знімку, і рецензент, цитуючи їх, дає NEEDS-HUMAN (UAT 16.11, правило R4). Їх доводять expect нижче.
+          visible: [`повідомлення «${REFUSED}»`, "поле Name — «Client Fifteen»"],
+          hidden: [
+            "Client type — Adult; Date of birth, Session language і Email — порожні, як до запиту",
+            "картку не створено: форма лишилась на /clients/new без повідомлення про створення",
           ],
-          hidden: ["картку не створено: форма лишилась на /clients/new без повідомлення про створення"],
         },
         async () => {
           await expect(page.getByRole("main").getByRole("status")).toHaveText(REFUSED);
