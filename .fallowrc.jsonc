@@ -59,7 +59,10 @@
       "scripts/check-spec.mjs",
       "scripts/create-demo-users.mjs",
       "scripts/check-design-tokens.mjs",
-      "scripts/check-server-boundary.mjs"
+      "scripts/check-server-boundary.mjs",
+      // Скрипти набору materials/ai-feature WS10 (npm run ai:models, ai:quota) — з тієї самої причини.
+      "scripts/free-models.mjs",
+      "scripts/quota.mjs"
     ],
     "thresholdOverrides": [
       { "files": ["tests/**"], "maxUnitSize": 500, "reason": "describe()-блоки довгі за задумом" }

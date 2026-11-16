@@ -8,11 +8,11 @@
 
 ## 1. Ядро помічника: модель, схема, правила, промпт, golden офлайн (`task/ai-intake-core`)
 
-- [ ] 1.1 ADR `docs/decisions/0006-ai-feature-openrouter.md` (з шаблону набору, контекст — чернетка картки клієнта); залежності з точними версіями `ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7 server-only@0.0.1`; скрипти `eval`, `ai:models`, `ai:quota`; `OPENROUTER_API_KEY=` у `.env.example`
-- [ ] 1.2 Файли набору: `src/lib/ai/{models,openrouter,draft,scorer}.ts`, `prompts/judge.ts`, `evals/golden.live.eval.ts`, `vitest.eval.config.mts`, `scripts/{free-models,quota}.mjs`, `tests/ai-key.test.ts`; `npm run ai:models` — ланцюжок існує
-- [ ] 1.3 Домен (D2–D4): `IntakeDraftSchema`, промпт `intake-v1` з `sanitizeRequest` і «сьогодні», `normalizeDraft` і повідомлення станів у `src/lib/ai/intake.ts`; помилки → `unavailable` (D6)
-- [ ] 1.4 `tests/fixtures/golden/cases.json` — GC-01…10 дослівно з таблиці PM; `recorded.json` — заглушки під нашу схему (позначені як заглушки до задачі 3)
-- [ ] 1.5 Тести (окрема сесія, K06): `tests/golden.test.ts` — `it.each` за групами AC (AC-INTAKE-01, -02, -04, -05, -06, -07); `src/lib/ai/intake.test.ts` — правила D3 (дата в майбутньому, вік < 18, email, порядок «Missing»); збої AC-INTAKE-08 (немає ключа, 429, 429 у 200, таймаут, не за схемою); ін'єкція AC-INTAKE-07 (межа `<document>`, вирізані теги); `npm test` зелений без ключа
+- [x] 1.1 ADR `docs/decisions/0006-ai-feature-openrouter.md` (з шаблону набору, контекст — чернетка картки клієнта); залежності з точними версіями `ai@7.0.162 @openrouter/ai-sdk-provider@3.1.0 zod@4.6.7 server-only@0.0.1`; скрипти `eval`, `ai:models`, `ai:quota`; `OPENROUTER_API_KEY=` у `.env.example`
+- [x] 1.2 Файли набору: `src/lib/ai/{models,openrouter,draft,scorer}.ts`, `prompts/judge.ts`, `evals/golden.live.eval.ts`, `vitest.eval.config.mts`, `scripts/{free-models,quota}.mjs`, `tests/ai-key.test.ts`; `npm run ai:models` — ланцюжок існує
+- [x] 1.3 Домен (D2–D4): `IntakeDraftSchema`, промпт `intake-v1` з `sanitizeRequest` і «сьогодні», `normalizeDraft` і повідомлення станів у `src/lib/ai/intake.ts`; помилки → `unavailable` (D6)
+- [x] 1.4 `tests/fixtures/golden/cases.json` — GC-01…10 дослівно з таблиці PM; `recorded.json` — заглушки під нашу схему (позначені як заглушки до задачі 3)
+- [x] 1.5 Тести (окрема сесія, K06): `tests/golden.test.ts` — `it.each` за групами AC (AC-INTAKE-01, -02, -04, -05, -06, -07); `src/lib/ai/intake.test.ts` — правила D3 (дата в майбутньому, вік < 18, email, порядок «Missing»); збої AC-INTAKE-08 (немає ключа, 429, 429 у 200, таймаут, не за схемою); ін'єкція AC-INTAKE-07 (межа `<document>`, вирізані теги); `npm test` зелений без ключа
 
 Done when: AC-INTAKE-04, AC-INTAKE-05, AC-INTAKE-06, AC-INTAKE-07, AC-INTAKE-08 доведено офлайн (логіка й збої); `tests/ai-key.test.ts` зелений
 
