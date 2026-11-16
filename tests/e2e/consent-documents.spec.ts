@@ -354,7 +354,8 @@ test.describe("планувальник", () => {
         },
         async () => {
           const row = page.getByTestId("hold-list").locator("tbody tr").filter({ hasText: card.name });
-          await expect(row.getByRole("alert")).toHaveText(SIGN_ALL_FIRST);
+          // Результат підтвердження — одне повідомлення над таблицею утримань (confirm-form.tsx, ConfirmFeedback).
+          await expect(page.getByTestId("confirm-result").getByRole("alert")).toHaveText(SIGN_ALL_FIRST);
           await expect(row).toHaveAttribute("data-status", "held");
           await expect(row.getByText(heldUntil, { exact: true })).toBeVisible();
           const state = await holdStateOf(hold.holdId);
