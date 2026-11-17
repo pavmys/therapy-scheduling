@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { holdsList } from "@/lib/holds/status";
 import { fetchAll } from "@/lib/supabase/fetch-all";
-import { formatPracticeDateTime, formatPracticeTime } from "@/lib/time";
+import { formatPracticeDate, formatPracticeDateTime, formatPracticeTime } from "@/lib/time";
 import { ConfirmFeedback, ConfirmForm } from "./confirm-form";
 
 const HOLD_COLUMNS = "id, slot_id, client_id, created_at, expires_at, confirmed_at, slot:slots!inner(id, therapist_id, starts_at, ends_at)";
@@ -101,8 +101,13 @@ export default async function HoldsPage() {
                   const slot = slotOf.get(hold.id)!;
                   return (
                     <TableRow key={hold.id} data-status={status}>
+                      {/* Дата й час слоту — двома рядками: в один рядок стовпець займав ~200 px, і таблиця не вміщалась
+                          у ширину сторінки (max-w-3xl) — прокручувалась і обрізала «Slot» на кадрах UAT. */}
                       <TableCell className="tabular-nums">
-                        {formatPracticeDateTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
+                        <span className="block">{formatPracticeDate(new Date(slot.starts_at))}</span>
+                        <span className="block">
+                          {formatPracticeTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
+                        </span>
                       </TableCell>
                       <TableCell>{therapistName.get(slot.therapist_id) ?? "—"}</TableCell>
                       <TableCell className="font-medium">{clientName.get(hold.client_id) ?? "—"}</TableCell>
