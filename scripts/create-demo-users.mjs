@@ -10,10 +10,10 @@
 //
 // Аргументи (npm run users:pm:staging, ADR 0007):
 //   [файл]                — список користувачів (типово supabase/demo-users.json);
-//   --env <файл>          — узяти змінні з цього файлу, ПЕРЕКРИВАЮЧИ змінні оболонки (`node --env-file` їх не
-//                           перекриває: прод-URL з оболонки потрапив би в createClient);
+//   --env <файл>          — брати три змінні вище ЛИШЕ з цього файлу, без змінних оболонки (`node --env-file` їх не
+//                           перекриває, тож прод-URL чи ключ з оболонки потрапили б у createClient);
 //   --forbid-env <файл>   — відмовити, якщо ref проєкту збігається з ref NEXT_PUBLIC_SUPABASE_URL цього файлу
-//                           (для staging — .env.local проду), щоб не записати акаунти в чужу базу.
+//                           (для staging — .env.local проду) або якщо цей ref не вдалося визначити.
 // Чому скрипт, а не реєстрація: вбудований SMTP Supabase надсилає 2 листи/год і лише членам команди проєкту в Supabase,
 // тому email-підтвердження в навчальних проєктах вимкнено, а користувачів створюємо тут (email_confirm: true).
 // Скрипт ніколи не друкує значення ключів і паролів.
@@ -46,7 +46,8 @@ const supabaseRef = (value) => /^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/i.exec(
 
 const envFile = takeOption("--env");
 const forbidEnvFile = takeOption("--forbid-env");
-const env = envFile ? { ...process.env, ...readEnvFile(envFile) } : process.env;
+// З --env — жодного запасного значення з оболонки: відсутня у файлі змінна = помилка нижче.
+const env = envFile ? readEnvFile(envFile) : process.env;
 const envLabel = envFile ?? ".env.local";
 
 const url = env.NEXT_PUBLIC_SUPABASE_URL;
@@ -76,11 +77,17 @@ if (forbidEnvFile) {
     console.error(`NEXT_PUBLIC_SUPABASE_URL не схожий на https://<ref>.supabase.co — перевірте ${envLabel}.`);
     process.exit(1);
   }
-  if (ref === forbiddenRef) {
-    console.error(`Проєкт Supabase збігається з проєктом із ${forbidEnvFile} — користувачів не створено. Перевірте ${envLabel} і змінні оболонки.`);
+  if (!forbiddenRef) {
+    console.error(`Не вдалося визначити ref проєкту з ${forbidEnvFile} (NEXT_PUBLIC_SUPABASE_URL) — користувачів не створено.`);
+    process.exit(1);
+  }
+  if (ref.toLowerCase() === forbiddenRef.toLowerCase()) {
+    console.error(`Проєкт Supabase збігається з проєктом із ${forbidEnvFile} — користувачів не створено. Перевірте ${envLabel}.`);
     process.exit(1);
   }
 }
+
+console.log(`Ціль: проєкт Supabase ${new URL(url).host} (змінні з ${envLabel}).`);
 
 const file = path.resolve(args[0] ?? path.join("supabase", "demo-users.json"));
 const fileLabel = path.relative(process.cwd(), file);
