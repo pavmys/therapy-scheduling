@@ -21,8 +21,9 @@ PM перевіряє реліз-кандидати на постійній ад
   (і вручну), environment `staging` (Deployment branches = `staging`) із секретом `SUPABASE_DB_URL` (Session pooler,
   порт 5432). З ноутбука `db push` не запускаємо, як і для проду. `ci.yml` не змінено.
 - Тестові акаунти PM — `supabase/pm-users.json` (`pm-*@example.test`), створює
-  `npm run users:pm:staging` (той самий `create-demo-users.mjs`, файл — аргументом, ключі — з `.env.staging.local`,
-  якого git не відстежує).
+  `npm run users:pm:staging` (той самий `create-demo-users.mjs`, файл — аргументом). Змінні — з `.env.staging.local`
+  (git його не відстежує), і вони перекривають змінні оболонки; якщо ref проєкту збігається з ref з `.env.local`
+  (прод), скрипт відмовляє й нічого не пише.
 
 ## Розглянуті варіанти
 

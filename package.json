@@ -15,7 +15,7 @@
     "ac:coverage": "node scripts/check-ac-coverage.mjs",
     "db:types": "supabase gen types typescript --linked > src/lib/supabase/database.types.ts",
     "users:demo": "node --env-file=.env.local scripts/create-demo-users.mjs",
-    "users:pm:staging": "node --env-file=.env.staging.local scripts/create-demo-users.mjs supabase/pm-users.json",
+    "users:pm:staging": "node scripts/create-demo-users.mjs supabase/pm-users.json --env .env.staging.local --forbid-env .env.local",
     "check:design": "node scripts/check-design-tokens.mjs",
     "check:boundary": "node scripts/check-server-boundary.mjs",
     "smoke": "node scripts/smoke.mjs",
