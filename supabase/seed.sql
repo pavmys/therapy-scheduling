@@ -17,12 +17,14 @@
 
 -- ── Доступність терапевтів (зріз 1; design.md impl-hold, D8; ковзне вікно — ADR 0007) ─────
 -- Слоти пн–пт 09:00–17:00 (по 60 хв) у часовому поясі практики America/Los_Angeles для therapist1, therapist2
--- і pm-therapist (акаунт PM на staging, supabase/pm-users.json). Вікно рахується від дати ПЕРШОГО застосування сиду:
--- 7 днів назад (минулі слоти для «Past») і 26 тижнів уперед. Supabase CLI запам'ятовує хеш цього файлу
--- (supabase_migrations.seed_files) і повторно з include_seed виконує його, лише коли вміст змінився. Тому, щоб
--- продовжити розклад, змініть файл (напр. межі вікна) новим PR; on conflict не дублює наявні слоти.
--- Профілі створюють npm run users:demo / users:pm:staging: поки їх немає, вставка нічого не додає; після них —
--- Actions → CI (прод) або db-deploy-staging → Run workflow з include_seed.
+-- і pm-therapist (акаунт PM на staging, supabase/pm-users.json). Вікно рахується від дати виконання сиду:
+-- 7 днів назад (минулі слоти для «Past») і 26 тижнів уперед; on conflict не дублює наявні слоти, тож сид можна
+-- виконувати повторно, щоб продовжити розклад.
+-- Увага: `supabase db push --include-seed` виконує сид лише ОДИН раз на базу. Supabase CLI записує хеш файлу в
+-- supabase_migrations.seed_files, а для зміненого файлу лише оновлює хеш («hash update») і SQL не виконує.
+-- Перше застосування: профілі створюють npm run users:demo / users:pm:staging (поки їх немає, вставка нічого не
+-- додає), потім — Actions → CI (прод) або db-deploy-staging → Run workflow з include_seed. Повторне виконання
+-- (продовжити розклад) — вміст цього файлу вручну в SQL Editor відповідного проєкту (лише вставка даних, не DDL).
 insert into public.slots (therapist_id, starts_at, ends_at)
 select
   p.id,
