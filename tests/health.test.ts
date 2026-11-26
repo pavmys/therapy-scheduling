@@ -1,6 +1,6 @@
 // D0: /api/health відрізняє «база відповіла» від «база недоступна, призупинена чи ключ хибний».
 import { describe, expect, it } from "vitest";
-import { classifyDbProbe } from "@/lib/health";
+import { classifyDbProbe, resolveAppEnv, supabaseRefFromUrl } from "@/lib/health";
 
 describe("classifyDbProbe (/api/health)", () => {
   it("рахує базу живою, коли запит пройшов або Postgres відмовив у правах (42501)", () => {
@@ -48,5 +48,21 @@ describe("classifyDbProbe (/api/health)", () => {
     });
     expect(classifyDbProbe({ status: 401, error: { code: "PGRST301", message: "JWT invalid" } }).db).toBe("down");
     expect(classifyDbProbe({ status: 401, error: { code: "PGRST302", message: "anonymous role disabled" } }).db).toBe("down");
+  });
+});
+
+describe("appEnv і supabaseRef (/api/health, ADR 0007)", () => {
+  it("бере ref із адреси проєкту Supabase, інакше unknown", () => {
+    expect(supabaseRefFromUrl("https://abcdefghijklmnop.supabase.co")).toBe("abcdefghijklmnop");
+    expect(supabaseRefFromUrl("https://abcdefghijklmnop.supabase.co/")).toBe("abcdefghijklmnop");
+    expect(supabaseRefFromUrl("http://127.0.0.1:54321")).toBe("unknown");
+    expect(supabaseRefFromUrl(undefined)).toBe("unknown");
+  });
+
+  it("appEnv: APP_ENV, інакше VERCEL_ENV, інакше local", () => {
+    expect(resolveAppEnv({ APP_ENV: "staging", VERCEL_ENV: "preview" })).toBe("staging");
+    expect(resolveAppEnv({ VERCEL_ENV: "production" })).toBe("production");
+    expect(resolveAppEnv({ APP_ENV: "", VERCEL_ENV: "preview" })).toBe("preview");
+    expect(resolveAppEnv({})).toBe("local");
   });
 });

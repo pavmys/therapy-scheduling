@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // npm run users:demo — створює синтетичних користувачів із supabase/demo-users.json через Admin API
+// (інший файл — першим аргументом: npm run users:pm:staging бере supabase/pm-users.json і .env.staging.local, ADR 0007)
 // і ставить їм роль у public.profiles. Ідемпотентно: наявних користувачів не дублює, а оновлює
 // їм пароль, ім'я та роль.
 //
@@ -34,11 +35,12 @@ if (password.length < 8) {
   process.exit(1);
 }
 
-const file = path.join(process.cwd(), "supabase", "demo-users.json");
+const file = path.resolve(process.argv[2] ?? path.join("supabase", "demo-users.json"));
+const fileLabel = path.relative(process.cwd(), file);
 const users = JSON.parse(readFileSync(file, "utf8"));
 for (const u of users) {
   if (!/^[^@\s]+@example\.test$/i.test(u.email ?? "")) {
-    console.error(`Лише синтетичні адреси *@example.test: "${u.email}" у supabase/demo-users.json.`);
+    console.error(`Лише синтетичні адреси *@example.test: "${u.email}" у ${fileLabel}.`);
     process.exit(1);
   }
   // role: null — користувач, який увійшов, але ще без ролі (AC-CARD-11); ключ role обов'язковий, щоб null був свідомим.
@@ -110,4 +112,4 @@ if (failed) {
   );
   process.exit(1);
 }
-console.log(`\nГотово, користувачів: ${users.length}. Пароль — значення DEMO_USER_PASSWORD (у консоль не виводимо).`);
+console.log(`\nГотово (${new URL(url).host}), користувачів: ${users.length}. Пароль — значення DEMO_USER_PASSWORD (у консоль не виводимо).`);
