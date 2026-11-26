@@ -17,10 +17,12 @@
 
 -- ── Доступність терапевтів (зріз 1; design.md impl-hold, D8; ковзне вікно — ADR 0007) ─────
 -- Слоти пн–пт 09:00–17:00 (по 60 хв) у часовому поясі практики America/Los_Angeles для therapist1, therapist2
--- і pm-therapist (акаунт PM на staging, supabase/pm-users.json). Вікно рахується від дати запуску: 7 днів назад
--- (минулі слоти для «Past») і 8 тижнів уперед, тож повторний запуск з include_seed продовжує розклад, а
--- on conflict не дублює наявні слоти. Профілі створюють npm run users:demo / users:pm:staging: поки їх немає,
--- вставка нічого не додає; після них — Actions → CI (прод) або db-deploy-staging → Run workflow з include_seed.
+-- і pm-therapist (акаунт PM на staging, supabase/pm-users.json). Вікно рахується від дати ПЕРШОГО застосування сиду:
+-- 7 днів назад (минулі слоти для «Past») і 26 тижнів уперед. Supabase CLI запам'ятовує хеш цього файлу
+-- (supabase_migrations.seed_files) і повторно з include_seed виконує його, лише коли вміст змінився. Тому, щоб
+-- продовжити розклад, змініть файл (напр. межі вікна) новим PR; on conflict не дублює наявні слоти.
+-- Профілі створюють npm run users:demo / users:pm:staging: поки їх немає, вставка нічого не додає; після них —
+-- Actions → CI (прод) або db-deploy-staging → Run workflow з include_seed.
 insert into public.slots (therapist_id, starts_at, ends_at)
 select
   p.id,
@@ -29,7 +31,7 @@ select
 from public.profiles as p
 cross join generate_series(
   ((now() at time zone 'America/Los_Angeles')::date - 7)::timestamp,
-  ((now() at time zone 'America/Los_Angeles')::date + 56)::timestamp,
+  ((now() at time zone 'America/Los_Angeles')::date + 182)::timestamp,
   interval '1 day'
 ) as d
 cross join generate_series(9, 16) as h
