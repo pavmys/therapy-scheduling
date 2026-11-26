@@ -23,3 +23,15 @@ export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
   // 0 — мережа (Supabase недоступний або хибний URL), 5xx, PGRST000–003 і 300–302, SQLSTATE поза класом 42.
   return { db: "down", reason: `status-${status}${code ? `-${code}` : ""}` };
 }
+
+/** Ref проєкту Supabase з NEXT_PUBLIC_SUPABASE_URL (https://<ref>.supabase.co) — не секрет; показує, яку базу бачить
+ *  розгортання (ADR 0007: staging і прод — різні проєкти). Інша адреса (локальна, власний домен) — "unknown". */
+export function supabaseRefFromUrl(url: string | undefined): string {
+  const match = /^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/i.exec(url ?? "");
+  return match ? match[1] : "unknown";
+}
+
+/** Середовище застосунку: APP_ENV (Vercel задає staging лише для гілки staging), інакше VERCEL_ENV, інакше local. */
+export function resolveAppEnv(env: { APP_ENV?: string; VERCEL_ENV?: string }): string {
+  return env.APP_ENV || env.VERCEL_ENV || "local";
+}

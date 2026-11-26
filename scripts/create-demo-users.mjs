@@ -7,16 +7,52 @@
 //   NEXT_PUBLIC_SUPABASE_URL  — адреса проєкту;
 //   SUPABASE_SECRET_KEY       — секретний ключ (sb_secret_…), лише на сервері, ніколи NEXT_PUBLIC_;
 //   DEMO_USER_PASSWORD        — один пароль для всіх демо-користувачів (≥ 8 символів), не комітиться.
+//
+// Аргументи (npm run users:pm:staging, ADR 0007):
+//   [файл]                — список користувачів (типово supabase/demo-users.json);
+//   --env <файл>          — брати три змінні вище ЛИШЕ з цього файлу, без змінних оболонки (`node --env-file` їх не
+//                           перекриває, тож прод-URL чи ключ з оболонки потрапили б у createClient);
+//   --forbid-env <файл>   — відмовити, якщо ref проєкту збігається з ref NEXT_PUBLIC_SUPABASE_URL цього файлу
+//                           (для staging — .env.local проду) або якщо цей ref не вдалося визначити.
 // Чому скрипт, а не реєстрація: вбудований SMTP Supabase надсилає 2 листи/год і лише членам команди проєкту в Supabase,
 // тому email-підтвердження в навчальних проєктах вимкнено, а користувачів створюємо тут (email_confirm: true).
 // Скрипт ніколи не друкує значення ключів і паролів.
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { parseEnv } from "node:util";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const secretKey = process.env.SUPABASE_SECRET_KEY;
-const password = process.env.DEMO_USER_PASSWORD;
+const args = process.argv.slice(2);
+function takeOption(name) {
+  const i = args.indexOf(name);
+  if (i === -1) return undefined;
+  const value = args[i + 1];
+  if (!value || value.startsWith("--")) {
+    console.error(`Після ${name} вкажіть шлях до файлу.`);
+    process.exit(1);
+  }
+  args.splice(i, 2);
+  return value;
+}
+function readEnvFile(file) {
+  try {
+    return parseEnv(readFileSync(file, "utf8"));
+  } catch {
+    console.error(`Не вдалося прочитати файл змінних ${file}: файл не знайдено або він некоректний.`);
+    process.exit(1);
+  }
+}
+const supabaseRef = (value) => /^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/i.exec(value ?? "")?.[1] ?? null;
+
+const envFile = takeOption("--env");
+const forbidEnvFile = takeOption("--forbid-env");
+// З --env — жодного запасного значення з оболонки: відсутня у файлі змінна = помилка нижче.
+const env = envFile ? readEnvFile(envFile) : process.env;
+const envLabel = envFile ?? ".env.local";
+
+const url = env.NEXT_PUBLIC_SUPABASE_URL;
+const secretKey = env.SUPABASE_SECRET_KEY;
+const password = env.DEMO_USER_PASSWORD;
 
 const missing = [
   ["NEXT_PUBLIC_SUPABASE_URL", url],
@@ -26,7 +62,7 @@ const missing = [
   .filter(([, value]) => !value)
   .map(([name]) => name);
 if (missing.length) {
-  console.error(`Не задано: ${missing.join(", ")}. Додайте їх у .env.local (див. .env.example).`);
+  console.error(`Не задано: ${missing.join(", ")}. Додайте їх у ${envLabel} (див. .env.example).`);
   process.exit(1);
 }
 if (password.length < 8) {
@@ -34,11 +70,42 @@ if (password.length < 8) {
   process.exit(1);
 }
 
-const file = path.join(process.cwd(), "supabase", "demo-users.json");
-const users = JSON.parse(readFileSync(file, "utf8"));
+if (forbidEnvFile) {
+  const ref = supabaseRef(url);
+  const forbiddenRef = supabaseRef(readEnvFile(forbidEnvFile).NEXT_PUBLIC_SUPABASE_URL);
+  if (!ref) {
+    console.error(`NEXT_PUBLIC_SUPABASE_URL не схожий на https://<ref>.supabase.co — перевірте ${envLabel}.`);
+    process.exit(1);
+  }
+  if (!forbiddenRef) {
+    console.error(`Не вдалося визначити ref проєкту з ${forbidEnvFile} (NEXT_PUBLIC_SUPABASE_URL) — користувачів не створено.`);
+    process.exit(1);
+  }
+  if (ref.toLowerCase() === forbiddenRef.toLowerCase()) {
+    console.error(`Проєкт Supabase збігається з проєктом із ${forbidEnvFile} — користувачів не створено. Перевірте ${envLabel}.`);
+    process.exit(1);
+  }
+}
+
+console.log(`Ціль: проєкт Supabase ${new URL(url).host} (змінні з ${envLabel}).`);
+
+const file = path.resolve(args[0] ?? path.join("supabase", "demo-users.json"));
+const fileLabel = path.relative(process.cwd(), file);
+let users;
+try {
+  users = JSON.parse(readFileSync(file, "utf8"));
+} catch (e) {
+  const reason = e?.code === "ENOENT" ? "файл не знайдено" : e instanceof SyntaxError ? "некоректний JSON" : "помилка читання";
+  console.error(`Не вдалося прочитати ${fileLabel}: ${reason}.`);
+  process.exit(1);
+}
+if (!Array.isArray(users)) {
+  console.error(`${fileLabel} має містити масив користувачів.`);
+  process.exit(1);
+}
 for (const u of users) {
   if (!/^[^@\s]+@example\.test$/i.test(u.email ?? "")) {
-    console.error(`Лише синтетичні адреси *@example.test: "${u.email}" у supabase/demo-users.json.`);
+    console.error(`Лише синтетичні адреси *@example.test: "${u.email}" у ${fileLabel}.`);
     process.exit(1);
   }
   // role: null — користувач, який увійшов, але ще без ролі (AC-CARD-11); ключ role обов'язковий, щоб null був свідомим.
@@ -110,4 +177,4 @@ if (failed) {
   );
   process.exit(1);
 }
-console.log(`\nГотово, користувачів: ${users.length}. Пароль — значення DEMO_USER_PASSWORD (у консоль не виводимо).`);
+console.log(`\nГотово (${new URL(url).host}), користувачів: ${users.length}. Пароль — значення DEMO_USER_PASSWORD (у консоль не виводимо).`);
