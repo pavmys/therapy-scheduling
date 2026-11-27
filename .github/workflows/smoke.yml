@@ -66,6 +66,8 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
+      # Дія з postmortem 2026-11-27-staging-bad-supabase-url: прод має дивитися в прод-базу (змінна репо, не секрет).
+      EXPECT_SUPABASE_REF: ${{ vars.SUPABASE_PROD_REF }}
       # Прод не за захистом (Standard Protection), але заголовок не шкодить, якщо колись увімкнуть All Deployments.
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
@@ -143,6 +145,8 @@ jobs:
     env:
       DEPLOY_URL: ${{ github.event.client_payload.url || inputs.url }}
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || inputs.sha }}
+      # Preview і staging — база staging (ADR 0008); ручний запуск з довільною адресою — без звірки ref.
+      EXPECT_SUPABASE_REF: ${{ github.event_name == 'repository_dispatch' && vars.SUPABASE_STAGING_REF || '' }}
       DEPLOY_ENV: ${{ github.event.client_payload.environment || 'manual' }}
       DEPLOY_BRANCH: ${{ github.event.client_payload.git.ref || '' }}
       SMOKE_TARGET: deploy
