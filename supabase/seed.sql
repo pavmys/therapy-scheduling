@@ -23,7 +23,8 @@
 -- Увага: `supabase db push --include-seed` виконує сид лише ОДИН раз на базу. Supabase CLI записує хеш файлу в
 -- supabase_migrations.seed_files, а для зміненого файлу лише оновлює хеш («hash update») і SQL не виконує.
 -- Перше застосування: профілі створюють npm run users:demo / users:pm:staging (поки їх немає, вставка нічого не
--- додає), потім — Actions → CI (прод) або db-deploy-staging → Run workflow з include_seed. Повторне виконання
+-- додає), потім — Actions → CI → Run workflow на main: include_seed — прод, include_seed_staging — staging
+-- (job db-deploy-staging, ADR 0008). Повторне виконання
 -- (продовжити розклад) — вміст цього файлу вручну в SQL Editor відповідного проєкту (лише вставка даних, не DDL).
 insert into public.slots (therapist_id, starts_at, ends_at)
 select

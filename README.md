@@ -165,7 +165,8 @@ push, fetch, `git log` і `scripts/check-migration-order.mjs` працюють �
 застосовуємо; прямий хост на Free лише IPv6, а раннери GitHub — IPv4). Спецсимволи пароля — percent-encoded
 (`@` → `%40`, `#` → `%23`, `/` → `%2F`). Job `db-deploy` на push у `main` виконує
 `supabase db push --db-url "$SUPABASE_DB_URL"` (спершу `--dry-run` для журналу; без `--include-all`); сид — лише
-вручну: **Actions → CI → Run workflow** на `main` з `include_seed` (`--include-seed`). Без секрету job пропускає
+вручну: **Actions → CI → Run workflow** на `main` з `include_seed` (`--include-seed`). Сид у базу staging — той самий
+запуск з `include_seed_staging` (job `db-deploy-staging`, ADR 0008). Без секрету job пропускає
 крок з повідомленням. Перевіряємо прогоном у день 0.
 
 **Запасний шлях** (якщо `--db-url` не працює): офіційний `supabase link` + `supabase db push`. Створіть scoped token

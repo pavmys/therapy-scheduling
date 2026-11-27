@@ -23,8 +23,9 @@ staging застосовувались push-ем у `staging` окремим wor
   `SUPABASE_STAGING_REF` і друкує «Ціль міграцій: проєкт <ref> (staging)». `db-deploy` (прод) чекає на нього і так
   само звіряє свій ref із `SUPABASE_PROD_REF`. Вхід `include_seed_staging` запускає seed у staging вручну.
   `.github/workflows/db-deploy-staging.yml` видалено.
-- `staging` отримує код лише з `main` (`git merge --ff-only origin/main` або PR `main → staging`). Схему staging
-  на той момент уже оновив CI.
+- Перед оновленням `staging` перевіряємо, що в прогоні CI на потрібному коміті `main` job `db-deploy-staging`
+  зелений. Інакше новий код staging побачить стару схему.
+- `staging` отримує код лише з `main` (`git merge --ff-only origin/main` або PR `main → staging`).
 - Взято з `materials/ops-kit/ci-examples/db-deploy-staging.yml` репо домашки WS11.
 
 ## Розглянуті варіанти
