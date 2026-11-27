@@ -20,6 +20,8 @@
 //   - x-vercel-set-bypass-cookie НЕ надсилаємо: він потрібен браузеру для наступних запитів і відповідає
 //     редіректом із Set-Cookie, а smoke з redirect:"manual" тоді побачив би 3xx замість сторінки.
 //   - SMOKE_TARGET=deploy (ставить workflow для preview і staging) змінює лише підказки в повідомленнях про збій.
+import { supabaseRefMismatch } from "./lib/supabase-ref.mjs";
+
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
 const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawBase}` : "").replace(/\/+$/, "");
@@ -110,6 +112,12 @@ async function main() {
       `"/api/health": HTTP ${health.status}, db=${health.db ?? "?"}${health.reason ? ` (${health.reason})` : ""} — Supabase недоступний чи NEXT_PUBLIC_SUPABASE_URL у Vercel не той?`,
     );
   }
+  // Дія з postmortem 2026-11-27-staging-bad-supabase-url: ref бази — той, що очікуємо для цього середовища.
+  // Лише коли /api/health відповів JSON-ом (200 чи 503), інакше причина вже у fail.
+  const refProblem = health && (health.status === 200 || health.status === 503)
+    ? supabaseRefMismatch(health.supabaseRef, process.env.EXPECT_SUPABASE_REF)
+    : null;
+  if (refProblem) fail.push(refProblem);
   if (expectSha && health?.sha === "local") {
     fail.push(`"/api/health": sha=local — у Vercel увімкніть Settings → Environment Variables → «Automatically expose System Environment Variables» і зробіть Redeploy`);
   } else if (expectSha && health?.sha && health.sha !== expectSha) {
