@@ -93,7 +93,7 @@
 
 | Дія | Власник | Перевірка, якою вона стала | Посилання |
 |---|---|---|---|
-| Smoke звіряє `supabaseRef` з очікуваним ref (staging і preview — `SUPABASE_STAGING_REF`, прод — `SUPABASE_PROD_REF`) і пише прямо «ref не той» | розробник | крок smoke + тест `scripts/smoke.mjs` | https://github.com/pavmys/therapy-scheduling/pull/81 |
+| Smoke звіряє `supabaseRef` з очікуваним ref (staging і preview — `SUPABASE_STAGING_REF`, прод — `SUPABASE_PROD_REF`) і пише прямо «ref не той» | розробник | перевірка в `scripts/smoke.mjs` + тест `tests/scripts/smoke-supabase-ref.test.ts` | https://github.com/pavmys/therapy-scheduling/pull/81 |
 | Перевірка формату `NEXT_PUBLIC_SUPABASE_URL` під час збірки (ref — 20 малих латинських літер) | розробник | prebuild-крок; збірка падає, alias лишається на зеленому деплої | не зроблено |
 | `/api/health` пише `reason` і `supabaseRef` у журнал при `db` ≠ ok (без секретів) | розробник | рядок у Vercel Logs | не зроблено |
 | PM у Telegram-групі алертів (відкрите питання `operations.md`, розділ 4) | розробник і PM | алерт дрілу отримали обидва | зроблено 2026-11-27 |
