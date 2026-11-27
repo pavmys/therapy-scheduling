@@ -2,6 +2,7 @@
 
 import { proposeDraft } from "@/lib/ai/draft";
 import { DRAFT_REFUSED_MESSAGE, intakeOutcome, type IntakeState } from "@/lib/ai/intake";
+import { PRODUCT_MODELS } from "@/lib/ai/models";
 import { productModel } from "@/lib/ai/openrouter";
 import { MAX_REQUEST_LENGTH, sanitizeRequest } from "@/lib/ai/prompts/draft";
 import { getCurrentUser, isStaffRole } from "@/lib/auth";
@@ -41,7 +42,13 @@ export async function requestIntakeDraft(
   const today = practiceToday(new Date());
   const model = productModel();
   const outcome = model
-    ? intakeOutcome(await proposeDraft({ text, today }, model), today)
+    ? intakeOutcome(
+        await proposeDraft({ text, today }, model, {
+          // WS11: рядок llm.call у Runtime Logs — без тексту звернення (src/lib/ai/llm-log.ts).
+          log: { requestId: crypto.randomUUID(), route: "/clients/new", primaryModel: PRODUCT_MODELS[0] },
+        }),
+        today,
+      )
     : intakeOutcome({ ok: false, reason: "no_key", message: "model key is not set" }, today);
 
   // Чернетка замінює всю форму (ready / incomplete); інакше поля лишаються як були (AC-INTAKE-06, -07, -08).

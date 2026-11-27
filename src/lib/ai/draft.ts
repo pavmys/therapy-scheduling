@@ -1,5 +1,6 @@
 import { APICallError, NoObjectGeneratedError, Output, RetryError, generateText, type LanguageModel } from "ai";
-import { DRAFT_INSTRUCTIONS, wrapDocument } from "./prompts/draft";
+import { isFallback, logLlmCall } from "./llm-log";
+import { DRAFT_INSTRUCTIONS, DRAFT_PROMPT_VERSION, wrapDocument } from "./prompts/draft";
 import { IntakeDraftSchema, type IntakeDraft } from "./schema";
 
 // Чиста функція: модель передають параметром. Застосунок передає модель OpenRouter (src/lib/ai/openrouter.ts),
@@ -15,13 +16,19 @@ export type DraftResult =
   | { ok: true; draft: IntakeDraft; modelId: string }
   | { ok: false; reason: DraftFailureReason; message: string };
 
-export type DraftOptions = { maxRetries?: number; timeoutMs?: number };
+export type DraftOptions = {
+  maxRetries?: number;
+  timeoutMs?: number;
+  /** WS11: куди писати llm.call. Немає — журналу немає (так працюють golden-тести й eval). */
+  log?: { requestId: string; route: string; primaryModel: string };
+};
 
 /** design.md D1: на безкоштовному тарифі повтор витрачає той самий денний ліміт; PM не задав таймаут — 25 с. */
 export const DEFAULT_MAX_RETRIES = 0;
 export const DEFAULT_TIMEOUT_MS = 25_000;
 
 export async function proposeDraft(input: DraftInput, model: LanguageModel, opts: DraftOptions = {}): Promise<DraftResult> {
+  const started = performance.now();
   try {
     const result = await generateText({
       model,
@@ -33,9 +40,37 @@ export async function proposeDraft(input: DraftInput, model: LanguageModel, opts
       timeout: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     });
     // result.output уже перевірено за IntakeDraftSchema (інакше — виняток NoObjectGeneratedError).
+    if (opts.log) {
+      const cost = (result.providerMetadata?.openrouter as { usage?: { cost?: unknown } } | undefined)?.usage?.cost;
+      logLlmCall({
+        requestId: opts.log.requestId,
+        route: opts.log.route,
+        model: result.response.modelId,
+        fallbackUsed: isFallback(result.response.modelId, opts.log.primaryModel),
+        state: result.output.status, // ok | refused (needs_info у нас рахує код — intake.ts, «incomplete»)
+        latencyMs: performance.now() - started,
+        inputTokens: result.usage.inputTokens,
+        outputTokens: result.usage.outputTokens,
+        costUsd: typeof cost === "number" ? cost : undefined,
+        promptVersion: DRAFT_PROMPT_VERSION,
+      });
+    }
     return { ok: true, draft: result.output, modelId: result.response.modelId };
   } catch (error) {
-    return classifyError(error);
+    const failure = classifyError(error);
+    if (opts.log) {
+      logLlmCall({
+        requestId: opts.log.requestId,
+        route: opts.log.route,
+        model: opts.log.primaryModel,
+        fallbackUsed: false,
+        state: "unavailable",
+        latencyMs: performance.now() - started,
+        promptVersion: DRAFT_PROMPT_VERSION,
+        errorKind: failure.reason, // КОД причини; failure.message (текст постачальника) у журнал не йде
+      });
+    }
+    return failure;
   }
 }
 
